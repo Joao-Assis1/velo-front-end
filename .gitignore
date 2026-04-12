@@ -7,3 +7,7 @@ coverage/
 .env*
 !.env.example
 tlc-spec-driven
+.specs
+.next/
+out/
+.vercel

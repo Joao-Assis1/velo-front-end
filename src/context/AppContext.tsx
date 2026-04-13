@@ -1,16 +1,24 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Screen, UserRole, Instructor, Student, ScheduledClass } from '../types';
-import { MOCK_INSTRUCTORS, INITIAL_STUDENT_PROFILE, INITIAL_SCHEDULED_CLASSES } from '../constants/mockData';
+import { 
+  createLessonAction, 
+  checkInAction, 
+  checkOutAction, 
+  submitStudentFeedbackAction, 
+  submitInstructorFeedbackAction,
+  getLessonsAction
+} from '@/lib/actions/lessons';
+import { loginStudentAction, loginInstructorAction } from '@/lib/actions/auth';
 
 interface AppContextType {
   screen: Screen;
   userRole: UserRole;
   selectedInstructorId: string | null;
   hasLadv: boolean;
-  instructorProfile: Instructor;
-  studentProfile: Student;
+  instructorProfile: Instructor | null;
+  studentProfile: Student | null;
   scheduledClasses: ScheduledClass[];
   busySlots: Record<string, string[]>;
   
@@ -19,19 +27,19 @@ interface AppContextType {
   setUserRole: (role: UserRole) => void;
   selectInstructor: (id: string) => void;
   setHasLadv: (status: boolean) => void;
-  setInstructorProfile: (profile: Instructor) => void;
-  setStudentProfile: (profile: Student) => void;
+  setInstructorProfile: (profile: Instructor | null) => void;
+  setStudentProfile: (profile: Student | null) => void;
   setScheduledClasses: (classes: ScheduledClass[]) => void;
   setBusySlots: (slots: Record<string, string[]>) => void;
   
   login: () => void;
-  register: (ladvUploaded?: boolean) => void;
+  register: (data: any) => void;
   logout: () => void;
   
   // Business logic
   cancelClass: (id: string) => void;
   rateClass: (id: string, rating: number, text: string) => void;
-  bookClass: (date: Date, time: string, instructor: Instructor) => void;
+  bookClass: (date: Date, startTime: string, endTime: string, instructor: Instructor) => void;
   giveFeedback: (id: string, feedback: string) => void;
   checkIn: (id: string) => void;
   checkOut: (id: string) => void;
@@ -44,10 +52,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [selectedInstructorId, setSelectedInstructorId] = useState<string | null>(null);
   const [hasLadv, setHasLadv] = useState(false);
-  const [instructorProfile, setInstructorProfile] = useState<Instructor>(MOCK_INSTRUCTORS[0]);
-  const [studentProfile, setStudentProfile] = useState<Student>(INITIAL_STUDENT_PROFILE);
-  const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>(INITIAL_SCHEDULED_CLASSES);
+  const [instructorProfile, setInstructorProfile] = useState<Instructor | null>(null);
+  const [studentProfile, setStudentProfile] = useState<Student | null>(null);
+  const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [busySlots, setBusySlots] = useState<Record<string, string[]>>({});
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      if (userRole === 'student' && studentProfile?.id) {
+        const lessonsRes = await getLessonsAction({ studentId: studentProfile.id });
+        if (lessonsRes.success && lessonsRes.data) {
+          setScheduledClasses(lessonsRes.data as ScheduledClass[]);
+        }
+      } else if (userRole === 'instructor' && instructorProfile?.id) {
+        const lessonsRes = await getLessonsAction({ instructorId: instructorProfile.id });
+        if (lessonsRes.success && lessonsRes.data) {
+          setScheduledClasses(lessonsRes.data as ScheduledClass[]);
+        }
+      }
+    };
+    loadInitialData();
+  }, [userRole, studentProfile?.id, instructorProfile?.id]);
 
   const navigateTo = (newScreen: Screen) => {
     setScreen(newScreen);
@@ -61,21 +86,57 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     navigateTo('instructor-profile-view');
   };
 
-  const login = () => {
-    if (userRole === 'student') {
-      navigateTo('student-home');
-    } else {
-      navigateTo('instructor-dashboard');
+  const login = async () => {
+    try {
+      if (userRole === 'student') {
+        const res = await loginStudentAction();
+        if (res.success && res.data) {
+          setStudentProfile(res.data as Student);
+          setHasLadv(res.data.ladvUploaded);
+        }
+        navigateTo('student-home');
+      } else {
+        const res = await loginInstructorAction();
+        if (res.success && res.data) {
+          setInstructorProfile(res.data as Instructor);
+        }
+        navigateTo('instructor-dashboard');
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+      if (userRole === 'student') navigateTo('student-home');
+      else navigateTo('instructor-dashboard');
     }
   };
 
-  const register = (ladvUploaded?: boolean) => {
-    if (ladvUploaded) {
-      setHasLadv(true);
-    }
+  const register = (data: any) => {
     if (userRole === 'student') {
+      setStudentProfile({
+        id: data.id || 'new-student-id',
+        name: data.name,
+        email: data.email,
+        phone: data.phone || '',
+        cpf: data.cpf || '',
+        profilePicture: data.profilePicture || '',
+        ladvUploaded: data.ladvUploaded || false
+      });
       navigateTo('student-home');
     } else {
+      setInstructorProfile({
+        id: data.id || 'new-instructor-id',
+        name: data.name,
+        email: data.email,
+        profilePicture: data.profilePicture || '',
+        rating: 5.0,
+        reviewsCount: 0,
+        pricePerClass: 0,
+        location: data.location || '',
+        bio: data.bio || '',
+        transmission: 'Manual',
+        instructorType: 'Credenciado',
+        availability: [],
+        busySlots: []
+      });
       navigateTo('instructor-dashboard');
     }
   };
@@ -83,6 +144,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUserRole(null);
     setHasLadv(false);
+    setStudentProfile(null);
+    setInstructorProfile(null);
     setScreen('onboarding');
   };
 
@@ -90,49 +153,86 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setScheduledClasses(prev => prev.filter(c => c.id !== id));
   };
 
-  const rateClass = (id: string, rating: number, text: string) => {
-    setScheduledClasses(prev => prev.map(c => 
-      c.id === id ? { ...c, studentFeedback: { rating, text } } : c
-    ));
-  };
-
-  const bookClass = (date: Date, time: string, instructor: Instructor) => {
-    const newClass: ScheduledClass = {
-      id: `class-${Date.now()}`,
-      instructorId: instructor.id,
-      instructorName: instructor.name,
-      date,
-      time,
-      status: 'upcoming',
-      price: instructor.price,
-      studentName: studentProfile.name,
-      studentImage: studentProfile.image
-    };
-    setScheduledClasses(prev => [...prev, newClass]);
-  };
-
-  const giveFeedback = (id: string, feedback: string) => {
-    setScheduledClasses(prev => prev.map(c => 
-      c.id === id ? { ...c, instructorFeedback: feedback } : c
-    ));
-  };
-
-  const checkIn = (id: string) => {
-    setScheduledClasses(prev => prev.map(c => 
-      c.id === id ? { ...c, status: 'in-progress', checkInTime: new Date() } : c
-    ));
-  };
-
-  const checkOut = (id: string) => {
-    setScheduledClasses(prev => prev.map(c => {
-      if (c.id === id) {
-        const checkOutTime = new Date();
-        const checkInTime = c.checkInTime || new Date();
-        const durationMinutes = Math.max(1, Math.round((checkOutTime.getTime() - checkInTime.getTime()) / 60000));
-        return { ...c, status: 'completed', checkOutTime, durationMinutes };
+  const rateClass = async (id: string, rating: number, text: string) => {
+    try {
+      const result = await submitStudentFeedbackAction(id, rating, text);
+      if (result.success) {
+        setScheduledClasses(prev => prev.map(c => 
+          c.id === id ? { ...c, studentFeedbackRating: rating, studentFeedbackText: text } : c
+        ));
       }
-      return c;
-    }));
+    } catch (err) {
+      console.error('Failed to rate class:', err);
+    }
+  };
+
+  const bookClass = async (date: Date, startTime: string, endTime: string, instructor: Instructor) => {
+    try {
+      const lessonDto = {
+        studentId: studentProfile?.id || '00000000-0000-0000-0000-000000000000',
+        instructorId: instructor.id,
+        date: date.toISOString(),
+        startTime,
+        endTime,
+        price: instructor.pricePerClass,
+        vehicleId: instructor.vehicleId
+      };
+      
+      const result = await createLessonAction(lessonDto);
+      if (result.success && result.data) {
+        setScheduledClasses(prev => [...prev, result.data as ScheduledClass]);
+      } else {
+        throw new Error(result.error || 'Failed to book class');
+      }
+    } catch (err) {
+      console.error('Failed to book class:', err);
+      throw err;
+    }
+  };
+
+  const giveFeedback = async (id: string, feedback: string) => {
+    try {
+      const result = await submitInstructorFeedbackAction(id, feedback);
+      if (result.success) {
+        setScheduledClasses(prev => prev.map(c => 
+          c.id === id ? { ...c, instructorFeedback: feedback } : c
+        ));
+      }
+    } catch (err) {
+      console.error('Failed to give feedback:', err);
+    }
+  };
+
+  const checkIn = async (id: string) => {
+    try {
+      const result = await checkInAction(id);
+      if (result.success) {
+        setScheduledClasses(prev => prev.map(c => 
+          c.id === id ? { ...c, status: 'in-progress', checkInTime: new Date() } : c
+        ));
+      }
+    } catch (err) {
+      console.error('Failed to check in:', err);
+    }
+  };
+
+  const checkOut = async (id: string) => {
+    try {
+      const result = await checkOutAction(id);
+      if (result.success) {
+        setScheduledClasses(prev => prev.map(c => {
+          if (c.id === id) {
+            const checkOutTime = new Date();
+            const checkInTime = c.checkInTime || new Date();
+            const durationMinutes = Math.max(1, Math.round((checkOutTime.getTime() - checkInTime.getTime()) / 60000));
+            return { ...c, status: 'completed', checkOutTime, durationMinutes };
+          }
+          return c;
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to check out:', err);
+    }
   };
 
   return (

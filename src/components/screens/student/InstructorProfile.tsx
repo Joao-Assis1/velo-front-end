@@ -13,7 +13,7 @@ import {
   Calendar as CalendarIcon,
   Clock,
 } from "lucide-react";
-import { format, isBefore, startOfDay, isSameDay } from "date-fns";
+import { format, isBefore, startOfDay, isSameDay, addHours } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Button, CalendarWidget } from "@/components/ui-custom";
@@ -21,22 +21,25 @@ import { Instructor } from "@/types";
 import { MOCK_INSTRUCTORS } from "@/constants/mockData";
 
 export const InstructorProfileView = ({
-  instructorId,
+  instructor,
   onBack,
   hasLadv,
   onUploadLadv,
   onBookClass,
   busySlots,
 }: {
-  instructorId: string;
+  instructor: Instructor;
   onBack: () => void;
   hasLadv: boolean;
   onUploadLadv: () => void;
-  onBookClass: (date: Date, time: string, instructor: Instructor) => void;
+  onBookClass: (
+    date: Date,
+    startTime: string,
+    endTime: string,
+    instructor: Instructor,
+  ) => void;
   busySlots?: Record<string, string[]>;
 }) => {
-  const instructor =
-    MOCK_INSTRUCTORS.find((i) => i.id === instructorId) || MOCK_INSTRUCTORS[0];
   const [showWhatsAppAnim, setShowWhatsAppAnim] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -79,18 +82,18 @@ export const InstructorProfileView = ({
     };
 
     const dayConfig =
-      instructor.availability?.find((d) => d.dayOfWeek === dayOfWeek) ||
-      (instructor.availability
+      instructor?.availability?.find((d) => d.dayOfWeek === dayOfWeek) ||
+      (instructor?.availability
         ? { isEnabled: false, startTime: "", endTime: "", dayOfWeek }
         : defaultAvailability);
 
-    if (!dayConfig.isEnabled) {
+    if (!dayConfig?.isEnabled) {
       return [];
     }
 
     let slots = [];
-    let startHour = parseInt(dayConfig.startTime.split(":")[0]);
-    const endHour = parseInt(dayConfig.endTime.split(":")[0]);
+    let startHour = parseInt(dayConfig.startTime?.split(":")[0] || "8");
+    const endHour = parseInt(dayConfig.endTime?.split(":")[0] || "18");
 
     for (let h = startHour; h < endHour; h++) {
       slots.push(`${h.toString().padStart(2, "0")}:00`);
@@ -153,7 +156,19 @@ export const InstructorProfileView = ({
 
   const confirmBooking = () => {
     if (selectedTime) {
-      onBookClass(selectedDate, selectedTime, instructor);
+      const [hours, minutes] = selectedTime.split(":").map(Number);
+      const endTime = `${(hours + 1).toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+
+      // Adaptation for booking logic with the updated Instructor interface
+      const adaptedInstructor = {
+        ...instructor,
+        profilePicture: (instructor as any).image,
+        pricePerClass: (instructor as any).price,
+        instructorType: (instructor as any).type,
+        reviewsCount: (instructor as any).reviews,
+      } as unknown as Instructor;
+
+      onBookClass(selectedDate, selectedTime, endTime, adaptedInstructor);
       setShowBookingModal(false);
       setShowSuccessModal(true);
     }
@@ -175,7 +190,7 @@ export const InstructorProfileView = ({
           <div className="relative mb-4">
             <div className="w-28 h-28 rounded-full p-1 border-2 border-slate-100">
               <img
-                src={instructor.image}
+                src={(instructor as any).image}
                 alt={instructor.name}
                 className="w-full h-full object-cover rounded-full"
               />
@@ -197,12 +212,12 @@ export const InstructorProfileView = ({
             <span
               className={cn(
                 "text-xs px-3 py-1.5 rounded-full font-medium border transition-colors",
-                instructor.type === "Credenciado"
+                (instructor as any).type === "Credenciado"
                   ? "bg-blue-50 text-velo-blue border-blue-100"
                   : "bg-orange-50 text-orange-600 border-orange-100",
               )}
             >
-              {instructor.type}
+              {(instructor as any).type}
             </span>
             <span className="text-xs px-3 py-1.5 rounded-full font-medium border border-slate-100 bg-slate-50 text-slate-600 flex items-center gap-1">
               <Car size={12} />
@@ -221,7 +236,7 @@ export const InstructorProfileView = ({
             </span>
             <div className="flex items-baseline gap-0.5">
               <span className="text-xl font-bold text-slate-900">
-                R$ {instructor.price}
+                R$ {(instructor as any).price}
               </span>
             </div>
           </div>
@@ -231,7 +246,7 @@ export const InstructorProfileView = ({
             </span>
             <div className="flex items-baseline gap-0.5">
               <span className="text-xl font-bold text-slate-900">
-                {instructor.reviews}
+                {(instructor as any).reviews}
               </span>
               <span className="text-xs text-slate-500 font-medium">aulas</span>
             </div>
@@ -295,7 +310,10 @@ export const InstructorProfileView = ({
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-100 z-50 flex flex-col md:flex-row md:left-64 gap-3">
-        <Button className="w-full text-lg py-4 md:flex-1" onClick={handleBookClick}>
+        <Button
+          className="w-full text-lg py-4 md:flex-1"
+          onClick={handleBookClick}
+        >
           Agendar agora {selectedTime ? `(${selectedTime})` : ""}
         </Button>
 
@@ -349,9 +367,9 @@ export const InstructorProfileView = ({
               </p>
 
               <div className="bg-slate-50 p-4 rounded-xl mb-6 flex justify-between items-center">
-                <span className="text-slate-600">Total Price</span>
+                <span className="text-slate-600">Preço Total</span>
                 <span className="text-xl font-bold text-velo-blue">
-                  R$ {instructor.price}
+                  R$ {instructor.pricePerClass}
                 </span>
               </div>
 
@@ -527,7 +545,7 @@ export const InstructorProfileView = ({
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 text-sm">Valor</span>
                   <span className="font-bold text-velo-blue">
-                    R$ {instructor.price}
+                    R$ {(instructor as any).price}
                   </span>
                 </div>
               </div>

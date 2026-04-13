@@ -20,9 +20,12 @@ export type Screen =
   | 'instructor-profile' 
   | 'instructor-edit-profile' 
   | 'instructor-vehicle' 
-  | 'instructor-availability';
+  | 'instructor-availability'
+  | 'instructor-finance'
+  | 'instructor-settings';
 
 export interface Availability {
+  id?: string;
   dayOfWeek: number; // 0-6 (Sun-Sat)
   startTime: string; // "08:00"
   endTime: string; // "18:00"
@@ -39,18 +42,20 @@ export interface BusySlot {
 
 export interface Instructor {
   id: string;
+  email: string;
   name: string;
-  image: string;
-  vehicleImage: string;
-  vehicleModel: string;
+  profilePicture?: string;
+  vehicleImage?: string;
+  vehicleModel?: string;
   rating: number;
-  reviews: number;
-  price: number;
-  location: string;
-  bio: string;
-  transmission: 'Manual' | 'Automatic';
-  type: 'Credenciado' | 'Autônomo';
+  reviewsCount: number;
+  pricePerClass?: number;
+  location?: string;
+  bio?: string;
+  transmission?: 'Manual' | 'Automatic';
+  instructorType?: 'Credenciado' | 'Autônomo';
   // Extended details
+  vehicleId?: string;
   vehiclePlate?: string;
   vehicleYear?: string;
   availability?: Availability[];
@@ -58,25 +63,28 @@ export interface Instructor {
 }
 
 export interface Student {
+  id?: string;
   name: string;
   email: string;
-  phone: string;
-  cpf: string;
-  image: string;
+  phone?: string;
+  cpf?: string;
+  profilePicture?: string;
+  ladvUploaded: boolean;
 }
 
 export interface ScheduledClass {
   id: string;
+  studentId: string;
   instructorId: string;
-  instructorName: string;
+  instructorName?: string;
+  vehicleId?: string;
   date: Date;
-  time: string;
+  startTime: string;
+  endTime: string;
   status: 'upcoming' | 'in-progress' | 'completed' | 'cancelled';
-  price: number;
-  studentFeedback?: {
-    rating: number;
-    text: string;
-  };
+  price?: number;
+  studentFeedbackRating?: number;
+  studentFeedbackText?: string;
   instructorFeedback?: string;
   studentName?: string;
   studentImage?: string;

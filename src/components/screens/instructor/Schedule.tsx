@@ -8,23 +8,26 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Card, Button } from '@/components/ui-custom';
 import { ScheduledClass } from '@/types';
+import { EmptyState } from '@/components/ui-custom/EmptyState';
 
 export const InstructorSchedule = ({ 
   classes, 
   onGiveFeedback, 
   onCheckIn, 
-  onCheckOut 
+  onCheckOut,
+  onNavigate
 }: { 
   classes: ScheduledClass[], 
   onGiveFeedback: (id: string, feedback: string) => void, 
   onCheckIn: (id: string) => void, 
-  onCheckOut: (id: string) => void 
+  onCheckOut: (id: string) => void,
+  onNavigate: (screen: any) => void
 }) => {
   // Sort classes by date and time
   const sortedClasses = [...classes].sort((a, b) => {
     const dateDiff = a.date.getTime() - b.date.getTime();
     if (dateDiff !== 0) return dateDiff;
-    return a.time.localeCompare(b.time);
+    return a.startTime.localeCompare(b.startTime);
   });
 
   const upcomingClasses = sortedClasses.filter(c => c.status === 'upcoming' || c.status === 'in-progress');
@@ -32,9 +35,18 @@ export const InstructorSchedule = ({
 
   return (
     <div className="pb-24 pt-6 px-4 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-slate-900">Agenda Completa</h1>
-        <p className="text-slate-500 text-sm">Gerencie suas aulas e horários</p>
+      <header className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Agenda Completa</h1>
+          <p className="text-slate-500 text-sm">Gerencie suas aulas e horários</p>
+        </div>
+        <button 
+          onClick={() => onNavigate('instructor-availability')}
+          className="p-2 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 transition-colors flex items-center gap-2 text-xs font-bold"
+        >
+          <Calendar size={18} />
+          <span>Disponibilidade</span>
+        </button>
       </header>
 
       <section>
@@ -58,7 +70,7 @@ export const InstructorSchedule = ({
                       <p className="font-bold text-slate-900">{cls.studentName || 'Aluno'}</p>
                       <p className="text-xs text-slate-500 flex items-center gap-1">
                         <Clock size={12} />
-                        {format(cls.date, "dd 'de' MMM", { locale: ptBR })} • {cls.time}
+                        {format(cls.date, "dd 'de' MMM", { locale: ptBR })} • {cls.startTime}
                       </p>
                     </div>
                   </div>
@@ -90,9 +102,12 @@ export const InstructorSchedule = ({
               </Card>
             ))
           ) : (
-            <p className="text-slate-500 text-sm text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-              Nenhuma aula futura agendada.
-            </p>
+            <EmptyState 
+              icon={Calendar}
+              title="Sem agendamentos"
+              description="Você não tem nenhuma aula agendada para os próximos dias."
+              className="py-12 bg-slate-50 rounded-2xl border border-slate-100 border-dashed"
+            />
           )}
         </div>
       </section>
@@ -100,32 +115,36 @@ export const InstructorSchedule = ({
       <section>
         <h2 className="text-lg font-bold text-slate-900 mb-4">Histórico Recente</h2>
         <div className="space-y-3">
-          {pastClasses.slice(0, 5).map((cls) => (
-            <Card key={cls.id} className="bg-slate-50 border-slate-200">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 grayscale opacity-70">
-                      <img src={cls.studentImage || `https://ui-avatars.com/api/?name=${cls.studentName}`} alt={cls.studentName} />
-                   </div>
-                   <div>
-                      <p className="font-bold text-slate-700 text-sm">{cls.studentName || 'Aluno'}</p>
-                      <p className="text-[10px] text-slate-400">
-                        {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} • {cls.time}
-                      </p>
-                   </div>
+          {pastClasses.length > 0 ? (
+            pastClasses.slice(0, 5).map((cls) => (
+              <Card key={cls.id} className="bg-slate-50 border-slate-200">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 grayscale opacity-70">
+                        <img src={cls.studentImage || `https://ui-avatars.com/api/?name=${cls.studentName}`} alt={cls.studentName} />
+                    </div>
+                    <div>
+                        <p className="font-bold text-slate-700 text-sm">{cls.studentName || 'Aluno'}</p>
+                        <p className="text-[10px] text-slate-400">
+                          {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} • {cls.startTime}
+                        </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={cn(
+                      "text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider",
+                      cls.status === 'completed' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    )}>
+                      {cls.status === 'completed' ? 'Concluída' : 'Cancelada'}
+                    </span>
+                    <p className="text-xs font-bold text-slate-900 mt-1">R$ {cls.price || 0}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                   <span className={cn(
-                     "text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider",
-                     cls.status === 'completed' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                   )}>
-                     {cls.status === 'completed' ? 'Concluída' : 'Cancelada'}
-                   </span>
-                   <p className="text-xs font-bold text-slate-900 mt-1">R$ {cls.price}</p>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          ) : (
+            <p className="text-center text-slate-400 text-sm py-4">Nenhum histórico disponível.</p>
+          )}
         </div>
       </section>
     </div>

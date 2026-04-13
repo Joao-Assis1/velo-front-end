@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Filter, Star } from 'lucide-react';
+import { Search, Filter, Star, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { MOCK_INSTRUCTORS } from '@/constants/mockData';
+import { getInstructorsAction } from '@/lib/actions/instructors';
 import { FilterModal } from './FilterModal';
+import { Instructor } from '@/types';
+import { EmptyState } from '@/components/ui-custom/EmptyState';
 
 export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: string) => void }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,16 +20,30 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
     type: 'Todos'
   });
 
-  const filteredInstructors = MOCK_INSTRUCTORS.filter(instructor => {
-    const matchesSearch = instructor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          instructor.location.toLowerCase().includes(searchQuery.toLowerCase());
+  const { data: instructors = [], isLoading, error } = useQuery({
+    queryKey: ['instructors'],
+    queryFn: async () => {
+      const response = await getInstructorsAction();
+      if (!response.success) {
+        throw new Error(response.error || 'Não foi possível carregar os instrutores.');
+      }
+      return response.data as Instructor[] || [];
+    }
+  });
+
+  const instructorList = Array.isArray(instructors) ? instructors : [];
+
+  const filteredInstructors = instructorList.filter(instructor => {
+    if (!instructor) return false;
+    const matchesSearch = (instructor.name?.toLowerCase() ?? "").includes(searchQuery.toLowerCase()) || 
+                          (instructor.location?.toLowerCase() ?? "").includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
 
-    if (instructor.price > filters.maxPrice) return false;
-    if (instructor.rating < filters.minRating) return false;
+    if ((instructor.pricePerClass ?? 0) > filters.maxPrice) return false;
+    if ((instructor.rating ?? 0) < filters.minRating) return false;
     if (filters.transmission !== 'Todos' && instructor.transmission !== filters.transmission) return false;
-    if (filters.type !== 'Todos' && instructor.type !== filters.type) return false;
+    if (filters.type !== 'Todos' && instructor.instructorType !== filters.type) return false;
 
     return true;
   });
@@ -122,7 +139,26 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
 
       {/* Instructors List */}
       <section className="space-y-4">
-        {filteredInstructors.length > 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <Loader2 className="w-10 h-10 animate-spin mb-4 text-velo-blue" />
+            <p className="font-medium">Buscando instrutores...</p>
+          </div>
+        ) : error ? (
+          <EmptyState 
+            icon={AlertCircle}
+            title="Ops! Algo deu errado"
+            description={(error as Error).message}
+            action={
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-velo-blue text-white font-bold rounded-2xl shadow-lg shadow-velo-blue/20 active:scale-95 transition-all"
+              >
+                Tentar novamente
+              </button>
+            }
+          />
+        ) : filteredInstructors.length > 0 ? (
           filteredInstructors.map((instructor) => (
             <div 
               key={instructor.id} 
@@ -131,7 +167,7 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
             >
               <div className="relative">
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md">
-                  <img src={instructor.image} alt={instructor.name} className="w-full h-full object-cover" />
+                  <img src={instructor.profilePicture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop'} alt={instructor.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm">
                   <div className="bg-slate-900 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
@@ -153,22 +189,21 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
 
               <div className="text-right">
                 <p className="text-lg font-bold text-slate-900">
-                  R$ {instructor.price}
+                  R$ {instructor.pricePerClass}
                 </p>
                 <p className="text-xs text-slate-400 font-medium">/hora</p>
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-              <Search size={24} />
-            </div>
-            <p className="text-slate-500 font-medium">Nenhum instrutor encontrado</p>
-            <p className="text-slate-400 text-sm mt-1">Tente mudar os filtros</p>
-          </div>
+          <EmptyState 
+            icon={Search}
+            title="Nenhum instrutor encontrado"
+            description="Tente mudar os filtros ou buscar por outra localização."
+          />
         )}
       </section>
     </div>
   );
 };
+

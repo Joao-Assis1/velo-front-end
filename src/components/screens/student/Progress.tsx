@@ -9,7 +9,7 @@ import { Card } from '@/components/ui-custom';
 import { ScheduledClass } from '@/types';
 
 export const StudentProgress = ({ classes = [] }: { classes?: ScheduledClass[] }) => {
-  const totalHoursRequired = 20; // Correcting to standard Brazilian requirement or as intended
+  const totalHoursRequired = 2; // Correcting to user request: 2 hours minimum
   
   // Filter for completed classes
   const completedClasses = classes.filter(c => c.status === 'completed').sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -108,7 +108,7 @@ export const StudentProgress = ({ classes = [] }: { classes?: ScheduledClass[] }
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-bold text-slate-900 text-sm">{cls.instructorName}</h4>
-                      <p className="text-xs text-slate-500 mb-2">{cls.time} • {cls.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                      <p className="text-xs text-slate-500 mb-2">{cls.startTime} • {(cls.price || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
                     </div>
                     <div className="bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wide">
                       Concluída

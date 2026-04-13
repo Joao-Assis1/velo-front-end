@@ -7,26 +7,29 @@ import { isToday, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Card, Button } from '@/components/ui-custom';
-import { ScheduledClass } from '@/types';
-import { MOCK_INSTRUCTORS } from '@/constants/mockData';
+import { ScheduledClass, Instructor } from '@/types';
+import { EmptyState } from '@/components/ui-custom/EmptyState';
+import { Calendar, History } from 'lucide-react';
 
 export const InstructorDashboard = ({ 
+  profile,
   onViewSchedule, 
   classes, 
   onGiveFeedback 
 }: { 
+  profile: Instructor | null,
   onViewSchedule: () => void, 
   classes: ScheduledClass[], 
   onGiveFeedback: (id: string, feedback: string) => void 
 }) => {
-  // Filter classes for the current instructor (mocked as ID '1')
-  const myClasses = classes.filter(c => c.instructorId === '1');
+  // Filter classes for the current instructor
+  const myClasses = classes.filter(c => c.instructorId === profile?.id);
   
   const todayClasses = myClasses.filter(c => isToday(c.date));
   const completedClasses = myClasses.filter(c => c.status === 'completed').sort((a, b) => b.date.getTime() - a.date.getTime());
 
   // Calculate stats
-  const totalEarnings = myClasses.reduce((acc, curr) => acc + curr.price, 0);
+  const totalEarnings = myClasses.reduce((acc, curr) => acc + (curr.price || 0), 0);
   const activeStudents = new Set(myClasses.map(c => c.studentName)).size;
 
   const [feedbackClassId, setFeedbackClassId] = useState<string | null>(null);
@@ -40,6 +43,12 @@ export const InstructorDashboard = ({
     }
   };
 
+  if (!profile) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
+    </div>
+  );
+
   return (
     <div className="pb-24 pt-6 px-4 space-y-6">
       <header className="flex justify-between items-center">
@@ -48,7 +57,7 @@ export const InstructorDashboard = ({
           <h1 className="text-2xl font-bold text-slate-900">Painel do Instrutor</h1>
         </div>
         <div className="w-10 h-10 bg-slate-200 rounded-full overflow-hidden border-2 border-white shadow-sm">
-          <img src={MOCK_INSTRUCTORS[0].image} alt="Profile" />
+          <img src={profile.profilePicture || "https://ui-avatars.com/api/?name=" + profile.name} alt="Profile" />
         </div>
       </header>
 
@@ -76,7 +85,9 @@ export const InstructorDashboard = ({
       <section>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold text-slate-900">Agenda de Hoje</h2>
-          <button onClick={onViewSchedule} className="text-velo-blue text-sm font-medium">Ver tudo</button>
+          {todayClasses.length > 0 && (
+            <button onClick={onViewSchedule} className="text-velo-blue text-sm font-medium">Ver tudo</button>
+          )}
         </div>
         
         <div className="space-y-3">
@@ -84,7 +95,7 @@ export const InstructorDashboard = ({
             todayClasses.map((item, i) => (
               <div key={i} className="flex gap-4 items-center">
                 <div className="w-14 text-center">
-                  <p className="font-bold text-slate-900">{item.time}</p>
+                  <p className="font-bold text-slate-900">{item.startTime}</p>
                 </div>
                 <Card className={cn(
                   "flex-1 flex justify-between items-center p-3 border-l-4",
@@ -108,7 +119,12 @@ export const InstructorDashboard = ({
               </div>
             ))
           ) : (
-            <p className="text-slate-500 text-sm text-center py-4">Nenhuma aula hoje.</p>
+            <EmptyState 
+              icon={Calendar}
+              title="Sem aulas para hoje"
+              description="Sua agenda está livre. Aproveite para descansar ou organizar seus horários."
+              className="py-8 bg-slate-50 rounded-2xl border border-slate-100 border-dashed"
+            />
           )}
         </div>
       </section>
@@ -124,7 +140,7 @@ export const InstructorDashboard = ({
                   <div>
                     <p className="font-bold text-slate-900">{cls.studentName || 'Aluno'}</p>
                     <p className="text-sm text-slate-500">
-                      {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} • {cls.time}
+                      {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} • {cls.startTime}
                     </p>
                   </div>
                   <span className="text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700">
@@ -152,7 +168,12 @@ export const InstructorDashboard = ({
               </Card>
             ))
           ) : (
-            <p className="text-slate-500 text-sm text-center py-4">Nenhuma aula concluída.</p>
+            <EmptyState 
+              icon={History}
+              title="Nenhum histórico"
+              description="Suas aulas concluídas aparecerão aqui para você dar feedback aos alunos."
+              className="py-8"
+            />
           )}
         </div>
       </section>

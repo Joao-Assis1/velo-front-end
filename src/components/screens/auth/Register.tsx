@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, User, Mail, MessageCircle, CheckCircle2, Car, Lock } from 'lucide-react';
+import { ArrowLeft, User, Mail, MessageCircle, CheckCircle2, Car, Lock, Loader2, CreditCard } from 'lucide-react';
 import { Button, Input } from '@/components/ui-custom';
 import { UserRole } from '@/types';
 import { cn } from '@/lib/utils';
+import { createStudentAction } from '@/lib/actions/students';
+import { CreateStudentSchema } from '@/lib/validations';
 
 export const Register = ({ 
   role, 
@@ -19,9 +21,63 @@ export const Register = ({
   const isStudent = role === 'student';
   const [instructorType, setInstructorType] = useState<'Credenciado' | 'Autônomo'>('Credenciado');
   const [ladvFile, setLadvFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleRegister = () => {
-    onRegister(!!ladvFile);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    cpf: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const handleRegister = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      setError('As senhas não coincidem');
+      return;
+    }
+
+    if (isStudent) {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const studentData = {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          cpf: formData.cpf,
+          profilePicture: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', // Placeholder
+          ladvUploaded: !!ladvFile
+        };
+
+        // Validate with Zod
+        const validation = CreateStudentSchema.safeParse(studentData);
+        if (!validation.success) {
+          setError(validation.error.issues[0].message);
+          setLoading(false);
+          return;
+        }
+
+        const result = await createStudentAction(validation.data);
+        
+        if (result.success) {
+          onRegister(!!ladvFile);
+        } else {
+          setError(result.error || 'Erro ao realizar cadastro. Tente novamente.');
+        }
+      } catch (err: any) {
+        console.error('Registration failed:', err);
+        setError('Erro ao realizar cadastro. Tente novamente.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Instructor registration logic
+      onRegister(false);
+    }
   };
 
   return (
@@ -43,21 +99,46 @@ export const Register = ({
           <p className="text-slate-500">Preencha seus dados para começar.</p>
         </div>
 
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-medium flex items-center gap-3">
+            <CheckCircle2 className="text-red-500 rotate-180" size={20} />
+            {error}
+          </div>
+        )}
+
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleRegister(); }}>
           <Input 
             type="text" 
             placeholder="Nome completo" 
             icon={<User size={20} />} 
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
           />
           <Input 
             type="email" 
             placeholder="Seu e-mail" 
             icon={<Mail size={20} />} 
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            required
           />
           <Input 
             type="tel" 
             placeholder="Celular (WhatsApp)" 
             icon={<MessageCircle size={20} />} 
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            required
+          />
+          
+          <Input 
+            type="text" 
+            placeholder="CPF" 
+            icon={<CreditCard size={20} />} 
+            value={formData.cpf}
+            onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+            required
           />
           
           {isStudent ? (
@@ -133,15 +214,29 @@ export const Register = ({
             type="password" 
             placeholder="Crie uma senha" 
             icon={<Lock size={20} />} 
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            required
           />
           <Input 
             type="password" 
             placeholder="Confirme a senha" 
             icon={<Lock size={20} />} 
+            value={formData.confirmPassword}
+            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+            required
           />
 
-          <Button className="w-full py-4 text-lg mt-6">
-            Cadastrar
+          <Button 
+            className="w-full py-4 text-lg mt-6"
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="animate-spin" size={20} />
+                Cadastrando...
+              </div>
+            ) : 'Cadastrar'}
           </Button>
         </form>
 

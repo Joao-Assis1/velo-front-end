@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Card, Button } from '@/components/ui-custom';
 import { ScheduledClass } from '@/types';
+import { EmptyState } from '@/components/ui-custom/EmptyState';
 
 export const StudentSchedule = ({ 
   classes, 
@@ -55,7 +56,7 @@ export const StudentSchedule = ({
                   <p className="font-bold text-slate-900">{cls.instructorName}</p>
                   <p className="text-sm text-slate-500 flex items-center gap-1">
                     <Clock size={14} />
-                    {format(cls.date, "dd 'de' MMM", { locale: ptBR })} às {cls.time}
+                    {format(cls.date, "dd 'de' MMM", { locale: ptBR })} às {cls.startTime}
                   </p>
                 </div>
                 <div className="text-right flex flex-col items-end gap-2">
@@ -77,10 +78,11 @@ export const StudentSchedule = ({
               </Card>
             ))
           ) : (
-            <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-100 border-dashed">
-              <p className="text-slate-500">Nenhuma aula agendada.</p>
-              <p className="text-xs text-slate-400 mt-1">Que tal buscar um instrutor?</p>
-            </div>
+            <EmptyState 
+              icon={Calendar}
+              title="Nenhuma aula agendada"
+              description="Você ainda não possui aulas marcadas para os próximos dias."
+            />
           )}
         </div>
       </section>
@@ -95,7 +97,7 @@ export const StudentSchedule = ({
                   <div>
                     <p className="font-bold text-slate-900">{cls.instructorName}</p>
                     <p className="text-sm text-slate-500">
-                      {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} • {cls.time}
+                      {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} • {cls.startTime}
                     </p>
                   </div>
                   <span className={cn(
@@ -108,19 +110,19 @@ export const StudentSchedule = ({
                 
                 {cls.status === 'completed' && (
                   <div className="mt-3 pt-3 border-t border-slate-200">
-                    {cls.studentFeedback ? (
+                    {(cls.studentFeedbackRating !== undefined) ? (
                       <div className="bg-white p-3 rounded-lg border border-slate-100">
                         <div className="flex items-center gap-1 mb-1">
                           {[...Array(5)].map((_, i) => (
                             <Star 
                               key={i} 
                               size={12} 
-                              className={i < cls.studentFeedback!.rating ? "fill-yellow-400 text-yellow-400" : "text-slate-300"} 
+                              className={i < cls.studentFeedbackRating! ? "fill-yellow-400 text-yellow-400" : "text-slate-300"} 
                             />
                           ))}
                           <span className="text-xs font-bold text-slate-700 ml-1">Sua avaliação</span>
                         </div>
-                        <p className="text-xs text-slate-600 italic">"{cls.studentFeedback.text}"</p>
+                        <p className="text-xs text-slate-600 italic">"{cls.studentFeedbackText}"</p>
                       </div>
                     ) : (
                       <button 
@@ -144,7 +146,7 @@ export const StudentSchedule = ({
               </Card>
             ))
           ) : (
-            <p className="text-sm text-slate-400 text-center py-4">Nenhum histórico disponível.</p>
+            <p className="text-sm text-slate-400 text-center py-8">Nenhum histórico disponível.</p>
           )}
         </div>
       </section>

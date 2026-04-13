@@ -11,7 +11,7 @@ export const StudentProfile = ({
   onNavigate, 
   onLogout 
 }: { 
-  profile: Student, 
+  profile: Student | null, 
   onNavigate: (screen: Screen) => void, 
   onLogout: () => void 
 }) => {
@@ -19,15 +19,20 @@ export const StudentProfile = ({
     { id: 'student-personal-data', label: 'Dados Pessoais', icon: User, color: 'text-blue-500', bg: 'bg-blue-50' },
     { id: 'student-payments', label: 'Pagamentos', icon: CreditCard, color: 'text-green-500', bg: 'bg-green-50' },
     { id: 'student-settings', label: 'Configurações', icon: Settings, color: 'text-slate-500', bg: 'bg-slate-50' },
-    { id: 'student-security', label: 'Segurança', icon: ShieldCheck, color: 'text-purple-500', bg: 'bg-purple-50' },
   ];
+
+  if (!profile) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
+    </div>
+  );
 
   return (
     <div className="pb-24 pt-6 px-4 space-y-6 bg-white min-h-screen">
       <header className="text-center pt-4 pb-2">
         <div className="relative inline-block mb-4">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-50 shadow-md">
-            <img src={profile.image} alt={profile.name} className="w-full h-full object-cover" />
+            <img src={profile.profilePicture || "https://ui-avatars.com/api/?name=User"} alt={profile.name} className="w-full h-full object-cover" />
           </div>
           <div className="absolute -bottom-1 -right-1 bg-velo-green text-white p-1.5 rounded-full border-2 border-white shadow-sm">
             <ShieldCheck size={14} fill="currentColor" fillOpacity={0.2} />

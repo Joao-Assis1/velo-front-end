@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '@/context/AppContext';
+import { MOCK_INSTRUCTORS } from '@/constants/mockData';
 
 // Auth Screens
 import { SplashScreen } from '@/components/screens/auth/SplashScreen';
@@ -17,6 +18,8 @@ import { StudentProgress } from '@/components/screens/student/Progress';
 import { StudentProfile } from '@/components/screens/student/Profile';
 import { StudentPersonalData } from '@/components/screens/student/PersonalData';
 import { InstructorProfileView } from '@/components/screens/student/InstructorProfile';
+import { StudentSettings } from '@/components/screens/student/Settings';
+import { StudentPayments } from '@/components/screens/student/Payments';
 
 // Instructor Screens
 import { InstructorDashboard } from '@/components/screens/instructor/Dashboard';
@@ -25,10 +28,15 @@ import { InstructorProfileMenu } from '@/components/screens/instructor/ProfileMe
 import { InstructorEditProfile } from '@/components/screens/instructor/EditProfile';
 import { InstructorVehicle } from '@/components/screens/instructor/Vehicle';
 import { InstructorAvailability } from '@/components/screens/instructor/Availability';
+import { InstructorFinance } from '@/components/screens/instructor/Finance';
+import { InstructorSettings } from '@/components/screens/instructor/Settings';
 
 // Navigation
 import { Tabs } from '@/components/navigation/Tabs';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { getInstructorsAction } from '@/lib/actions/instructors';
+import { Instructor } from '@/types';
 
 export default function Page() {
   const { 
@@ -56,6 +64,15 @@ export default function Page() {
     checkOut,
     busySlots
   } = useApp();
+
+  const { data: instructors = [] } = useQuery({
+    queryKey: ['instructors'],
+    queryFn: async () => {
+      const response = await getInstructorsAction();
+      if (response.success) return response.data as Instructor[];
+      return [];
+    }
+  });
 
   const renderContent = () => {
     switch (screen) {
@@ -112,6 +129,10 @@ export default function Page() {
             onLogout={logout} 
           />
         );
+      case 'student-payments':
+        return <StudentPayments onBack={() => navigateTo('student-profile')} />;
+      case 'student-settings':
+        return <StudentSettings onBack={() => navigateTo('student-profile')} />;
       case 'student-personal-data':
         return (
           <StudentPersonalData 
@@ -121,21 +142,24 @@ export default function Page() {
           />
         );
       case 'instructor-profile-view':
-        return selectedInstructorId ? (
+        const selectedInstructor = instructors.find(i => i.id === selectedInstructorId) || 
+                                    (scheduledClasses.find(c => c.instructorId === selectedInstructorId) as any);
+        return (
           <InstructorProfileView 
-            instructorId={selectedInstructorId} 
+            instructor={selectedInstructor}
             onBack={() => navigateTo('student-home')} 
             hasLadv={hasLadv}
             onUploadLadv={() => setHasLadv(true)}
             onBookClass={bookClass}
             busySlots={busySlots}
           />
-        ) : null;
+        );
 
       // Instructor Screens
       case 'instructor-dashboard':
         return (
           <InstructorDashboard 
+            profile={instructorProfile}
             onViewSchedule={() => navigateTo('instructor-schedule')} 
             classes={scheduledClasses} 
             onGiveFeedback={giveFeedback} 
@@ -148,6 +172,7 @@ export default function Page() {
             onGiveFeedback={giveFeedback} 
             onCheckIn={checkIn} 
             onCheckOut={checkOut} 
+            onNavigate={navigateTo}
           />
         );
       case 'instructor-profile':
@@ -179,6 +204,19 @@ export default function Page() {
           <InstructorAvailability 
             profile={instructorProfile} 
             onSave={setInstructorProfile}
+            onBack={() => navigateTo('instructor-schedule')}
+          />
+        );
+      case 'instructor-finance':
+        return (
+          <InstructorFinance 
+            classes={scheduledClasses} 
+            onBack={() => navigateTo('instructor-profile')}
+          />
+        );
+      case 'instructor-settings':
+        return (
+          <InstructorSettings 
             onBack={() => navigateTo('instructor-profile')}
           />
         );
@@ -195,7 +233,7 @@ export default function Page() {
   return (
     <main className={cn(
       "bg-slate-50 min-h-screen font-sans relative overflow-x-hidden",
-      showNav ? "max-w-md mx-auto shadow-2xl md:max-w-full md:mx-0 md:shadow-none md:pl-64" : "max-w-md mx-auto shadow-2xl md:max-w-lg"
+      showNav ? "w-full md:pl-64" : "w-full max-w-lg mx-auto md:max-w-xl"
     )}>
       <AnimatePresence mode="wait">
         <motion.div
@@ -206,7 +244,7 @@ export default function Page() {
           transition={{ duration: 0.2 }}
           className="min-h-screen"
         >
-          <div className={showNav ? "md:max-w-5xl md:mx-auto" : ""}>
+          <div className={showNav ? "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" : "px-4 py-12"}>
             {renderContent()}
           </div>
         </motion.div>

@@ -11,3 +11,7 @@ tlc-spec-driven
 .next/
 out/
 .vercel
+FLOW_AND_FEATURES.md
+API_DATA_FLOW.md
+prisma
+prisma.config.ts

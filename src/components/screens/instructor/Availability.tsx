@@ -14,13 +14,32 @@ export const InstructorAvailability = ({
   onSave,
   onBack
 }: { 
-  profile: Instructor, 
+  profile: Instructor | null, 
   onSave: (profile: Instructor) => void,
   onBack: () => void
 }) => {
-  const [localProfile, setLocalProfile] = useState<Instructor>(profile);
+  const [localProfile, setLocalProfile] = useState<Instructor>(profile || {
+    id: '',
+    email: '',
+    name: '',
+    profilePicture: '',
+    vehicleImage: '',
+    vehicleModel: '',
+    rating: 0,
+    reviewsCount: 0,
+    pricePerClass: 0,
+    location: '',
+    bio: '',
+    transmission: 'Manual',
+    instructorType: 'Credenciado',
+    vehiclePlate: '',
+    vehicleYear: '',
+    availability: [],
+    busySlots: []
+  });
 
   const handleToggleDay = (day: number) => {
+    if (!localProfile) return;
     const newAvailability = [...(localProfile.availability || [])];
     const index = newAvailability.findIndex(a => a.dayOfWeek === day);
     
@@ -34,6 +53,7 @@ export const InstructorAvailability = ({
   };
 
   const handleTimeChange = (day: number, field: 'startTime' | 'endTime', value: string) => {
+    if (!localProfile) return;
     const newAvailability = [...(localProfile.availability || [])];
     const index = newAvailability.findIndex(a => a.dayOfWeek === day);
     
@@ -45,6 +65,7 @@ export const InstructorAvailability = ({
 
   const handleAddBusySlot = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!localProfile) return;
     const form = e.target as HTMLFormElement;
     const dateInput = form.elements.namedItem('date') as HTMLInputElement;
     const startInput = form.elements.namedItem('start') as HTMLInputElement;
@@ -68,11 +89,18 @@ export const InstructorAvailability = ({
   };
 
   const handleRemoveBusySlot = (id: string) => {
+    if (!localProfile) return;
     setLocalProfile({
       ...localProfile,
       busySlots: (localProfile.busySlots || []).filter(s => s.id !== id)
     });
   };
+
+  if (!profile && !localProfile.id) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
+    </div>
+  );
 
   return (
     <div className="pb-24 pt-6 px-4 space-y-6">

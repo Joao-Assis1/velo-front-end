@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AppProvider } from "@/context/AppContext";
+import Providers from "@/components/Providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -19,9 +20,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={cn("font-sans", inter.variable)}>
       <body className="antialiased">
-        <AppProvider>
-          {children}
-        </AppProvider>
+        <Providers>
+          <AppProvider>
+            {children}
+          </AppProvider>
+        </Providers>
       </body>
     </html>
   );

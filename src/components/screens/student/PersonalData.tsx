@@ -11,19 +11,35 @@ export const StudentPersonalData = ({
   onSave,
   onBack
 }: { 
-  profile: Student, 
+  profile: Student | null, 
   onSave: (profile: Student) => void,
   onBack: () => void
 }) => {
-  const [localProfile, setLocalProfile] = useState<Student>(profile);
+  const [localProfile, setLocalProfile] = useState<Student>(profile || {
+    id: '',
+    name: '',
+    email: '',
+    phone: '',
+    cpf: '',
+    profilePicture: '',
+    ladvUploaded: false
+  });
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(localProfile);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+    if (localProfile) {
+      onSave(localProfile);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    }
   };
+
+  if (!profile && !localProfile.id) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
+    </div>
+  );
 
   return (
     <div className="pb-24 pt-6 px-4 space-y-6">
@@ -41,7 +57,7 @@ export const StudentPersonalData = ({
         <div className="flex flex-col items-center">
           <div className="relative">
             <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-md">
-              <img src={localProfile.image} alt="Profile" className="w-full h-full object-cover" />
+              <img src={localProfile.profilePicture || "https://ui-avatars.com/api/?name=User"} alt="Profile" className="w-full h-full object-cover" />
             </div>
             <button type="button" className="absolute bottom-0 right-0 bg-velo-blue text-white p-2 rounded-full shadow-lg border-2 border-white">
               <Camera size={16} />

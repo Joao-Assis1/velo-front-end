@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Car, Camera, Check, Settings, ArrowLeft } from 'lucide-react';
+import { Car, Camera, Check, Settings, ArrowLeft, Upload } from 'lucide-react';
 import { Button, Input } from '@/components/ui-custom';
 import { Instructor } from '@/types';
 import { cn } from '@/lib/utils';
@@ -12,18 +12,57 @@ export const InstructorVehicle = ({
   onSave,
   onBack
 }: { 
-  profile: Instructor, 
+  profile: Instructor | null, 
   onSave: (profile: Instructor) => void,
   onBack: () => void
 }) => {
-  const [localProfile, setLocalProfile] = useState<Instructor>(profile);
+  const [localProfile, setLocalProfile] = useState<Instructor>(profile || {
+    id: '',
+    email: '',
+    name: '',
+    profilePicture: '',
+    vehicleImage: '',
+    vehicleModel: '',
+    rating: 0,
+    reviewsCount: 0,
+    pricePerClass: 0,
+    location: '',
+    bio: '',
+    transmission: 'Manual',
+    instructorType: 'Credenciado',
+    vehiclePlate: '',
+    vehicleYear: '',
+    availability: [],
+    busySlots: []
+  });
   const [isSaved, setIsSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(localProfile);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+    if (localProfile) {
+      onSave(localProfile);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    }
+  };
+
+  if (!profile && !localProfile.id) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
+    </div>
+  );
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Simulação de upload transformando em URL local
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLocalProfile({ ...localProfile, vehicleImage: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -40,11 +79,31 @@ export const InstructorVehicle = ({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex flex-col items-center">
-          <div className="relative w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-100 shadow-md bg-slate-100">
-            <img src={localProfile.vehicleImage} alt="Vehicle" className="w-full h-full object-cover" />
-            <button type="button" className="absolute bottom-4 right-4 bg-velo-blue text-white p-3 rounded-full shadow-lg border-2 border-white">
+          <div className="relative w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-100 shadow-md bg-slate-100 group">
+            <img src={localProfile.vehicleImage || "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=600&fit=crop"} alt="Vehicle" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <button 
+                type="button" 
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-white text-slate-900 px-4 py-2 rounded-full font-bold flex items-center gap-2 text-sm shadow-xl"
+              >
+                <Upload size={18} /> Alterar Foto
+              </button>
+            </div>
+            <button 
+              type="button" 
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-4 right-4 bg-velo-blue text-white p-3 rounded-full shadow-lg border-2 border-white"
+            >
               <Camera size={20} />
             </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={handleImageUpload}
+            />
           </div>
         </div>
 

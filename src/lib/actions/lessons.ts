@@ -21,12 +21,16 @@ function mapLesson(lesson: any): LessonType {
     studentName: lesson.student?.name,
     studentImage: lesson.student?.profilePicture || undefined,
     checkInTime: lesson.checkInTime ? new Date(lesson.checkInTime) : undefined,
-    checkOutTime: lesson.checkOutTime ? new Date(lesson.checkOutTime) : undefined,
+    checkOutTime: lesson.checkOutTime
+      ? new Date(lesson.checkOutTime)
+      : undefined,
     durationMinutes: lesson.durationMinutes || undefined,
   };
 }
 
-export async function getLessonsAction(query: { studentId?: string; instructorId?: string } = {}) {
+export async function getLessonsAction(
+  query: { studentId?: string; instructorId?: string } = {},
+) {
   try {
     const params = new URLSearchParams();
     if (query.studentId) params.append("studentId", query.studentId);
@@ -49,7 +53,7 @@ export async function createLessonAction(data: CreateLessonDto) {
       method: "POST",
       body: JSON.stringify(data),
     });
-    
+
     revalidateTag("lessons", "default");
     return { success: true, data: mapLesson(lesson) };
   } catch (error: any) {
@@ -63,7 +67,7 @@ export async function checkInAction(id: string) {
     const lesson = await fetchWrapper<any>(`/lessons/${id}/checkin`, {
       method: "PATCH",
     });
-    
+
     revalidateTag("lessons", "default");
     return { success: true, data: mapLesson(lesson) };
   } catch (error: any) {
@@ -77,7 +81,7 @@ export async function checkOutAction(id: string) {
     const lesson = await fetchWrapper<any>(`/lessons/${id}/checkout`, {
       method: "PATCH",
     });
-    
+
     revalidateTag("lessons", "default");
     return { success: true, data: mapLesson(lesson) };
   } catch (error: any) {
@@ -86,13 +90,17 @@ export async function checkOutAction(id: string) {
   }
 }
 
-export async function submitStudentFeedbackAction(id: string, rating: number, text: string) {
+export async function submitStudentFeedbackAction(
+  id: string,
+  rating: number,
+  text: string,
+) {
   try {
     const lesson = await fetchWrapper<any>(`/lessons/${id}/feedback-student`, {
       method: "PATCH",
       body: JSON.stringify({ rating, text }),
     });
-    
+
     revalidateTag("lessons", "default");
     return { success: true, data: mapLesson(lesson) };
   } catch (error: any) {
@@ -101,13 +109,19 @@ export async function submitStudentFeedbackAction(id: string, rating: number, te
   }
 }
 
-export async function submitInstructorFeedbackAction(id: string, feedback: string) {
+export async function submitInstructorFeedbackAction(
+  id: string,
+  feedback: string,
+) {
   try {
-    const lesson = await fetchWrapper<any>(`/lessons/${id}/feedback-instructor`, {
-      method: "PATCH",
-      body: JSON.stringify({ feedback }),
-    });
-    
+    const lesson = await fetchWrapper<any>(
+      `/lessons/${id}/feedback-instructor`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ feedback }),
+      },
+    );
+
     revalidateTag("lessons", "default");
     return { success: true, data: mapLesson(lesson) };
   } catch (error: any) {

@@ -43,12 +43,6 @@ export const InstructorDashboard = ({
     }
   };
 
-  if (!profile) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
-    </div>
-  );
-
   return (
     <div className="pb-24 pt-6 px-4 space-y-6">
       <header className="flex justify-between items-center">
@@ -56,8 +50,12 @@ export const InstructorDashboard = ({
           <p className="text-slate-500 text-sm">Bem-vindo,</p>
           <h1 className="text-2xl font-bold text-slate-900">Painel do Instrutor</h1>
         </div>
-        <div className="w-10 h-10 bg-slate-200 rounded-full overflow-hidden border-2 border-white shadow-sm">
-          <img src={profile.profilePicture || "https://ui-avatars.com/api/?name=" + profile.name} alt="Profile" />
+        <div className="w-10 h-10 bg-slate-200 rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
+          {profile ? (
+            <img src={profile.profilePicture || "https://ui-avatars.com/api/?name=" + profile.name} alt="Profile" />
+          ) : (
+            <div className="animate-pulse w-full h-full bg-slate-300"></div>
+          )}
         </div>
       </header>
 

@@ -5,31 +5,33 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '@/context/AppContext';
 import { MOCK_INSTRUCTORS } from '@/constants/mockData';
 
+import dynamic from 'next/dynamic';
+
 // Auth Screens
-import { SplashScreen } from '@/components/screens/auth/SplashScreen';
-import { Onboarding } from '@/components/screens/auth/Onboarding';
-import { Login } from '@/components/screens/auth/Login';
-import { Register } from '@/components/screens/auth/Register';
+const SplashScreen = dynamic(() => import('@/components/screens/auth/SplashScreen').then(mod => ({ default: mod.SplashScreen })));
+const Onboarding = dynamic(() => import('@/components/screens/auth/Onboarding').then(mod => ({ default: mod.Onboarding })));
+const Login = dynamic(() => import('@/components/screens/auth/Login').then(mod => ({ default: mod.Login })));
+const Register = dynamic(() => import('@/components/screens/auth/Register').then(mod => ({ default: mod.Register })));
 
 // Student Screens
-import { StudentHome } from '@/components/screens/student/Home';
-import { StudentSchedule } from '@/components/screens/student/Schedule';
-import { StudentProgress } from '@/components/screens/student/Progress';
-import { StudentProfile } from '@/components/screens/student/Profile';
-import { StudentPersonalData } from '@/components/screens/student/PersonalData';
-import { InstructorProfileView } from '@/components/screens/student/InstructorProfile';
-import { StudentSettings } from '@/components/screens/student/Settings';
-import { StudentPayments } from '@/components/screens/student/Payments';
+const StudentHome = dynamic(() => import('@/components/screens/student/Home').then(mod => ({ default: mod.StudentHome })));
+const StudentSchedule = dynamic(() => import('@/components/screens/student/Schedule').then(mod => ({ default: mod.StudentSchedule })));
+const StudentProgress = dynamic(() => import('@/components/screens/student/Progress').then(mod => ({ default: mod.StudentProgress })));
+const StudentProfile = dynamic(() => import('@/components/screens/student/Profile').then(mod => ({ default: mod.StudentProfile })));
+const StudentPersonalData = dynamic(() => import('@/components/screens/student/PersonalData').then(mod => ({ default: mod.StudentPersonalData })));
+const InstructorProfileView = dynamic(() => import('@/components/screens/student/InstructorProfile').then(mod => ({ default: mod.InstructorProfileView })));
+const StudentSettings = dynamic(() => import('@/components/screens/student/Settings').then(mod => ({ default: mod.StudentSettings })));
+const StudentPayments = dynamic(() => import('@/components/screens/student/Payments').then(mod => ({ default: mod.StudentPayments })));
 
 // Instructor Screens
-import { InstructorDashboard } from '@/components/screens/instructor/Dashboard';
-import { InstructorSchedule } from '@/components/screens/instructor/Schedule';
-import { InstructorProfileMenu } from '@/components/screens/instructor/ProfileMenu';
-import { InstructorEditProfile } from '@/components/screens/instructor/EditProfile';
-import { InstructorVehicle } from '@/components/screens/instructor/Vehicle';
-import { InstructorAvailability } from '@/components/screens/instructor/Availability';
-import { InstructorFinance } from '@/components/screens/instructor/Finance';
-import { InstructorSettings } from '@/components/screens/instructor/Settings';
+const InstructorDashboard = dynamic(() => import('@/components/screens/instructor/Dashboard').then(mod => ({ default: mod.InstructorDashboard })));
+const InstructorSchedule = dynamic(() => import('@/components/screens/instructor/Schedule').then(mod => ({ default: mod.InstructorSchedule })));
+const InstructorProfileMenu = dynamic(() => import('@/components/screens/instructor/ProfileMenu').then(mod => ({ default: mod.InstructorProfileMenu })));
+const InstructorEditProfile = dynamic(() => import('@/components/screens/instructor/EditProfile').then(mod => ({ default: mod.InstructorEditProfile })));
+const InstructorVehicle = dynamic(() => import('@/components/screens/instructor/Vehicle').then(mod => ({ default: mod.InstructorVehicle })));
+const InstructorAvailability = dynamic(() => import('@/components/screens/instructor/Availability').then(mod => ({ default: mod.InstructorAvailability })));
+const InstructorFinance = dynamic(() => import('@/components/screens/instructor/Finance').then(mod => ({ default: mod.InstructorFinance })));
+const InstructorSettings = dynamic(() => import('@/components/screens/instructor/Settings').then(mod => ({ default: mod.InstructorSettings })));
 
 // Navigation
 import { Tabs } from '@/components/navigation/Tabs';

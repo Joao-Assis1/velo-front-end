@@ -10,7 +10,12 @@ import {
   submitInstructorFeedbackAction,
   getLessonsAction
 } from '@/lib/actions/lessons';
-import { loginStudentAction, loginInstructorAction } from '@/lib/actions/auth';
+import { 
+  loginStudentAction, 
+  loginInstructorAction,
+  registerStudentAction,
+  registerInstructorAction
+} from '@/lib/actions/auth';
 
 interface AppContextType {
   screen: Screen;
@@ -56,6 +61,50 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [studentProfile, setStudentProfile] = useState<Student | null>(null);
   const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [busySlots, setBusySlots] = useState<Record<string, string[]>>({});
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const persistedUserRole = localStorage.getItem('velo-userRole');
+      const persistedScreen = localStorage.getItem('velo-screen');
+      const persistedInstructorProfile = localStorage.getItem('velo-instructorProfile');
+      const persistedStudentProfile = localStorage.getItem('velo-studentProfile');
+      const persistedHasLadv = localStorage.getItem('velo-hasLadv');
+
+      if (persistedUserRole) {
+        // Only set parsed role if valid
+        const parsedData = JSON.parse(persistedUserRole);
+        if (parsedData === 'student' || parsedData === 'instructor') {
+          setUserRole(parsedData);
+        }
+      }
+      
+      if (persistedScreen) setScreen(persistedScreen as Screen);
+      if (persistedInstructorProfile && persistedInstructorProfile !== 'undefined') setInstructorProfile(JSON.parse(persistedInstructorProfile));
+      if (persistedStudentProfile && persistedStudentProfile !== 'undefined') setStudentProfile(JSON.parse(persistedStudentProfile));
+      if (persistedHasLadv) setHasLadv(JSON.parse(persistedHasLadv));
+    } catch (e) {
+      console.warn("Failed to parse local storage details");
+    }
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    localStorage.setItem('velo-screen', screen);
+    localStorage.setItem('velo-userRole', JSON.stringify(userRole));
+    localStorage.setItem('velo-hasLadv', JSON.stringify(hasLadv));
+    if (instructorProfile) {
+      localStorage.setItem('velo-instructorProfile', JSON.stringify(instructorProfile));
+    } else {
+      localStorage.removeItem('velo-instructorProfile');
+    }
+    if (studentProfile) {
+      localStorage.setItem('velo-studentProfile', JSON.stringify(studentProfile));
+    } else {
+      localStorage.removeItem('velo-studentProfile');
+    }
+  }, [screen, userRole, hasLadv, instructorProfile, studentProfile, isHydrated]);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -71,8 +120,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     };
-    loadInitialData();
-  }, [userRole, studentProfile?.id, instructorProfile?.id]);
+    if (isHydrated) {
+      loadInitialData();
+    }
+  }, [userRole, studentProfile?.id, instructorProfile?.id, isHydrated]);
 
   const navigateTo = (newScreen: Screen) => {
     setScreen(newScreen);
@@ -86,18 +137,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     navigateTo('instructor-profile-view');
   };
 
-  const login = async () => {
+  const login = async (credentials?: any) => {
     try {
       if (userRole === 'student') {
-        const res = await loginStudentAction();
+        const res = await loginStudentAction(credentials);
         if (res.success && res.data) {
+          if (res.token) localStorage.setItem('velo-token', res.token);
           setStudentProfile(res.data as Student);
           setHasLadv(res.data.ladvUploaded);
         }
         navigateTo('student-home');
       } else {
-        const res = await loginInstructorAction();
+        const res = await loginInstructorAction(credentials);
         if (res.success && res.data) {
+          if (res.token) localStorage.setItem('velo-token', res.token);
           setInstructorProfile(res.data as Instructor);
         }
         navigateTo('instructor-dashboard');
@@ -109,35 +162,33 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = (data: any) => {
-    if (userRole === 'student') {
-      setStudentProfile({
-        id: data.id || 'new-student-id',
-        name: data.name,
-        email: data.email,
-        phone: data.phone || '',
-        cpf: data.cpf || '',
-        profilePicture: data.profilePicture || '',
-        ladvUploaded: data.ladvUploaded || false
-      });
-      navigateTo('student-home');
-    } else {
-      setInstructorProfile({
-        id: data.id || 'new-instructor-id',
-        name: data.name,
-        email: data.email,
-        profilePicture: data.profilePicture || '',
-        rating: 5.0,
-        reviewsCount: 0,
-        pricePerClass: 0,
-        location: data.location || '',
-        bio: data.bio || '',
-        transmission: 'Manual',
-        instructorType: 'Credenciado',
-        availability: [],
-        busySlots: []
-      });
-      navigateTo('instructor-dashboard');
+  const register = async (data: any) => {
+    try {
+      if (userRole === 'student') {
+        const res = await registerStudentAction(data);
+        if (res.success && res.data) {
+          if (res.token) localStorage.setItem('velo-token', res.token);
+          setStudentProfile(res.data as Student);
+        }
+        navigateTo('student-home');
+      } else {
+        const res = await registerInstructorAction(data);
+        if (res.success && res.data) {
+          if (res.token) localStorage.setItem('velo-token', res.token);
+          // Fallback missing properties for new instructor until onboarded
+          setInstructorProfile({
+            ...res.data,
+            rating: 5.0,
+            reviewsCount: 0,
+            pricePerClass: 0,
+            availability: [],
+            busySlots: []
+          });
+        }
+        navigateTo('instructor-dashboard');
+      }
+    } catch (err) {
+      console.error("Register failed:", err);
     }
   };
 
@@ -146,6 +197,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setHasLadv(false);
     setStudentProfile(null);
     setInstructorProfile(null);
+    localStorage.removeItem('velo-token');
     setScreen('onboarding');
   };
 

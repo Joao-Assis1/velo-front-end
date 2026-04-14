@@ -47,12 +47,6 @@ export const InstructorVehicle = ({
     }
   };
 
-  if (!profile && !localProfile.id) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
-    </div>
-  );
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {

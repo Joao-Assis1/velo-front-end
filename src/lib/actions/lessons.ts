@@ -10,7 +10,7 @@ function mapLesson(lesson: any): LessonType {
     studentId: lesson.studentId,
     instructorId: lesson.instructorId,
     instructorName: lesson.instructor?.name,
-    date: lesson.date,
+    date: new Date(lesson.date),
     startTime: lesson.startTime,
     endTime: lesson.endTime,
     status: lesson.status as any,
@@ -20,8 +20,8 @@ function mapLesson(lesson: any): LessonType {
     instructorFeedback: lesson.instructorFeedback || undefined,
     studentName: lesson.student?.name,
     studentImage: lesson.student?.profilePicture || undefined,
-    checkInTime: lesson.checkInTime || undefined,
-    checkOutTime: lesson.checkOutTime || undefined,
+    checkInTime: lesson.checkInTime ? new Date(lesson.checkInTime) : undefined,
+    checkOutTime: lesson.checkOutTime ? new Date(lesson.checkOutTime) : undefined,
     durationMinutes: lesson.durationMinutes || undefined,
   };
 }

@@ -96,12 +96,6 @@ export const InstructorAvailability = ({
     });
   };
 
-  if (!profile && !localProfile.id) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
-    </div>
-  );
-
   return (
     <div className="pb-24 pt-6 px-4 space-y-6">
       <header className="flex items-center gap-4 mb-6">

@@ -21,24 +21,22 @@ export const StudentProfile = ({
     { id: 'student-settings', label: 'Configurações', icon: Settings, color: 'text-slate-500', bg: 'bg-slate-50' },
   ];
 
-  if (!profile) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-velo-blue"></div>
-    </div>
-  );
-
   return (
     <div className="pb-24 pt-6 px-4 space-y-6 bg-white min-h-screen">
       <header className="text-center pt-4 pb-2">
         <div className="relative inline-block mb-4">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-50 shadow-md">
-            <img src={profile.profilePicture || "https://ui-avatars.com/api/?name=User"} alt={profile.name} className="w-full h-full object-cover" />
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-50 shadow-md bg-slate-100 flex items-center justify-center">
+            {profile ? (
+              <img src={profile.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}`} alt={profile.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="animate-pulse w-full h-full bg-slate-200"></div>
+            )}
           </div>
           <div className="absolute -bottom-1 -right-1 bg-velo-green text-white p-1.5 rounded-full border-2 border-white shadow-sm">
             <ShieldCheck size={14} fill="currentColor" fillOpacity={0.2} />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">{profile.name}</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{profile?.name || "Carregando..."}</h1>
         <p className="text-slate-500 text-sm">Aluno Velo • Nível 4</p>
       </header>
 

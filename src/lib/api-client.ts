@@ -6,8 +6,14 @@ export async function fetchWrapper<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const url = `${BASE_URL}${endpoint}`;
+  let token = null;
+  if (typeof window !== "undefined") {
+    token = localStorage.getItem("velo-token");
+  }
+
   const headers = {
     "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
@@ -22,5 +28,9 @@ export async function fetchWrapper<T>(
     throw new Error(message);
   }
 
-  return response.json();
+  const responseData = await response.json();
+  if (responseData && typeof responseData === 'object' && 'success' in responseData && 'data' in responseData) {
+    return responseData.data;
+  }
+  return responseData;
 }

@@ -15,7 +15,7 @@ export const Register = ({
   onBack 
 }: { 
   role: UserRole, 
-  onRegister: (hasLadv?: boolean) => void, 
+  onRegister: (data: any) => void, 
   onBack: () => void 
 }) => {
   const isStudent = role === 'student';
@@ -39,44 +39,27 @@ export const Register = ({
       return;
     }
 
-    if (isStudent) {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const studentData = {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          cpf: formData.cpf,
-          profilePicture: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', // Placeholder
-          ladvUploaded: !!ladvFile
-        };
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const authData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        cpf: formData.cpf,
+        password: formData.password,
+        ladvUploaded: !!ladvFile,
+        profilePicture: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop'
+      };
 
-        // Validate with Zod
-        const validation = CreateStudentSchema.safeParse(studentData);
-        if (!validation.success) {
-          setError(validation.error.issues[0].message);
-          setLoading(false);
-          return;
-        }
-
-        const result = await createStudentAction(validation.data);
-        
-        if (result.success) {
-          onRegister(!!ladvFile);
-        } else {
-          setError(result.error || 'Erro ao realizar cadastro. Tente novamente.');
-        }
-      } catch (err: any) {
-        console.error('Registration failed:', err);
-        setError('Erro ao realizar cadastro. Tente novamente.');
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      // Instructor registration logic
-      onRegister(false);
+      // Let context handle the Auth and token storage
+      await onRegister(authData);
+    } catch (err: any) {
+      console.error('Registration failed:', err);
+      setError('Erro ao realizar cadastro. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
   };
 

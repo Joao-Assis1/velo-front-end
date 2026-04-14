@@ -13,11 +13,13 @@ export const Login = ({
   onBack 
 }: { 
   role: UserRole, 
-  onLogin: () => void, 
+  onLogin: (credentials: any) => void, 
   onRegister: () => void, 
   onBack: () => void 
 }) => {
   const isStudent = role === 'student';
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
   return (
     <motion.div 
@@ -38,16 +40,22 @@ export const Login = ({
           <p className="text-slate-500">Entre para continuar sua jornada.</p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onLogin(); }}>
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onLogin({ email, password }); }}>
           <Input 
             type="email" 
             placeholder="Seu e-mail" 
             icon={<Mail size={20} />} 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <Input 
             type="password" 
             placeholder="Sua senha" 
             icon={<Lock size={20} />} 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
           
           <div className="text-right">
@@ -56,7 +64,7 @@ export const Login = ({
             </button>
           </div>
 
-          <Button className="w-full py-4 text-lg mt-4">
+          <Button type="submit" className="w-full py-4 text-lg mt-4">
             Entrar
           </Button>
         </form>

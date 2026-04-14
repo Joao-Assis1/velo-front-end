@@ -4,24 +4,29 @@ import { fetchWrapper } from "../api-client";
 import { StudentType } from "../validations";
 import { Instructor } from "../../types";
 
-export async function loginStudentAction() {
+export async function loginStudentAction(credentials: any) {
   try {
-    // Busca todos os alunos via API e pega o primeiro para simular login
-    const students = await fetchWrapper<any[]>("/students");
-    if (!students || students.length === 0) return { success: false, error: "No students found" };
-    return { success: true, data: students[0] as StudentType };
+    const authResult = await fetchWrapper<any>("/auth/login/student", {
+      method: 'POST',
+      body: JSON.stringify(credentials)
+    });
+    
+    if (!authResult || !authResult.user) return { success: false, error: "Credenciais inválidas" };
+    return { success: true, data: authResult.user, token: authResult.access_token };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
 }
 
-export async function loginInstructorAction() {
+export async function loginInstructorAction(credentials: any) {
   try {
-    // Busca todos os instrutores via API e pega o primeiro para simular login
-    const instructors = await fetchWrapper<any[]>("/instructors");
-    if (!instructors || instructors.length === 0) return { success: false, error: "No instructors found" };
+    const authResult = await fetchWrapper<any>("/auth/login/instructor", {
+      method: 'POST',
+      body: JSON.stringify(credentials)
+    });
+    if (!authResult || !authResult.user) return { success: false, error: "Credenciais inválidas" };
 
-    const instructor = instructors[0];
+    const instructor = authResult.user;
     const primaryVehicle = instructor.vehicles?.[0];
 
     const mapped: Instructor = {
@@ -29,8 +34,8 @@ export async function loginInstructorAction() {
       email: instructor.email,
       name: instructor.name,
       profilePicture: instructor.profilePicture || undefined,
-      rating: instructor.rating,
-      reviewsCount: instructor.reviewsCount,
+      rating: instructor.rating || 0,
+      reviewsCount: instructor.reviewsCount || 0,
       pricePerClass: instructor.pricePerClass || undefined,
       location: instructor.location || undefined,
       bio: instructor.bio || undefined,
@@ -47,8 +52,35 @@ export async function loginInstructorAction() {
       })) || []
     };
 
-    return { success: true, data: mapped };
+    return { success: true, data: mapped, token: authResult.access_token };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
 }
+
+export async function registerStudentAction(data: any) {
+  try {
+    const authResult = await fetchWrapper<any>("/auth/register/student", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    if (!authResult || !authResult.user) return { success: false, error: "Registration failed" };
+    return { success: true, data: authResult.user as StudentType, token: authResult.access_token };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function registerInstructorAction(data: any) {
+  try {
+    const authResult = await fetchWrapper<any>("/auth/register/instructor", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    if (!authResult || !authResult.user) return { success: false, error: "Registration failed" };
+    return { success: true, data: authResult.user, token: authResult.access_token };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+

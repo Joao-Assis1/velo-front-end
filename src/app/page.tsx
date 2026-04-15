@@ -41,7 +41,7 @@ import { getInstructorsAction } from '@/lib/actions/instructors';
 import { Instructor } from '@/types';
 
 export default function Page() {
-  const { 
+const { 
     screen, 
     userRole, 
     navigateTo, 
@@ -52,6 +52,7 @@ export default function Page() {
     selectedInstructorId,
     selectInstructor,
     hasLadv,
+    hasPaymentMethod,
     setHasLadv,
     scheduledClasses,
     cancelClass,
@@ -60,7 +61,8 @@ export default function Page() {
     instructorProfile,
     studentProfile,
     setInstructorProfile,
-    setStudentProfile,
+    updateStudentProfile,
+    updateInstructorProfile,
     giveFeedback,
     checkIn,
     checkOut,
@@ -115,12 +117,11 @@ export default function Page() {
         return <StudentHome onSelectInstructor={selectInstructor} />;
       case 'student-schedule':
         return (
-          <StudentSchedule 
-            classes={scheduledClasses} 
-            onCancelClass={cancelClass} 
-            onRateClass={rateClass} 
-          />
-        );
+          <StudentSchedule
+            classes={scheduledClasses}
+            onCancelClass={cancelClass}
+            onRateClass={rateClass}
+          />        );
       case 'student-progress':
         return <StudentProgress classes={scheduledClasses} />;
       case 'student-profile':
@@ -139,19 +140,36 @@ export default function Page() {
         return (
           <StudentPersonalData 
             profile={studentProfile} 
-            onSave={setStudentProfile} 
+            onSave={updateStudentProfile} 
             onBack={() => navigateTo('student-profile')}
           />
         );
       case 'instructor-profile-view':
         const selectedInstructor = instructors.find(i => i.id === selectedInstructorId) || 
                                     (scheduledClasses.find(c => c.instructorId === selectedInstructorId) as any);
+        if (!selectedInstructor) {
+          return (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <p className="text-slate-600 mb-4">Instrutor não encontrado</p>
+                <button 
+                  onClick={() => navigateTo('student-home')}
+                  className="text-velo-blue hover:underline"
+                >
+                  Voltar
+                </button>
+              </div>
+            </div>
+          );
+        }
         return (
           <InstructorProfileView 
             instructor={selectedInstructor}
             onBack={() => navigateTo('student-home')} 
             hasLadv={hasLadv}
-            onUploadLadv={() => setHasLadv(true)}
+            hasPaymentMethod={hasPaymentMethod}
+            onUploadLadv={() => navigateTo('student-home')} // Or handle locally
+            onAddPaymentMethod={() => navigateTo('student-payments')}
             onBookClass={bookClass}
             busySlots={busySlots}
           />
@@ -189,7 +207,7 @@ export default function Page() {
         return (
           <InstructorEditProfile 
             profile={instructorProfile} 
-            onSave={setInstructorProfile} 
+            onSave={updateInstructorProfile} 
             onBack={() => navigateTo('instructor-profile')}
           />
         );
@@ -197,7 +215,7 @@ export default function Page() {
         return (
           <InstructorVehicle 
             profile={instructorProfile} 
-            onSave={setInstructorProfile} 
+            onSave={updateInstructorProfile} 
             onBack={() => navigateTo('instructor-profile')}
           />
         );
@@ -205,7 +223,7 @@ export default function Page() {
         return (
           <InstructorAvailability 
             profile={instructorProfile} 
-            onSave={setInstructorProfile}
+            onSave={updateInstructorProfile}
             onBack={() => navigateTo('instructor-schedule')}
           />
         );
@@ -224,7 +242,7 @@ export default function Page() {
         );
       
       default:
-        return <div className="p-8 text-center">Screen "{screen}" not implemented yet.</div>;
+        return <div className="p-8 text-center">Tela "{screen}" ainda não implementada.</div>;
     }
   };
 

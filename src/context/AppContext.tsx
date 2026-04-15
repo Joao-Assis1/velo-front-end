@@ -16,12 +16,15 @@ import {
   registerStudentAction,
   registerInstructorAction
 } from '@/lib/actions/auth';
+import { updateInstructorProfileAction } from '@/lib/actions/instructors';
+import { updateStudentProfileAction } from '@/lib/actions/profileActions';
 
 interface AppContextType {
   screen: Screen;
   userRole: UserRole;
   selectedInstructorId: string | null;
   hasLadv: boolean;
+  hasPaymentMethod: boolean;
   instructorProfile: Instructor | null;
   studentProfile: Student | null;
   scheduledClasses: ScheduledClass[];
@@ -37,8 +40,10 @@ interface AppContextType {
   setScheduledClasses: (classes: ScheduledClass[]) => void;
   setBusySlots: (slots: Record<string, string[]>) => void;
   
-  login: () => void;
-  register: (data: any) => void;
+  login: (credentials?: any) => Promise<void>;
+  register: (data: any) => Promise<void>;
+  updateStudentProfile: (data: any) => Promise<void>;
+  updateInstructorProfile: (data: any) => Promise<void>;
   logout: () => void;
   
   // Business logic
@@ -72,7 +77,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const persistedHasLadv = localStorage.getItem('velo-hasLadv');
 
       if (persistedUserRole) {
-        // Only set parsed role if valid
         const parsedData = JSON.parse(persistedUserRole);
         if (parsedData === 'student' || parsedData === 'instructor') {
           setUserRole(parsedData);
@@ -138,57 +142,98 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (credentials?: any) => {
-    try {
-      if (userRole === 'student') {
-        const res = await loginStudentAction(credentials);
-        if (res.success && res.data) {
-          if (res.token) localStorage.setItem('velo-token', res.token);
-          setStudentProfile(res.data as Student);
-          setHasLadv(res.data.ladvUploaded);
-        }
-        navigateTo('student-home');
-      } else {
-        const res = await loginInstructorAction(credentials);
-        if (res.success && res.data) {
-          if (res.token) localStorage.setItem('velo-token', res.token);
-          setInstructorProfile(res.data as Instructor);
-        }
-        navigateTo('instructor-dashboard');
+    if (userRole === 'student') {
+      const res = await loginStudentAction(credentials);
+      if (!res.success || !res.data) {
+        throw new Error(res.error || 'Credenciais inválidas');
       }
-    } catch (err) {
-      console.error("Login failed:", err);
-      if (userRole === 'student') navigateTo('student-home');
-      else navigateTo('instructor-dashboard');
+      if (res.token) {
+        localStorage.setItem('velo-token', res.token);
+        document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+      setStudentProfile(res.data as Student);
+      setHasLadv((res.data as any).ladvUploaded ?? false);
+      navigateTo('student-home');
+    } else {
+      const res = await loginInstructorAction(credentials);
+      if (!res.success || !res.data) {
+        throw new Error(res.error || 'Credenciais inválidas');
+      }
+      if (res.token) {
+        localStorage.setItem('velo-token', res.token);
+        document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+      setInstructorProfile(res.data as Instructor);
+      navigateTo('instructor-dashboard');
     }
   };
 
   const register = async (data: any) => {
-    try {
-      if (userRole === 'student') {
-        const res = await registerStudentAction(data);
-        if (res.success && res.data) {
-          if (res.token) localStorage.setItem('velo-token', res.token);
-          setStudentProfile(res.data as Student);
-        }
-        navigateTo('student-home');
-      } else {
-        const res = await registerInstructorAction(data);
-        if (res.success && res.data) {
-          if (res.token) localStorage.setItem('velo-token', res.token);
-          // Fallback missing properties for new instructor until onboarded
-          setInstructorProfile({
-            ...res.data,
-            rating: 5.0,
-            reviewsCount: 0,
-            pricePerClass: 0,
-            availability: [],
-            busySlots: []
-          });
-        }
-        navigateTo('instructor-dashboard');
+    if (userRole === 'student') {
+      const res = await registerStudentAction(data);
+      if (!res.success || !res.data) {
+        throw new Error(res.error || 'Erro ao realizar cadastro');
       }
-    } catch (err) {
-      console.error("Register failed:", err);
+      if (res.token) {
+        localStorage.setItem('velo-token', res.token);
+        document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+      setStudentProfile(res.data as Student);
+      navigateTo('student-home');
+    } else {
+      const res = await registerInstructorAction(data);
+      if (!res.success || !res.data) {
+        throw new Error(res.error || 'Erro ao realizar cadastro');
+      }
+      if (res.token) {
+        localStorage.setItem('velo-token', res.token);
+        document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+      setInstructorProfile({
+        ...res.data,
+        rating: res.data.rating ?? 5.0,
+        reviewsCount: res.data.reviewsCount ?? 0,
+        pricePerClass: res.data.pricePerClass ?? 0,
+        availability: res.data.availability ?? [],
+        busySlots: res.data.busySlots ?? [],
+      });
+      navigateTo('instructor-dashboard');
+    }
+  };
+
+  const updateStudentProfile = async (data: any) => {
+    if (!studentProfile?.id) return;
+    try {
+      const res = await updateStudentProfileAction(studentProfile.id, data);
+      if (res.success) {
+        setStudentProfile((prev) => (prev ? { ...prev, ...data } : null));
+      } else {
+        throw new Error(res.error);
+      }
+    } catch (err: any) {
+      console.error("Failed to update student profile:", err);
+      throw err;
+    }
+  };
+
+  const updateInstructorProfile = async (data: any) => {
+    if (!instructorProfile?.id) return;
+    try {
+      const { 
+        id, email, rating, reviewsCount, availability, busySlots, 
+        vehicleId, vehicleModel, vehiclePlate, vehicleYear, transmission,
+        instructorType, ...updateData 
+      } = data;
+
+      const res = await updateInstructorProfileAction(instructorProfile.id, updateData);
+      if (res.success) {
+        setInstructorProfile((prev) => (prev ? { ...prev, ...data } : null));
+      } else {
+        throw new Error(res.error);
+      }
+    } catch (err: any) {
+      console.error("Failed to update instructor profile:", err);
+      throw err;
     }
   };
 
@@ -198,6 +243,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setStudentProfile(null);
     setInstructorProfile(null);
     localStorage.removeItem('velo-token');
+    document.cookie = "velo-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     setScreen('onboarding');
   };
 
@@ -287,6 +333,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const hasPaymentMethod = (studentProfile?.paymentMethods?.length ?? 0) > 0;
+
   return (
     <AppContext.Provider
       value={{
@@ -294,6 +342,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         userRole,
         selectedInstructorId,
         hasLadv,
+        hasPaymentMethod,
         instructorProfile,
         studentProfile,
         scheduledClasses,
@@ -308,6 +357,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setBusySlots,
         login,
         register,
+        updateStudentProfile,
+        updateInstructorProfile,
         logout,
         cancelClass,
         rateClass,

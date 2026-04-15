@@ -18,3 +18,6 @@ prisma.config.ts
 .agent
 docs
 .agents/workflows
+FLUXO-INSTRUTOR.MD
+FLUXO-ALUNO.md
+velo.md

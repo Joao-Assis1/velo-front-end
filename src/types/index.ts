@@ -70,6 +70,19 @@ export interface Student {
   cpf?: string;
   profilePicture?: string;
   ladvUploaded: boolean;
+  ladvValidationDate?: Date;
+  ladvDocumentUrl?: string;
+  paymentMethods?: PaymentMethod[];
+}
+
+export interface PaymentMethod {
+  id: string;
+  studentId: string;
+  last4: string;
+  cardholderName: string;
+  expiryMonth: string;
+  expiryYear: string;
+  isDefault: boolean;
 }
 
 export interface ScheduledClass {

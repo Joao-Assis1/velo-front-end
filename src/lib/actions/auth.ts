@@ -3,16 +3,28 @@
 import { fetchWrapper } from "../api-client";
 import { StudentType } from "../validations";
 import { Instructor } from "../../types";
+import { cookies } from "next/headers";
 
 export async function loginStudentAction(credentials: any) {
   try {
-    const authResult = await fetchWrapper<any>("/auth/login/student", {
-      method: 'POST',
-      body: JSON.stringify(credentials)
+    const apiResponse = await fetchWrapper<any>("/auth/login/student", {
+      method: "POST",
+      body: JSON.stringify(credentials),
     });
-    
-    if (!authResult || !authResult.user) return { success: false, error: "Credenciais inválidas" };
-    return { success: true, data: authResult.user, token: authResult.access_token };
+
+    const authResult = apiResponse.data;
+    if (!authResult || !authResult.user)
+      return { success: false, error: "Credenciais inválidas" };
+
+    (await cookies()).set("velo-token", authResult.access_token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    return {
+      success: true,
+      data: authResult.user,
+      token: authResult.access_token,
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -20,11 +32,13 @@ export async function loginStudentAction(credentials: any) {
 
 export async function loginInstructorAction(credentials: any) {
   try {
-    const authResult = await fetchWrapper<any>("/auth/login/instructor", {
-      method: 'POST',
-      body: JSON.stringify(credentials)
+    const apiResponse = await fetchWrapper<any>("/auth/login/instructor", {
+      method: "POST",
+      body: JSON.stringify(credentials),
     });
-    if (!authResult || !authResult.user) return { success: false, error: "Credenciais inválidas" };
+    const authResult = apiResponse.data;
+    if (!authResult || !authResult.user)
+      return { success: false, error: "Credenciais inválidas" };
 
     const instructor = authResult.user;
     const primaryVehicle = instructor.vehicles?.[0];
@@ -43,15 +57,20 @@ export async function loginInstructorAction(credentials: any) {
       vehicleId: primaryVehicle?.id,
       vehicleModel: primaryVehicle?.model,
       transmission: primaryVehicle?.transmission as any,
-      availability: instructor.availabilities?.map((a: any) => ({
-        id: a.id,
-        dayOfWeek: a.dayOfWeek,
-        startTime: a.startTime,
-        endTime: a.endTime,
-        isEnabled: a.isEnabled
-      })) || []
+      availability:
+        instructor.availabilities?.map((a: any) => ({
+          id: a.id,
+          dayOfWeek: a.dayOfWeek,
+          startTime: a.startTime,
+          endTime: a.endTime,
+          isEnabled: a.isEnabled,
+        })) || [],
     };
 
+    (await cookies()).set("velo-token", authResult.access_token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
     return { success: true, data: mapped, token: authResult.access_token };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -60,12 +79,23 @@ export async function loginInstructorAction(credentials: any) {
 
 export async function registerStudentAction(data: any) {
   try {
-    const authResult = await fetchWrapper<any>("/auth/register/student", {
+    const apiResponse = await fetchWrapper<any>("/auth/register/student", {
       method: "POST",
       body: JSON.stringify(data),
     });
-    if (!authResult || !authResult.user) return { success: false, error: "Registration failed" };
-    return { success: true, data: authResult.user as StudentType, token: authResult.access_token };
+    const authResult = apiResponse.data;
+    if (!authResult || !authResult.user)
+      return { success: false, error: "Registration failed" };
+
+    (await cookies()).set("velo-token", authResult.access_token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    return {
+      success: true,
+      data: authResult.user as StudentType,
+      token: authResult.access_token,
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -73,14 +103,24 @@ export async function registerStudentAction(data: any) {
 
 export async function registerInstructorAction(data: any) {
   try {
-    const authResult = await fetchWrapper<any>("/auth/register/instructor", {
+    const apiResponse = await fetchWrapper<any>("/auth/register/instructor", {
       method: "POST",
       body: JSON.stringify(data),
     });
-    if (!authResult || !authResult.user) return { success: false, error: "Registration failed" };
-    return { success: true, data: authResult.user, token: authResult.access_token };
+    const authResult = apiResponse.data;
+    if (!authResult || !authResult.user)
+      return { success: false, error: "Registration failed" };
+
+    (await cookies()).set("velo-token", authResult.access_token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    return {
+      success: true,
+      data: authResult.user,
+      token: authResult.access_token,
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
 }
-

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Mail, Lock } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, Loader2 } from 'lucide-react';
 import { Button, Input } from '@/components/ui-custom';
 import { UserRole } from '@/types';
 
@@ -12,14 +12,28 @@ export const Login = ({
   onRegister, 
   onBack 
 }: { 
-  role: UserRole, 
-  onLogin: (credentials: any) => void, 
-  onRegister: () => void, 
-  onBack: () => void 
+  role: UserRole,
+  onLogin: (credentials: any) => Promise<void>,
+  onRegister: () => void,
+  onBack: () => void
 }) => {
   const isStudent = role === 'student';
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await onLogin({ email, password });
+    } catch (err: any) {
+      setError(err.message || 'Credenciais inválidas. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div 
@@ -40,7 +54,13 @@ export const Login = ({
           <p className="text-slate-500">Entre para continuar sua jornada.</p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onLogin({ email, password }); }}>
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-medium flex items-center gap-3">
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
           <Input 
             type="email" 
             placeholder="Seu e-mail" 
@@ -64,8 +84,13 @@ export const Login = ({
             </button>
           </div>
 
-          <Button type="submit" className="w-full py-4 text-lg mt-4">
-            Entrar
+          <Button type="submit" className="w-full py-4 text-lg mt-4" disabled={loading}>
+            {loading ? (
+              <div className="flex items-center gap-2 justify-center">
+                <Loader2 className="animate-spin" size={20} />
+                Entrando...
+              </div>
+            ) : 'Entrar'}
           </Button>
         </form>
 

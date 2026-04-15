@@ -36,11 +36,15 @@ export async function getLessonsAction(
     if (query.studentId) params.append("studentId", query.studentId);
     if (query.instructorId) params.append("instructorId", query.instructorId);
 
-    const lessons = await fetchWrapper<any[]>(`/lessons?${params.toString()}`, {
-      next: { tags: ["lessons"] },
-    });
+    const apiResponse = await fetchWrapper<any>(
+      `/lessons?${params.toString()}`,
+      {
+        next: { tags: ["lessons"] },
+      },
+    );
 
-    return { success: true, data: lessons.map(mapLesson) };
+    const lessons = apiResponse?.data ?? [];
+    return { success: true, data: (lessons as any[]).map(mapLesson) };
   } catch (error: any) {
     console.error("Error fetching lessons:", error);
     return { success: false, error: error.message };
@@ -49,13 +53,13 @@ export async function getLessonsAction(
 
 export async function createLessonAction(data: CreateLessonDto) {
   try {
-    const lesson = await fetchWrapper<any>("/lessons", {
+    const apiResponse = await fetchWrapper<any>("/lessons", {
       method: "POST",
       body: JSON.stringify(data),
     });
 
     revalidateTag("lessons", "default");
-    return { success: true, data: mapLesson(lesson) };
+    return { success: true, data: mapLesson(apiResponse?.data) };
   } catch (error: any) {
     console.error("Error creating lesson:", error);
     return { success: false, error: error.message };
@@ -64,12 +68,12 @@ export async function createLessonAction(data: CreateLessonDto) {
 
 export async function checkInAction(id: string) {
   try {
-    const lesson = await fetchWrapper<any>(`/lessons/${id}/checkin`, {
+    const apiResponse = await fetchWrapper<any>(`/lessons/${id}/checkin`, {
       method: "PATCH",
     });
 
     revalidateTag("lessons", "default");
-    return { success: true, data: mapLesson(lesson) };
+    return { success: true, data: mapLesson(apiResponse?.data) };
   } catch (error: any) {
     console.error("Error check-in:", error);
     return { success: false, error: error.message };
@@ -78,12 +82,12 @@ export async function checkInAction(id: string) {
 
 export async function checkOutAction(id: string) {
   try {
-    const lesson = await fetchWrapper<any>(`/lessons/${id}/checkout`, {
+    const apiResponse = await fetchWrapper<any>(`/lessons/${id}/checkout`, {
       method: "PATCH",
     });
 
     revalidateTag("lessons", "default");
-    return { success: true, data: mapLesson(lesson) };
+    return { success: true, data: mapLesson(apiResponse?.data) };
   } catch (error: any) {
     console.error("Error check-out:", error);
     return { success: false, error: error.message };
@@ -96,13 +100,16 @@ export async function submitStudentFeedbackAction(
   text: string,
 ) {
   try {
-    const lesson = await fetchWrapper<any>(`/lessons/${id}/feedback-student`, {
-      method: "PATCH",
-      body: JSON.stringify({ rating, text }),
-    });
+    const apiResponse = await fetchWrapper<any>(
+      `/lessons/${id}/feedback-student`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ rating, text }),
+      },
+    );
 
     revalidateTag("lessons", "default");
-    return { success: true, data: mapLesson(lesson) };
+    return { success: true, data: mapLesson(apiResponse?.data) };
   } catch (error: any) {
     console.error("Error student feedback:", error);
     return { success: false, error: error.message };
@@ -114,7 +121,7 @@ export async function submitInstructorFeedbackAction(
   feedback: string,
 ) {
   try {
-    const lesson = await fetchWrapper<any>(
+    const apiResponse = await fetchWrapper<any>(
       `/lessons/${id}/feedback-instructor`,
       {
         method: "PATCH",
@@ -123,7 +130,7 @@ export async function submitInstructorFeedbackAction(
     );
 
     revalidateTag("lessons", "default");
-    return { success: true, data: mapLesson(lesson) };
+    return { success: true, data: mapLesson(apiResponse?.data) };
   } catch (error: any) {
     console.error("Error instructor feedback:", error);
     return { success: false, error: error.message };

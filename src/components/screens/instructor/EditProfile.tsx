@@ -34,14 +34,22 @@ export const InstructorEditProfile = ({
     availability: [],
     busySlots: []
   });
+  const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (localProfile) {
-      onSave(localProfile);
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
+      setIsLoading(true);
+      try {
+        await onSave(localProfile);
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2000);
+      } catch (error) {
+        console.error("Erro ao salvar perfil:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -113,8 +121,8 @@ export const InstructorEditProfile = ({
           </div>
         </div>
 
-        <Button className="w-full py-4 text-lg" disabled={isSaved}>
-          {isSaved ? <><Check size={20} /> Perfil Salvo</> : 'Salvar Alterações'}
+        <Button className="w-full py-4 text-lg" disabled={isSaved || isLoading}>
+          {isLoading ? "Salvando..." : isSaved ? <><Check size={20} /> Perfil Salvo</> : 'Salvar Alterações'}
         </Button>
       </form>
     </div>

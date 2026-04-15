@@ -32,6 +32,11 @@ export const InstructorSchema = z.object({
   vehicleYear: z.string().optional(),
   availability: z.array(AvailabilitySchema).optional(),
   busySlots: z.array(BusySlotSchema).optional(),
+  cnhNumber: z.string().optional(),
+  cnhExpiry: z.coerce.date().optional(),
+  cnhEar: z.boolean().optional(),
+  certidaoNegativa: z.boolean().optional(),
+  termsAcceptedAt: z.coerce.date().optional(),
 });
 
 export const StudentSchema = z.object({
@@ -42,6 +47,7 @@ export const StudentSchema = z.object({
   cpf: z.string().optional(),
   profilePicture: z.string().url().optional(),
   ladvUploaded: z.boolean().default(false),
+  termsAcceptedAt: z.coerce.date().optional(),
 });
 
 export const CreateStudentSchema = StudentSchema.omit({ id: true });

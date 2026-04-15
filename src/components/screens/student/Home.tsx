@@ -9,10 +9,14 @@ import { getInstructorsAction } from '@/lib/actions/instructors';
 import { FilterModal } from './FilterModal';
 import { Instructor } from '@/types';
 import { EmptyState } from '@/components/ui-custom/EmptyState';
+import { useApp } from '@/context/AppContext';
+import { LadvUpload } from '@/components/features/LadvUpload';
 
 export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: string) => void }) => {
+  const { hasLadv } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isLadvModalOpen, setIsLadvModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     maxPrice: 150,
     minRating: 0,
@@ -61,6 +65,21 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
           <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop" alt="Profile" className="w-full h-full object-cover" />
         </div>
       </header>
+
+      {!hasLadv && (
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex gap-3 items-start justify-between">
+          <div className="flex gap-3 items-start">
+            <AlertCircle className="text-orange-500 shrink-0 mt-0.5" size={20} />
+            <p className="text-sm text-orange-800 font-medium">Faça o upload da LADV para agendar suas aulas</p>
+          </div>
+          <button 
+            onClick={() => setIsLadvModalOpen(true)}
+            className="text-orange-600 font-bold text-sm underline shrink-0 transition-all active:scale-95"
+          >
+            Enviar agora
+          </button>
+        </div>
+      )}
 
       {/* Search & Filter */}
       <div className="space-y-4">
@@ -134,6 +153,16 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
             filters={filters}
             onApply={setFilters}
           />
+        )}
+        {isLadvModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+              <LadvUpload 
+                onClose={() => setIsLadvModalOpen(false)} 
+                onSuccess={() => setIsLadvModalOpen(false)}
+              />
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

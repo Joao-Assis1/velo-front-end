@@ -1,212 +1,205 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, Calendar, Clock, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { Button, Input, Card } from '@/components/ui-custom';
-import { Instructor, BusySlot } from '@/types';
+import React, { useState } from "react";
+import { ArrowLeft, Clock, Check, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui-custom";
+import { Instructor } from "@/types";
+import { cn } from "@/lib/utils";
+import { updateInstructorAvailabilityAction } from "@/lib/actions/profileActions";
 
-export const InstructorAvailability = ({ 
-  profile, 
+const DAYS_OF_WEEK = [
+  "Domingo",
+  "Segunda",
+  "Terça",
+  "Quarta",
+  "Quinta",
+  "Sexta",
+  "Sábado",
+];
+
+export const InstructorAvailability = ({
+  profile,
   onSave,
-  onBack
-}: { 
-  profile: Instructor | null, 
-  onSave: (profile: Instructor) => void,
-  onBack: () => void
+  onBack,
+}: {
+  profile: Instructor;
+  onSave: (profile: Instructor) => void;
+  onBack: () => void;
 }) => {
-  const [localProfile, setLocalProfile] = useState<Instructor>(profile || {
-    id: '',
-    email: '',
-    name: '',
-    profilePicture: '',
-    vehicleImage: '',
-    vehicleModel: '',
-    rating: 0,
-    reviewsCount: 0,
-    pricePerClass: 0,
-    location: '',
-    bio: '',
-    transmission: 'Manual',
-    instructorType: 'Credenciado',
-    vehiclePlate: '',
-    vehicleYear: '',
-    availability: [],
-    busySlots: []
-  });
-
-  const handleToggleDay = (day: number) => {
-    if (!localProfile) return;
-    const newAvailability = [...(localProfile.availability || [])];
-    const index = newAvailability.findIndex(a => a.dayOfWeek === day);
-    
-    if (index >= 0) {
-      newAvailability[index] = { ...newAvailability[index], isEnabled: !newAvailability[index].isEnabled };
-    } else {
-      newAvailability.push({ dayOfWeek: day, startTime: '08:00', endTime: '18:00', isEnabled: true });
-    }
-    
-    setLocalProfile({ ...localProfile, availability: newAvailability });
-  };
-
-  const handleTimeChange = (day: number, field: 'startTime' | 'endTime', value: string) => {
-    if (!localProfile) return;
-    const newAvailability = [...(localProfile.availability || [])];
-    const index = newAvailability.findIndex(a => a.dayOfWeek === day);
-    
-    if (index >= 0) {
-      newAvailability[index] = { ...newAvailability[index], [field]: value };
-      setLocalProfile({ ...localProfile, availability: newAvailability });
-    }
-  };
-
-  const handleAddBusySlot = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!localProfile) return;
-    const form = e.target as HTMLFormElement;
-    const dateInput = form.elements.namedItem('date') as HTMLInputElement;
-    const startInput = form.elements.namedItem('start') as HTMLInputElement;
-    const endInput = form.elements.namedItem('end') as HTMLInputElement;
-
-    if (dateInput.value && startInput.value && endInput.value) {
-      const newBusySlot: BusySlot = {
-        id: Math.random().toString(36).substr(2, 9),
-        date: new Date(dateInput.value + 'T00:00:00'),
-        startTime: startInput.value,
-        endTime: endInput.value
+  const [availability, setAvailability] = useState(() => {
+    // Sempre garantir todos os 7 dias, mesclando com os dados salvos se existirem
+    return DAYS_OF_WEEK.map((_, index) => {
+      const savedDay = profile.availability?.find(
+        (a) => a.dayOfWeek === index
+      );
+      return {
+        dayOfWeek: index,
+        startTime: savedDay?.startTime || "08:00",
+        endTime: savedDay?.endTime || "18:00",
+        isEnabled: savedDay ? savedDay.isEnabled : (index > 0 && index < 6),
       };
-      
-      setLocalProfile({
-        ...localProfile,
-        busySlots: [...(localProfile.busySlots || []), newBusySlot]
-      });
-      
-      form.reset();
-    }
+    });
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleToggleDay = (dayOfWeek: number) => {
+    setAvailability((prev) =>
+      prev.map((a) =>
+        a.dayOfWeek === dayOfWeek ? { ...a, isEnabled: !a.isEnabled } : a,
+      ),
+    );
   };
 
-  const handleRemoveBusySlot = (id: string) => {
-    if (!localProfile) return;
-    setLocalProfile({
-      ...localProfile,
-      busySlots: (localProfile.busySlots || []).filter(s => s.id !== id)
-    });
+  const handleTimeChange = (
+    dayOfWeek: number,
+    field: "startTime" | "endTime",
+    value: string,
+  ) => {
+    setAvailability((prev) =>
+      prev.map((a) =>
+        a.dayOfWeek === dayOfWeek ? { ...a, [field]: value } : a,
+      ),
+    );
+  };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      const result = await updateInstructorAvailabilityAction(
+        profile.id,
+        availability,
+      );
+      if (result.success) {
+        onSave({ ...profile, availability });
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2000);
+      } else {
+        console.error("Erro ao salvar disponibilidade:", result.error);
+      }
+    } catch (error) {
+      console.error("Falha ao salvar disponibilidade:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="pb-24 pt-6 px-4 space-y-6">
       <header className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-slate-400 hover:text-slate-600">
+        <button
+          onClick={onBack}
+          className="p-2 -ml-2 text-slate-400 hover:text-slate-600"
+        >
           <ArrowLeft size={24} />
         </button>
-        <h1 className="text-xl font-bold text-slate-900">Disponibilidade</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Disponibilidade</h1>
+          <p className="text-slate-500 text-sm">
+            Defina seus horários de trabalho
+          </p>
+        </div>
       </header>
 
-      <div className="space-y-6">
-        <section>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-slate-900">Horários de Trabalho</h3>
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => onSave(localProfile)}>Salvar Tudo</Button>
-          </div>
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5, 6, 0].map((day) => {
-              const dayName = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][day];
-              const dayAvailability = localProfile.availability?.find(a => a.dayOfWeek === day) || { dayOfWeek: day, startTime: '08:00', endTime: '18:00', isEnabled: false };
-              
-              return (
-                <div key={day} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-medium text-slate-700">{dayName}</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        className="sr-only peer"
-                        checked={dayAvailability.isEnabled}
-                        onChange={() => handleToggleDay(day)}
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-velo-blue"></div>
-                    </label>
-                  </div>
-                  
-                  {dayAvailability.isEnabled && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <label className="text-xs text-slate-500 mb-1 block">Início</label>
-                        <input 
-                          type="time" 
-                          value={dayAvailability.startTime}
-                          onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
-                          className="w-full p-2 border border-slate-200 rounded-lg text-sm"
-                        />
-                      </div>
-                      <span className="text-slate-400 mt-5">-</span>
-                      <div className="flex-1">
-                        <label className="text-xs text-slate-500 mb-1 block">Fim</label>
-                        <input 
-                          type="time" 
-                          value={dayAvailability.endTime}
-                          onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
-                          className="w-full p-2 border border-slate-200 rounded-lg text-sm"
-                        />
-                      </div>
-                    </div>
+      <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-3 items-start mb-6">
+        <AlertCircle size={20} className="text-velo-blue shrink-0 mt-0.5" />
+        <p className="text-xs text-slate-600 leading-relaxed">
+          Os horários ativados aqui ditarão a base na qual os alunos poderão
+          agendar aulas de direção com você.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {availability.map((day) => (
+          <div
+            key={day.dayOfWeek}
+            className={cn(
+              "p-4 rounded-2xl border transition-all",
+              day.isEnabled
+                ? "bg-white border-velo-blue shadow-sm"
+                : "bg-slate-50 border-slate-200",
+            )}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleToggleDay(day.dayOfWeek)}
+                  className={cn(
+                    "w-12 h-6 rounded-full transition-colors relative",
+                    day.isEnabled ? "bg-velo-blue" : "bg-slate-300",
                   )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <section>
-          <h3 className="font-semibold text-slate-900 mb-4">Bloqueios de Agenda</h3>
-          
-          <Card className="mb-4">
-            <h4 className="text-sm font-medium text-slate-700 mb-3">Adicionar Bloqueio</h4>
-            <form onSubmit={handleAddBusySlot} className="space-y-3">
-              <div>
-                <label className="text-xs text-slate-500 mb-1 block">Data</label>
-                <input name="date" type="date" className="w-full p-2 border border-slate-200 rounded-lg text-sm" required />
-              </div>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <label className="text-xs text-slate-500 mb-1 block">Início</label>
-                  <input name="start" type="time" className="w-full p-2 border border-slate-200 rounded-lg text-sm" required />
-                </div>
-                <div className="flex-1">
-                  <label className="text-xs text-slate-500 mb-1 block">Fim</label>
-                  <input name="end" type="time" className="w-full p-2 border border-slate-200 rounded-lg text-sm" required />
-                </div>
-              </div>
-              <Button type="submit" size="sm" className="w-full py-2">
-                Adicionar Bloqueio
-              </Button>
-            </form>
-          </Card>
-
-          <div className="space-y-2">
-            {localProfile.busySlots?.map((slot) => (
-              <div key={slot.id} className="bg-white p-3 rounded-lg border border-slate-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{format(new Date(slot.date), "dd 'de' MMMM", { locale: ptBR })}</p>
-                  <p className="text-xs text-slate-500">{slot.startTime} - {slot.endTime}</p>
-                </div>
-                <button 
-                  onClick={() => handleRemoveBusySlot(slot.id)}
-                  className="text-red-500 hover:text-red-700 p-2"
                 >
-                  <Trash2 size={16} />
+                  <div
+                    className={cn(
+                      "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
+                      day.isEnabled ? "right-1" : "left-1",
+                    )}
+                  />
                 </button>
+                <span
+                  className={cn(
+                    "font-bold text-sm",
+                    day.isEnabled ? "text-slate-900" : "text-slate-400",
+                  )}
+                >
+                  {DAYS_OF_WEEK[day.dayOfWeek]}
+                </span>
               </div>
-            ))}
-            {(!localProfile.busySlots || localProfile.busySlots.length === 0) && (
-              <p className="text-center text-slate-400 text-sm py-4">Nenhum bloqueio cadastrado.</p>
+            </div>
+
+            {day.isEnabled && (
+              <div className="flex items-center gap-4 border-t border-slate-100 pt-4">
+                <div className="flex-1 space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                    <Clock size={12} /> Início
+                  </label>
+                  <input
+                    type="time"
+                    value={day.startTime}
+                    onChange={(e) =>
+                      handleTimeChange(
+                        day.dayOfWeek,
+                        "startTime",
+                        e.target.value,
+                      )
+                    }
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-velo-blue focus:ring-1 focus:ring-velo-blue"
+                  />
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                    <Clock size={12} /> Fim
+                  </label>
+                  <input
+                    type="time"
+                    value={day.endTime}
+                    onChange={(e) =>
+                      handleTimeChange(day.dayOfWeek, "endTime", e.target.value)
+                    }
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium outline-none focus:border-velo-blue focus:ring-1 focus:ring-velo-blue"
+                  />
+                </div>
+              </div>
             )}
           </div>
-        </section>
+        ))}
       </div>
+
+      <Button
+        className="w-full py-4 text-lg mt-6"
+        onClick={handleSubmit}
+        disabled={isSaved || isLoading}
+      >
+        {isLoading ? (
+          "Salvando..."
+        ) : isSaved ? (
+          <>
+            <Check size={20} /> Salvo com Sucesso
+          </>
+        ) : (
+          "Salvar Horários"
+        )}
+      </Button>
     </div>
   );
 };

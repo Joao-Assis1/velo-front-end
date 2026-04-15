@@ -13,11 +13,11 @@ import { EmptyState } from '@/components/ui-custom/EmptyState';
 export const StudentSchedule = ({ 
   classes, 
   onCancelClass, 
-  onRateClass 
+  onRateClass
 }: { 
   classes: ScheduledClass[], 
   onCancelClass: (id: string) => void, 
-  onRateClass: (id: string, rating: number, text: string) => void 
+  onRateClass: (id: string, rating: number, text: string) => void
 }) => {
   const [classToCancel, setClassToCancel] = useState<string | null>(null);
   const [classToRate, setClassToRate] = useState<string | null>(null);
@@ -51,30 +51,34 @@ export const StudentSchedule = ({
         <div className="space-y-3">
           {upcomingClasses.length > 0 ? (
             upcomingClasses.map((cls) => (
-              <Card key={cls.id} className={cn("border-l-4 flex justify-between items-center", cls.status === 'in-progress' ? "border-l-orange-500" : "border-l-velo-blue")}>
-                <div>
-                  <p className="font-bold text-slate-900">{cls.instructorName}</p>
-                  <p className="text-sm text-slate-500 flex items-center gap-1">
-                    <Clock size={14} />
-                    {format(cls.date, "dd 'de' MMM", { locale: ptBR })} às {cls.startTime}
-                  </p>
+              <Card key={cls.id} className={cn("border-l-4", cls.status === 'in-progress' ? "border-l-orange-500" : "border-l-velo-blue")}>
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="font-bold text-slate-900">{cls.instructorName}</p>
+                    <p className="text-sm text-slate-500 flex items-center gap-1">
+                      <Clock size={14} />
+                      {format(cls.date, "dd 'de' MMM", { locale: ptBR })} às {cls.startTime}
+                    </p>
+                  </div>
+                  <div className="text-right flex flex-col items-end gap-2">
+                     <span className={cn(
+                       "text-xs font-bold px-2 py-1 rounded-full",
+                       cls.status === 'in-progress' ? "bg-orange-50 text-orange-600" : "bg-blue-50 text-velo-blue"
+                     )}>
+                       {cls.status === 'in-progress' ? 'Em andamento' : 'Agendada'}
+                     </span>
+                     {cls.status === 'upcoming' && (
+                       <button 
+                         onClick={() => setClassToCancel(cls.id)}
+                         className="text-xs text-red-500 font-medium hover:text-red-700 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
+                       >
+                         <LogOut size={12} /> Cancelar
+                       </button>
+                     )}
+                  </div>
                 </div>
-                <div className="text-right flex flex-col items-end gap-2">
-                   <span className={cn(
-                     "text-xs font-bold px-2 py-1 rounded-full",
-                     cls.status === 'in-progress' ? "bg-orange-50 text-orange-600" : "bg-blue-50 text-velo-blue"
-                   )}>
-                     {cls.status === 'in-progress' ? 'Em andamento' : 'Agendada'}
-                   </span>
-                   {cls.status === 'upcoming' && (
-                     <button 
-                       onClick={() => setClassToCancel(cls.id)}
-                       className="text-xs text-red-500 font-medium hover:text-red-700 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
-                     >
-                       <LogOut size={12} /> Cancelar
-                     </button>
-                   )}
-                </div>
+
+
               </Card>
             ))
           ) : (

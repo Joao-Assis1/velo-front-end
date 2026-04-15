@@ -12,6 +12,8 @@ import {
   Upload,
   Calendar as CalendarIcon,
   Clock,
+  CreditCard,
+  AlertCircle,
 } from "lucide-react";
 import { format, isBefore, startOfDay, isSameDay, addHours } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -24,20 +26,24 @@ export const InstructorProfileView = ({
   instructor,
   onBack,
   hasLadv,
+  hasPaymentMethod,
   onUploadLadv,
+  onAddPaymentMethod,
   onBookClass,
   busySlots,
 }: {
   instructor: Instructor;
   onBack: () => void;
   hasLadv: boolean;
+  hasPaymentMethod: boolean;
   onUploadLadv: () => void;
+  onAddPaymentMethod: () => void;
   onBookClass: (
     date: Date,
     startTime: string,
     endTime: string,
     instructor: Instructor,
-  ) => void;
+  ) => Promise<{ success: boolean; error?: string }> | void;
   busySlots?: Record<string, string[]>;
 }) => {
   const [showWhatsAppAnim, setShowWhatsAppAnim] = useState(false);
@@ -46,7 +52,10 @@ export const InstructorProfileView = ({
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showLadvAlert, setShowLadvAlert] = useState(false);
+  const [showPaymentAlert, setShowPaymentAlert] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingError, setBookingError] = useState("");
 
   const handleAddToCalendar = () => {
     if (!selectedTime) return;
@@ -71,6 +80,10 @@ export const InstructorProfileView = ({
 
   // Mock available times based on selected date
   const getAvailableTimes = (date: Date) => {
+    if (!instructor) {
+      return [];
+    }
+
     const dateKey = format(date, "yyyy-MM-dd");
     const globalBusyTimes = busySlots?.[dateKey] || [];
 
@@ -113,7 +126,7 @@ export const InstructorProfileView = ({
     }
 
     const instructorBusySlots =
-      instructor.busySlots?.filter((slot) =>
+      instructor?.busySlots?.filter((slot) =>
         isSameDay(new Date(slot.date), date),
       ) || [];
 
@@ -147,30 +160,45 @@ export const InstructorProfileView = ({
       alert("Por favor, selecione um horário primeiro.");
       return;
     }
+
     if (!hasLadv) {
       setShowLadvAlert(true);
       return;
     }
+
+    if (!hasPaymentMethod) {
+      setShowPaymentAlert(true);
+      return;
+    }
+
     setShowBookingModal(true);
   };
 
-  const confirmBooking = () => {
+  const confirmBooking = async () => {
     if (selectedTime) {
+      setIsBooking(true);
+      setBookingError("");
       const [hours, minutes] = selectedTime.split(":").map(Number);
       const endTime = `${(hours + 1).toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 
-      // Adaptation for booking logic with the updated Instructor interface
-      const adaptedInstructor = {
-        ...instructor,
-        profilePicture: (instructor as any).image,
-        pricePerClass: (instructor as any).price,
-        instructorType: (instructor as any).type,
-        reviewsCount: (instructor as any).reviews,
-      } as unknown as Instructor;
-
-      onBookClass(selectedDate, selectedTime, endTime, adaptedInstructor);
-      setShowBookingModal(false);
-      setShowSuccessModal(true);
+      try {
+        const result = await onBookClass(
+          selectedDate,
+          selectedTime,
+          endTime,
+          instructor,
+        );
+        if (result && result.success === false) {
+          setBookingError(result.error || "Erro ao agendar aula.");
+        } else {
+          setShowBookingModal(false);
+          setShowSuccessModal(true);
+        }
+      } catch (error: any) {
+        setBookingError(error.message || "Erro inesperado ao agendar.");
+      } finally {
+        setIsBooking(false);
+      }
     }
   };
 
@@ -190,9 +218,9 @@ export const InstructorProfileView = ({
           <div className="relative mb-4">
             <div className="w-28 h-28 rounded-full p-1 border-2 border-slate-100">
               <img
-                src={(instructor as any).image}
+                src={instructor.profilePicture}
                 alt={instructor.name}
-                className="w-full h-full object-cover rounded-full"
+                className="w-full h-full rounded-full object-cover"
               />
             </div>
             <div className="absolute bottom-1 right-1 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border-2 border-white">
@@ -212,12 +240,12 @@ export const InstructorProfileView = ({
             <span
               className={cn(
                 "text-xs px-3 py-1.5 rounded-full font-medium border transition-colors",
-                (instructor as any).type === "Credenciado"
+                instructor.instructorType === "Credenciado"
                   ? "bg-blue-50 text-velo-blue border-blue-100"
                   : "bg-orange-50 text-orange-600 border-orange-100",
               )}
             >
-              {(instructor as any).type}
+              {instructor.instructorType}
             </span>
             <span className="text-xs px-3 py-1.5 rounded-full font-medium border border-slate-100 bg-slate-50 text-slate-600 flex items-center gap-1">
               <Car size={12} />
@@ -236,7 +264,7 @@ export const InstructorProfileView = ({
             </span>
             <div className="flex items-baseline gap-0.5">
               <span className="text-xl font-bold text-slate-900">
-                R$ {(instructor as any).price}
+                R$ {instructor.pricePerClass ?? 0}
               </span>
             </div>
           </div>
@@ -246,7 +274,7 @@ export const InstructorProfileView = ({
             </span>
             <div className="flex items-baseline gap-0.5">
               <span className="text-xl font-bold text-slate-900">
-                {(instructor as any).reviews}
+                {instructor.reviewsCount}
               </span>
               <span className="text-xs text-slate-500 font-medium">aulas</span>
             </div>
@@ -335,7 +363,7 @@ export const InstructorProfileView = ({
               onClick={handleWhatsAppClick}
             >
               <MessageCircle size={24} />
-              Combinar via WhatsApp
+              Falar no WhatsApp
             </Button>
           )}
         </AnimatePresence>
@@ -358,20 +386,26 @@ export const InstructorProfileView = ({
               className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl"
             >
               <h3 className="text-xl font-bold text-slate-900 mb-2">
-                Confirm Booking
+                Confirmar Agendamento
               </h3>
               <p className="text-slate-600 mb-6">
-                Do you want to book a class with{" "}
-                <span className="font-bold">{instructor.name}</span> at{" "}
+                Você deseja agendar uma aula com{" "}
+                <span className="font-bold">{instructor.name}</span> às{" "}
                 <span className="font-bold">{selectedTime}</span>?
               </p>
 
               <div className="bg-slate-50 p-4 rounded-xl mb-6 flex justify-between items-center">
                 <span className="text-slate-600">Preço Total</span>
                 <span className="text-xl font-bold text-velo-blue">
-                  R$ {instructor.pricePerClass}
+                  R$ {instructor.pricePerClass ?? 0}
                 </span>
               </div>
+
+              {bookingError && (
+                <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 text-center">
+                  {bookingError}
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <Button
@@ -379,10 +413,14 @@ export const InstructorProfileView = ({
                   className="flex-1"
                   onClick={() => setShowBookingModal(false)}
                 >
-                  Cancel
+                  Cancelar
                 </Button>
-                <Button className="flex-1" onClick={confirmBooking}>
-                  Confirm
+                <Button
+                  className="flex-1"
+                  onClick={confirmBooking}
+                  disabled={isBooking}
+                >
+                  {isBooking ? "Processando..." : "Confirmar"}
                 </Button>
               </div>
             </motion.div>
@@ -545,7 +583,7 @@ export const InstructorProfileView = ({
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 text-sm">Valor</span>
                   <span className="font-bold text-velo-blue">
-                    R$ {(instructor as any).price}
+                    R$ {instructor.pricePerClass ?? 0}
                   </span>
                 </div>
               </div>
@@ -568,6 +606,54 @@ export const InstructorProfileView = ({
                   }}
                 >
                   Voltar ao Início
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showPaymentAlert && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 text-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowPaymentAlert(false)}
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl"
+            >
+              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CreditCard size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">
+                Cartão Necessário
+              </h3>
+              <p className="text-slate-600 mb-6">
+                Para confirmar o agendamento, você precisa cadastrar um cartão de crédito para processar o pagamento da aula.
+              </p>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => setShowPaymentAlert(false)}
+                >
+                  Depois
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    setShowPaymentAlert(false);
+                    onAddPaymentMethod();
+                  }}
+                >
+                  Cadastrar
                 </Button>
               </div>
             </motion.div>

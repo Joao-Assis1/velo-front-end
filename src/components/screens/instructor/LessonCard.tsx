@@ -14,6 +14,8 @@ import { Button } from "@/components/ui-custom";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/context/AppContext";
 import { submitInstructorFeedbackAction } from "@/lib/actions/profileActions";
+import { BiometryOverlay } from "@/components/features/BiometryOverlay";
+import { TelemetryHUD } from "@/components/features/TelemetryHUD";
 
 export type LessonData = {
   id: string;
@@ -44,11 +46,19 @@ export const LessonCard = ({
   );
   const [hasFeedback, setHasFeedback] = useState(!!lesson.instructorFeedback);
 
-  const handleCheckIn = async () => {
+  // Compliance Flows
+  const [showBiometry, setShowBiometry] = useState<'check-in' | 'check-out' | null>(null);
+  const [showTelemetry, setShowTelemetry] = useState(currentStatus === 'IN_PROGRESS');
+
+  const handleStartCheckIn = () => setShowBiometry('check-in');
+  
+  const executeCheckIn = async () => {
+    setShowBiometry(null);
     try {
       setIsLoading(true);
       checkIn(lesson.id);
       setCurrentStatus("IN_PROGRESS");
+      setShowTelemetry(true);
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error("Falha ao iniciar aula:", error);
@@ -57,12 +67,18 @@ export const LessonCard = ({
     }
   };
 
-  const handleCheckOut = async () => {
+  const handleTelemetryFinish = () => {
+    setShowTelemetry(false);
+    setShowBiometry('check-out');
+  };
+
+  const executeCheckOut = async () => {
+    setShowBiometry(null);
     try {
       setIsLoading(true);
       checkOut(lesson.id);
       setCurrentStatus("COMPLETED");
-      setShowFeedbackModal(true); // Abre modal de feedback automaticamente após checkout
+      setShowFeedbackModal(true); // Abre modal de feedback
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error("Falha ao finalizar aula:", error);
@@ -164,7 +180,7 @@ export const LessonCard = ({
         {currentStatus === "UPCOMING" && (
           <Button
             className="w-full py-3 bg-velo-blue hover:bg-blue-600 flex items-center gap-2 justify-center"
-            onClick={handleCheckIn}
+            onClick={handleStartCheckIn}
             disabled={isLoading}
           >
             <PlayCircle size={18} />
@@ -175,11 +191,11 @@ export const LessonCard = ({
         {currentStatus === "IN_PROGRESS" && (
           <Button
             className="w-full py-3 bg-velo-green hover:bg-green-600 border-none text-white flex items-center gap-2 justify-center"
-            onClick={handleCheckOut}
+            onClick={() => setShowTelemetry(true)}
             disabled={isLoading}
           >
-            <CheckCircle2 size={18} />
-            {isLoading ? "Finalizando..." : "Finalizar Aula (Check-out)"}
+            <PlayCircle size={18} />
+            Ver Telemetria / Finalizar
           </Button>
         )}
 
@@ -246,6 +262,28 @@ export const LessonCard = ({
               </Button>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Compliance Overlays */}
+      <AnimatePresence>
+        {showBiometry && (
+          <BiometryOverlay
+            lessonId={lesson.id}
+            stage={showBiometry === 'check-in' ? 'START' : 'END'}
+            studentName={lesson.studentName}
+            studentImage={lesson.studentImage}
+            onSuccess={showBiometry === 'check-in' ? executeCheckIn : executeCheckOut}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showTelemetry && (
+          <TelemetryHUD
+            studentName={lesson.studentName}
+            onFinish={handleTelemetryFinish}
+          />
         )}
       </AnimatePresence>
     </div>

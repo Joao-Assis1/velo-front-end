@@ -1,51 +1,154 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Scan, ShieldCheck, UserCheck, Loader2, Camera } from 'lucide-react';
+import { Scan, ShieldCheck, UserCheck, Loader2, Camera, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { submitBiometryAction } from '@/lib/actions/lessons';
+import { BiometryStage } from '@/types';
 
 interface BiometryOverlayProps {
+  lessonId: string;
   studentName: string;
   studentImage?: string;
   onSuccess: () => void;
-  type: 'check-in' | 'check-out';
+  stage: BiometryStage;
 }
 
-export const BiometryOverlay = ({ studentName, studentImage, onSuccess, type }: BiometryOverlayProps) => {
-  const [status, setStatus] = useState<'idle' | 'scanning' | 'verifying' | 'success'>('idle');
+export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess, stage }: BiometryOverlayProps) => {
+  const [status, setStatus] = useState<'idle' | 'scanning' | 'verifying' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     if (status === 'scanning') {
-      const timer = setTimeout(() => setStatus('verifying'), 3000);
-      return () => clearTimeout(timer);
+      startCamera();
+    } else if (status === 'idle') {
+      stopCamera();
     }
-    if (status === 'verifying') {
-      const timer = setTimeout(() => {
+    
+    return () => stopCamera();
+  }, [status]);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      streamRef.current = stream;
+    } catch (err) {
+      console.error("Erro ao acessar câmera:", err);
+      setStatus('error');
+      setErrorMessage('Não foi possível acessar a câmera. Verifique as permissões do seu navegador.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  const captureAndSubmit = async () => {
+    if (!videoRef.current || !streamRef.current) return;
+
+    try {
+      setStatus('verifying');
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error("Não foi possível processar a imagem.");
+      
+      ctx.drawImage(videoRef.current, 0, 0);
+      
+      // Gera hash base64 da imagem
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // Enviando para a Server Action real
+      const result = await submitBiometryAction(lessonId, stage, imageData);
+
+      if (result.success) {
         setStatus('success');
-        setTimeout(onSuccess, 2000);
-      }, 2000);
-      return () => clearTimeout(timer);
+        setTimeout(() => {
+          stopCamera();
+          onSuccess();
+        }, 2000);
+      } else {
+        setStatus('error');
+        setErrorMessage(result.error || 'Falha na validação biométrica com o DETRAN.');
+      }
+    } catch (err: any) {
+      console.error("Erro na biometria:", err);
+      setStatus('error');
+      setErrorMessage(err.message || 'Ocorreu um erro inesperado durante a validação.');
     }
-  }, [status, onSuccess]);
+  };
+
+  const getStageTitle = () => {
+    switch (stage) {
+      case 'START': return 'Check-in (Início)';
+      case 'MID': return 'Verificação (Meio)';
+      case 'END': return 'Check-out (Fim)';
+      default: return 'Biometria';
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[110] flex flex-col items-center justify-center p-6 text-white">
       {/* Scanning Target */}
       <div className="relative w-64 h-64 md:w-80 md:h-80 mb-12">
         {/* Frame Corners */}
-        <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-velo-blue rounded-tl-3xl" />
-        <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-velo-blue rounded-tr-3xl" />
-        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-velo-blue rounded-bl-3xl" />
-        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-velo-blue rounded-br-3xl" />
+        <div className={cn(
+          "absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 rounded-tl-3xl z-30 transition-colors duration-500",
+          status === 'success' ? "border-velo-green" : status === 'error' ? "border-red-500" : "border-velo-blue"
+        )} />
+        <div className={cn(
+          "absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 rounded-tr-3xl z-30 transition-colors duration-500",
+          status === 'success' ? "border-velo-green" : status === 'error' ? "border-red-500" : "border-velo-blue"
+        )} />
+        <div className={cn(
+          "absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 rounded-bl-3xl z-30 transition-colors duration-500",
+          status === 'success' ? "border-velo-green" : status === 'error' ? "border-red-500" : "border-velo-blue"
+        )} />
+        <div className={cn(
+          "absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 rounded-br-3xl z-30 transition-colors duration-500",
+          status === 'success' ? "border-velo-green" : status === 'error' ? "border-red-500" : "border-velo-blue"
+        )} />
 
-        {/* User Image / Placeholder */}
+        {/* Camera Feed / User Image */}
         <div className="absolute inset-4 rounded-2xl overflow-hidden bg-slate-800 flex items-center justify-center">
-          {studentImage ? (
-            <img src={studentImage} alt={studentName} className="w-full h-full object-cover opacity-50 grayscale" />
-          ) : (
-            <Camera size={64} className="text-slate-600" />
+          {status === 'idle' && (
+            studentImage ? (
+              <img src={studentImage} alt={studentName} className="w-full h-full object-cover opacity-50 grayscale" />
+            ) : (
+              <Camera size={64} className="text-slate-600" />
+            )
           )}
+
+          <video 
+            ref={videoRef}
+            autoPlay 
+            playsInline 
+            muted
+            className={cn(
+              "w-full h-full object-cover",
+              status === 'idle' ? "hidden" : "block",
+              status === 'verifying' && "opacity-50 grayscale"
+            )}
+          />
           
           {/* Scanning Line */}
           {status === 'scanning' && (
@@ -63,10 +166,25 @@ export const BiometryOverlay = ({ studentName, studentImage, onSuccess, type }: 
               <motion.div 
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="absolute inset-0 bg-velo-green/20 backdrop-blur-sm flex items-center justify-center z-20"
+                className="absolute inset-0 bg-velo-green/20 backdrop-blur-sm flex items-center justify-center z-40"
               >
                 <div className="bg-velo-green text-white p-4 rounded-full shadow-2xl">
                   <UserCheck size={48} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Error Overlay */}
+          <AnimatePresence>
+            {status === 'error' && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute inset-0 bg-red-500/20 backdrop-blur-sm flex items-center justify-center z-40"
+              >
+                <div className="bg-red-500 text-white p-4 rounded-full shadow-2xl">
+                  <AlertCircle size={48} />
                 </div>
               </motion.div>
             )}
@@ -78,21 +196,23 @@ export const BiometryOverlay = ({ studentName, studentImage, onSuccess, type }: 
       <div className="text-center space-y-4 max-w-sm">
         <div className="flex items-center justify-center gap-2 text-velo-blue">
           <ShieldCheck size={20} />
-          <span className="text-xs font-black uppercase tracking-widest">Validação Biométrica</span>
+          <span className="text-xs font-black uppercase tracking-widest">Conformidade CONTRAN 1.020/2025</span>
         </div>
 
         <h2 className="text-2xl font-bold">
-          {status === 'idle' && `Confirmar ${type === 'check-in' ? 'Início' : 'Fim'} da Aula`}
+          {status === 'idle' && `Validar ${getStageTitle()}`}
           {status === 'scanning' && "Escaneando face..."}
           {status === 'verifying' && "Verificando identidade..."}
           {status === 'success' && "Identidade confirmada!"}
+          {status === 'error' && "Falha na validação"}
         </h2>
 
         <p className="text-slate-400 text-sm">
-          {status === 'idle' && `Posicione o dispositivo para que ${studentName} possa realizar o reconhecimento facial.`}
-          {status === 'scanning' && "Mantenha o dispositivo parado e o rosto visível no quadro."}
-          {status === 'verifying' && "Cruzando dados com a base do DETRAN..."}
-          {status === 'success' && "Aula validada com sucesso. Sincronizando dados..."}
+          {status === 'idle' && `Posicione o rosto de ${studentName} no quadro para validar o estágio da aula.`}
+          {status === 'scanning' && "Mantenha o rosto visível e imóvel."}
+          {status === 'verifying' && "Validando biometria com a base do governo..."}
+          {status === 'success' && "Aula validada com sucesso. Prosseguindo..."}
+          {status === 'error' && errorMessage}
         </p>
 
         {status === 'idle' && (
@@ -100,11 +220,29 @@ export const BiometryOverlay = ({ studentName, studentImage, onSuccess, type }: 
             onClick={() => setStatus('scanning')}
             className="w-full mt-8 bg-velo-blue hover:bg-velo-blue-dark text-white py-4 rounded-2xl font-bold shadow-lg shadow-velo-blue/20 flex items-center justify-center gap-3 transition-all"
           >
-            <Scan size={24} /> Iniciar Escaneamento
+            <Scan size={24} /> Iniciar Câmera
           </button>
         )}
 
-        {(status === 'scanning' || status === 'verifying') && (
+        {status === 'scanning' && (
+          <button 
+            onClick={captureAndSubmit}
+            className="w-full mt-8 bg-velo-blue hover:bg-velo-blue-dark text-white py-4 rounded-2xl font-bold shadow-lg shadow-velo-blue/20 flex items-center justify-center gap-3 transition-all"
+          >
+            <Camera size={24} /> Capturar e Validar
+          </button>
+        )}
+
+        {status === 'error' && (
+          <button 
+            onClick={() => setStatus('idle')}
+            className="w-full mt-8 bg-slate-700 hover:bg-slate-600 text-white py-4 rounded-2xl font-bold transition-all"
+          >
+            Tentar Novamente
+          </button>
+        )}
+
+        {status === 'verifying' && (
           <div className="flex items-center justify-center mt-8 text-velo-blue">
             <Loader2 className="animate-spin" size={32} />
           </div>
@@ -113,3 +251,4 @@ export const BiometryOverlay = ({ studentName, studentImage, onSuccess, type }: 
     </div>
   );
 };
+

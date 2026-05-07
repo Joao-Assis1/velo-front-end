@@ -7,16 +7,20 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --color-velo-blue: #0066CC;
-  --color-velo-blue-dark: #004C99;
-  --color-velo-blue-light: #E6F0FF;
-  --color-velo-green: #10B981;
-  --color-velo-green-dark: #059669;
+  --color-velo-blue: #1E40AF;
+  --color-velo-blue-dark: #1E3A8A;
+  --color-velo-blue-light: #DBEAFE;
+  --color-velo-green: #059669;
+  --color-velo-green-dark: #047857;
   --color-velo-green-light: #D1FAE5;
+  --color-velo-gold: #D97706;
+  --color-velo-gold-dark: #B45309;
+  --color-velo-gold-light: #FEF3C7;
+  --color-velo-bg: #F9FAFB;
 }
 
 body {
-  background-color: #F8FAFC;
+  background-color: var(--color-velo-bg);
   color: #1E293B;
   font-family: var(--font-sans);
 }

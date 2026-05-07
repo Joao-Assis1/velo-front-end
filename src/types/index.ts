@@ -60,6 +60,17 @@ export interface Instructor {
   vehicleYear?: string;
   availability?: Availability[];
   busySlots?: BusySlot[];
+  // CONTRAN 1.020/2025
+  birthDate?: Date;
+  cnhNumber?: string;
+  cnhCategory?: string;
+  cnhEar?: boolean;
+  educationLevel?: string;
+  renachNumber?: string;
+  certidaoNegativa?: boolean;
+  isActive?: boolean;
+  cnhExpiry?: Date;
+  hasDoubleCommand?: boolean;
 }
 
 export interface Student {
@@ -73,6 +84,17 @@ export interface Student {
   ladvValidationDate?: Date;
   ladvDocumentUrl?: string;
   paymentMethods?: PaymentMethod[];
+  // CONTRAN 1.020/2025
+  birthDate?: Date;
+  motherName?: string;
+  intendedCategory?: 'A' | 'B' | 'ACC' | 'AB';
+  ufDomicile?: string;
+  checklist?: {
+    medico: boolean;
+    psicotecnico: boolean;
+    teorico: boolean;
+    pratico: boolean;
+  };
 }
 
 export interface PaymentMethod {
@@ -105,3 +127,46 @@ export interface ScheduledClass {
   checkOutTime?: Date;
   durationMinutes?: number;
 }
+
+export interface DetranStage {
+  id: string;
+  label: string;
+  status: 'locked' | 'current' | 'completed';
+  iconName?: string;
+}
+
+export interface InstructorFilter {
+  region?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  days?: string[];
+}
+
+export interface QuizQuestion {
+  id: string;
+  text: string;
+  options: { id: string; text: string }[];
+  correctOptionId: string;
+}
+
+export interface AcademyModule {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  progress: number; // 0-100
+  isLocked: boolean;
+  videoUrl?: string;
+  questions?: QuizQuestion[];
+}
+
+export type EscrowStatus = 'LOCKED' | 'IN_PROGRESS' | 'RELEASED' | 'UNDER_ANALYSIS';
+
+export interface LessonEscrow {
+  status: EscrowStatus;
+  amount: number;
+  fee: number;
+  netAmount: number;
+}
+
+export type BiometryStage = 'START' | 'MID' | 'END';

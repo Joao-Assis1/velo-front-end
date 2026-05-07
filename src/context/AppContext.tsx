@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Screen, UserRole, Instructor, Student, ScheduledClass } from '../types';
+import { Screen, UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
 import { 
   createLessonAction, 
   checkInAction, 
@@ -18,6 +18,7 @@ import {
 } from '@/lib/actions/auth';
 import { updateInstructorProfileAction } from '@/lib/actions/instructors';
 import { updateStudentProfileAction } from '@/lib/actions/profileActions';
+import { INITIAL_STUDENT_PROFILE, MOCK_DETRAN_STAGES, MOCK_ACADEMY_MODULES } from '../constants/mockData';
 
 interface AppContextType {
   screen: Screen;
@@ -29,6 +30,11 @@ interface AppContextType {
   studentProfile: Student | null;
   scheduledClasses: ScheduledClass[];
   busySlots: Record<string, string[]>;
+  detranStages: DetranStage[];
+  academyModules: AcademyModule[];
+  availableBalance: number;
+  pendingBalance: number;
+  activeClassId: string | null;
   
   // Actions
   navigateTo: (screen: Screen) => void;
@@ -39,6 +45,9 @@ interface AppContextType {
   setStudentProfile: (profile: Student | null) => void;
   setScheduledClasses: (classes: ScheduledClass[]) => void;
   setBusySlots: (slots: Record<string, string[]>) => void;
+  setDetranStages: (stages: DetranStage[]) => void;
+  setAcademyModules: (modules: AcademyModule[]) => void;
+  setActiveClassId: (id: string | null) => void;
   
   login: (credentials?: any) => Promise<void>;
   register: (data: any) => Promise<void>;
@@ -53,6 +62,8 @@ interface AppContextType {
   giveFeedback: (id: string, feedback: string) => void;
   checkIn: (id: string) => void;
   checkOut: (id: string) => void;
+  startClass: (id: string) => void;
+  finishClass: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -66,6 +77,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [studentProfile, setStudentProfile] = useState<Student | null>(null);
   const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [busySlots, setBusySlots] = useState<Record<string, string[]>>({});
+  const [detranStages, setDetranStages] = useState<DetranStage[]>(MOCK_DETRAN_STAGES);
+  const [academyModules, setAcademyModules] = useState<AcademyModule[]>(MOCK_ACADEMY_MODULES);
+  const [availableBalance, setAvailableBalance] = useState(1250.50);
+  const [pendingBalance, setPendingBalance] = useState(450.00);
+  const [activeClassId, setActiveClassId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -333,6 +349,31 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const startClass = (id: string) => {
+    setScheduledClasses(prev => prev.map(c => 
+      c.id === id ? { ...c, status: 'in-progress', checkInTime: new Date() } : c
+    ));
+    setActiveClassId(id);
+  };
+
+  const finishClass = (id: string) => {
+    setScheduledClasses(prev => prev.map(c => {
+      if (c.id === id) {
+        const checkOutTime = new Date();
+        const checkInTime = c.checkInTime || new Date();
+        const durationMinutes = Math.max(1, Math.round((checkOutTime.getTime() - checkInTime.getTime()) / 60000));
+        
+        // Update balances simulation
+        setAvailableBalance(prev => prev + (c.price || 0));
+        setPendingBalance(prev => Math.max(0, prev - (c.price || 0)));
+        
+        return { ...c, status: 'completed', checkOutTime, durationMinutes };
+      }
+      return c;
+    }));
+    setActiveClassId(null);
+  };
+
   const hasPaymentMethod = (studentProfile?.paymentMethods?.length ?? 0) > 0;
 
   return (
@@ -347,6 +388,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         studentProfile,
         scheduledClasses,
         busySlots,
+        detranStages,
+        academyModules,
+        availableBalance,
+        pendingBalance,
+        activeClassId,
         navigateTo,
         setUserRole,
         selectInstructor,
@@ -355,6 +401,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setStudentProfile,
         setScheduledClasses,
         setBusySlots,
+        setDetranStages,
+        setAcademyModules,
+        setActiveClassId,
         login,
         register,
         updateStudentProfile,
@@ -365,7 +414,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         bookClass,
         giveFeedback,
         checkIn,
-        checkOut
+        checkOut,
+        startClass,
+        finishClass
       }}
     >
       {children}

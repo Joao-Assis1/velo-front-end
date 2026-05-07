@@ -18,6 +18,7 @@ import { UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 import { createStudentAction } from "@/lib/actions/students";
 import { CreateStudentSchema } from "@/lib/validations";
+import { maskCPF, maskPhone } from "@/lib/utils/masks";
 
 export const Register = ({
   role,
@@ -65,8 +66,8 @@ export const Register = ({
       const authData = {
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
-        cpf: formData.cpf,
+        phone: formData.phone.replace(/\D/g, ""),
+        cpf: formData.cpf.replace(/\D/g, ""),
         password: formData.password,
         ladvUploaded: !!ladvFile,
         profilePicture:
@@ -147,10 +148,11 @@ export const Register = ({
             type="tel"
             placeholder="Celular (WhatsApp)"
             icon={<MessageCircle size={20} />}
-            value={formData.phone}
+            value={maskPhone(formData.phone)}
             onChange={(e) =>
-              setFormData({ ...formData, phone: e.target.value })
+              setFormData({ ...formData, phone: maskPhone(e.target.value) })
             }
+            maxLength={15}
             required
           />
 
@@ -158,8 +160,9 @@ export const Register = ({
             type="text"
             placeholder="CPF"
             icon={<CreditCard size={20} />}
-            value={formData.cpf}
-            onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+            value={maskCPF(formData.cpf)}
+            onChange={(e) => setFormData({ ...formData, cpf: maskCPF(e.target.value) })}
+            maxLength={14}
             required
           />
 

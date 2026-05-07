@@ -8,8 +8,10 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Card, Button } from '@/components/ui-custom';
 import { ScheduledClass, Instructor } from '@/types';
+import { useApp } from '@/context/AppContext';
 import { EmptyState } from '@/components/ui-custom/EmptyState';
-import { Calendar, History } from 'lucide-react';
+import { Calendar, History, AlertCircle } from 'lucide-react';
+import { KPISection } from '@/components/features/KPISection';
 
 export const InstructorDashboard = ({ 
   profile,
@@ -22,15 +24,17 @@ export const InstructorDashboard = ({
   classes: ScheduledClass[], 
   onGiveFeedback: (id: string, feedback: string) => void 
 }) => {
+  const { availableBalance, pendingBalance } = useApp();
+
   // Filter classes for the current instructor
   const myClasses = classes.filter(c => c.instructorId === profile?.id);
   
   const todayClasses = myClasses.filter(c => isToday(c.date));
   const completedClasses = myClasses.filter(c => c.status === 'completed').sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  // Calculate stats
-  const totalEarnings = myClasses.reduce((acc, curr) => acc + (curr.price || 0), 0);
-  const activeStudents = new Set(myClasses.map(c => c.studentName)).size;
+  // Mock financial data (additional)
+  const monthlyEarnings = 3800.00;
+  const growth = 12.5;
 
   const [feedbackClassId, setFeedbackClassId] = useState<string | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
@@ -44,43 +48,43 @@ export const InstructorDashboard = ({
   };
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6">
+    <div className="pb-24 pt-6 px-4 md:px-8 space-y-8 max-w-5xl mx-auto">
       <header className="flex justify-between items-center">
         <div>
-          <p className="text-slate-500 text-sm">Bem-vindo,</p>
-          <h1 className="text-2xl font-bold text-slate-900">Painel do Instrutor</h1>
+          <p className="text-slate-500 text-sm font-medium">Painel de Gestão</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Olá, {profile?.name?.split(' ')[0] || 'Instrutor'}</h1>
         </div>
-        <div className="w-10 h-10 bg-slate-200 rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
+        <div className="w-12 h-12 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
           {profile ? (
-            <img src={profile.profilePicture || "https://ui-avatars.com/api/?name=" + profile.name} alt="Profile" />
+            <img src={profile.profilePicture || "https://ui-avatars.com/api/?name=" + profile.name} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             <div className="animate-pulse w-full h-full bg-slate-300"></div>
           )}
         </div>
       </header>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-velo-blue text-white border-none">
-          <div className="flex items-start justify-between mb-4">
-            <DollarSign className="text-velo-blue-light" size={24} />
-            <span className="text-xs bg-white/20 px-2 py-1 rounded text-white">Total</span>
-          </div>
-          <p className="text-3xl font-bold">R$ {totalEarnings}</p>
-          <p className="text-xs text-velo-blue-light mt-1">Ganhos totais</p>
-        </Card>
-        <Card>
-          <div className="flex items-start justify-between mb-4">
-            <Users className="text-velo-blue" size={24} />
-            <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600">Total</span>
-          </div>
-          <p className="text-3xl font-bold text-slate-900">{activeStudents}</p>
-          <p className="text-xs text-slate-500 mt-1">Alunos ativos</p>
-        </Card>
-      </div>
+      {/* Critical Alerts */}
+      <section className="bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-4 items-center">
+        <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-red-600 shrink-0">
+          <AlertCircle size={24} />
+        </div>
+        <div className="flex-1">
+          <h4 className="text-sm font-bold text-red-900">Credencial Vencendo</h4>
+          <p className="text-xs text-red-700">Sua credencial do DETRAN vence em 5 dias. Regularize para evitar bloqueios.</p>
+        </div>
+        <Button size="sm" variant="primary" className="bg-red-600 hover:bg-red-700 shadow-none text-[10px] px-3 py-1">Renovar</Button>
+      </section>
+
+      {/* KPIs */}
+      <KPISection 
+        availableBalance={availableBalance}
+        pendingBalance={pendingBalance}
+        monthlyEarnings={monthlyEarnings}
+        growth={growth}
+      />
 
       {/* Today's Schedule */}
-      <section>
+      <section className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold text-slate-900">Agenda de Hoje</h2>
           {todayClasses.length > 0 && (

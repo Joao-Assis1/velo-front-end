@@ -7,6 +7,7 @@ import { Button, Input } from "@/components/ui-custom";
 import { Instructor } from "@/types";
 import { cn } from "@/lib/utils";
 import { updateInstructorVehicleAction } from "@/lib/actions/profileActions";
+import { maskPlate, isValidPlate } from "@/lib/utils/masks";
 
 export const InstructorVehicle = ({
   profile,
@@ -40,10 +41,18 @@ export const InstructorVehicle = ({
   );
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [plateError, setPlateError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (localProfile.vehiclePlate && !isValidPlate(localProfile.vehiclePlate)) {
+      setPlateError(true);
+      return;
+    }
+    setPlateError(false);
+
     if (localProfile && localProfile.id) {
       try {
         setIsLoading(true);
@@ -163,11 +172,17 @@ export const InstructorVehicle = ({
                 onChange={(e) =>
                   setLocalProfile({
                     ...localProfile,
-                    vehiclePlate: e.target.value.toUpperCase(),
+                    vehiclePlate: maskPlate(e.target.value),
                   })
                 }
                 placeholder="ABC-1234"
+                className={cn(plateError && "border-red-500 focus:ring-red-200")}
               />
+              {plateError && (
+                <p className="text-[10px] font-bold text-red-500 mt-1 ml-1">
+                  Placa inválida. Use o formato AAA-0000 ou AAA-0A00.
+                </p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-slate-700 ml-1">

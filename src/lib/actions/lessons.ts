@@ -3,6 +3,7 @@
 import { revalidateTag } from "next/cache";
 import { fetchWrapper } from "../api-client";
 import { CreateLessonDto, LessonType } from "../validations";
+import { BiometryStage } from "../../types";
 
 function mapLesson(lesson: any): LessonType {
   return {
@@ -133,6 +134,25 @@ export async function submitInstructorFeedbackAction(
     return { success: true, data: mapLesson(apiResponse?.data) };
   } catch (error: any) {
     console.error("Error instructor feedback:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function submitBiometryAction(id: string, stage: BiometryStage, imageHash: string) {
+  try {
+    return await fetchWrapper<any>(`/lessons/${id}/biometry`, {
+      method: "POST",
+      body: JSON.stringify({ stage, imageHash }),
+    });
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getEscrowStatusAction(id: string) {
+  try {
+    return await fetchWrapper<any>(`/lessons/${id}/escrow`);
+  } catch (error: any) {
     return { success: false, error: error.message };
   }
 }

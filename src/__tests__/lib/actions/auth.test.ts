@@ -23,6 +23,8 @@ import {
   loginInstructorAction,
   registerStudentAction,
   registerInstructorAction,
+  forgotPasswordAction,
+  resetPasswordAction,
 } from "@/lib/actions/auth";
 
 // ── fixtures ──────────────────────────────────────────────────────────────
@@ -271,6 +273,83 @@ describe("auth actions", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Email já cadastrado");
+    });
+  });
+
+  // forgotPasswordAction ────────────────────────────────────────────────────
+  describe("forgotPasswordAction", () => {
+    it("returns success on valid email", async () => {
+      (fetchWrapper as ReturnType<typeof vi.fn>).mockResolvedValue({
+        success: true,
+        message: "E-mail de recuperação enviado",
+      });
+
+      const result = await forgotPasswordAction("ana@velo.com");
+
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+      expect(fetchWrapper).toHaveBeenCalledWith(
+        "/auth/forgot-password",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ email: "ana@velo.com" }),
+        }),
+      );
+    });
+
+    it("catches and returns error when fetch throws", async () => {
+      (fetchWrapper as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error("Network error"),
+      );
+
+      const result = await forgotPasswordAction("ana@velo.com");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Network error");
+    });
+  });
+
+  // resetPasswordAction ─────────────────────────────────────────────────────
+  describe("resetPasswordAction", () => {
+    it("returns success with valid token and new password", async () => {
+      (fetchWrapper as ReturnType<typeof vi.fn>).mockResolvedValue({
+        success: true,
+        message: "Senha redefinida com sucesso",
+      });
+
+      const result = await resetPasswordAction("valid-reset-token", "novaSenha123");
+
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+      expect(fetchWrapper).toHaveBeenCalledWith(
+        "/auth/reset-password",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ token: "valid-reset-token", newPassword: "novaSenha123" }),
+        }),
+      );
+    });
+
+    it("returns { success: false } when token is invalid (400)", async () => {
+      (fetchWrapper as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error("Token inválido ou expirado"),
+      );
+
+      const result = await resetPasswordAction("expired-token", "novaSenha123");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Token inválido ou expirado");
+    });
+
+    it("catches and returns error when fetch throws", async () => {
+      (fetchWrapper as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error("Timeout"),
+      );
+
+      const result = await resetPasswordAction("any-token", "novaSenha123");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Timeout");
     });
   });
 });

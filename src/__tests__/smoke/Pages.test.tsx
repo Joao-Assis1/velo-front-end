@@ -19,6 +19,7 @@ vi.mock("@/lib/actions/auth", () => ({
   loginInstructorAction: vi.fn(),
   registerStudentAction: vi.fn(),
   registerInstructorAction: vi.fn(),
+  forgotPasswordAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock("@/lib/actions/instructors", () => ({
@@ -36,6 +37,7 @@ vi.mock("next/navigation", () => ({
 import HomePage from "@/app/page";
 import LoginPage from "@/app/auth/login/page";
 import RegisterPage from "@/app/auth/register/page";
+import ForgotPasswordPage from "@/app/auth/forgot-password/page";
 import InstructorDashboardPage from "@/app/app/instructor/dashboard/page";
 import StudentAcademyPage from "@/app/app/student/academy/page";
 import StudentDashboardPage from "@/app/app/student/dashboard/page";
@@ -84,6 +86,11 @@ describe("Smoke Testing - All Pages", () => {
 
   it("renders Student Instructors without crashing", () => {
     const { container } = render(<StudentInstructorsPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders ForgotPasswordPage without crashing", () => {
+    const { container } = render(<ForgotPasswordPage />, { wrapper });
     expect(container).toBeDefined();
   });
 });

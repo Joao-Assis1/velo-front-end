@@ -15,14 +15,16 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError("");
 
-    const result = await forgotPasswordAction(email);
+    try {
+      const result = await forgotPasswordAction(email);
 
-    setLoading(false);
-
-    if (result.success) {
-      setSuccess(true);
-    } else {
-      setError(result.error || "Ocorreu um erro. Tente novamente.");
+      if (result.success) {
+        setSuccess(true);
+      } else {
+        setError(result.error || "Ocorreu um erro. Tente novamente.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 

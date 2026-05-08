@@ -2,7 +2,7 @@
 
 import { fetchWrapper } from "../api-client";
 import { StudentType } from "../validations";
-import { Instructor, Student } from "../../types";
+import { Instructor } from "../../types";
 import { cookies } from "next/headers";
 
 export async function loginStudentAction(credentials: any) {
@@ -12,32 +12,20 @@ export async function loginStudentAction(credentials: any) {
       body: JSON.stringify(credentials),
     });
 
-    const authResult = apiResponse?.data ?? apiResponse;
-    const token = authResult?.access_token || authResult?.accessToken;
-
+    const authResult = apiResponse.data;
     if (!authResult || !authResult.user)
       return { success: false, error: "Credenciais inválidas" };
 
-    if (token) {
-      (await cookies()).set("velo-token", token, {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
-
-    const user = authResult.user;
-    const mapped: Student = {
-      ...user,
-      birthDate: user.birthDate ? new Date(user.birthDate) : undefined,
-    };
-
+    (await cookies()).set("velo-token", authResult.access_token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
     return {
       success: true,
-      data: mapped,
-      token: token,
+      data: authResult.user,
+      token: authResult.access_token,
     };
   } catch (error: any) {
-    console.error("Login student error:", error.message);
     return { success: false, error: error.message };
   }
 }
@@ -48,10 +36,7 @@ export async function loginInstructorAction(credentials: any) {
       method: "POST",
       body: JSON.stringify(credentials),
     });
-
-    const authResult = apiResponse?.data ?? apiResponse;
-    const token = authResult?.access_token || authResult?.accessToken;
-
+    const authResult = apiResponse.data;
     if (!authResult || !authResult.user)
       return { success: false, error: "Credenciais inválidas" };
 
@@ -80,26 +65,14 @@ export async function loginInstructorAction(credentials: any) {
           endTime: a.endTime,
           isEnabled: a.isEnabled,
         })) || [],
-      // CONTRAN 1.020/2025
-      birthDate: instructor.birthDate ? new Date(instructor.birthDate) : undefined,
-      cnhNumber: instructor.cnhNumber,
-      cnhCategory: instructor.cnhCategory,
-      cnhEar: instructor.cnhEar,
-      educationLevel: instructor.educationLevel,
-      renachNumber: instructor.renachNumber,
-      certidaoNegativa: instructor.certidaoNegativa,
     };
 
-    if (token) {
-      (await cookies()).set("velo-token", token, {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
-
-    return { success: true, data: mapped, token: token };
+    (await cookies()).set("velo-token", authResult.access_token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    return { success: true, data: mapped, token: authResult.access_token };
   } catch (error: any) {
-    console.error("Login instructor error:", error.message);
     return { success: false, error: error.message };
   }
 }
@@ -110,33 +83,20 @@ export async function registerStudentAction(data: any) {
       method: "POST",
       body: JSON.stringify(data),
     });
-
-    const authResult = apiResponse?.data ?? apiResponse;
-    const token = authResult?.access_token || authResult?.accessToken;
-
+    const authResult = apiResponse.data;
     if (!authResult || !authResult.user)
       return { success: false, error: "Registration failed" };
 
-    if (token) {
-      (await cookies()).set("velo-token", token, {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
-
-    const user = authResult.user;
-    const mapped: Student = {
-      ...user,
-      birthDate: user.birthDate ? new Date(user.birthDate) : undefined,
-    };
-
+    (await cookies()).set("velo-token", authResult.access_token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
     return {
       success: true,
-      data: mapped,
-      token: token,
+      data: authResult.user as StudentType,
+      token: authResult.access_token,
     };
   } catch (error: any) {
-    console.error("Register student error:", error.message);
     return { success: false, error: error.message };
   }
 }
@@ -147,62 +107,20 @@ export async function registerInstructorAction(data: any) {
       method: "POST",
       body: JSON.stringify(data),
     });
-
-    const authResult = apiResponse?.data ?? apiResponse;
-    const token = authResult?.access_token || authResult?.accessToken;
-
+    const authResult = apiResponse.data;
     if (!authResult || !authResult.user)
       return { success: false, error: "Registration failed" };
 
-    if (token) {
-      (await cookies()).set("velo-token", token, {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
-
-    const instructor = authResult.user;
-    const primaryVehicle = instructor.vehicles?.[0];
-
-    const mapped: Instructor = {
-      id: instructor.id,
-      email: instructor.email,
-      name: instructor.name,
-      profilePicture: instructor.profilePicture || undefined,
-      rating: instructor.rating || 0,
-      reviewsCount: instructor.reviewsCount || 0,
-      pricePerClass: instructor.pricePerClass || undefined,
-      location: instructor.location || undefined,
-      bio: instructor.bio || undefined,
-      instructorType: instructor.instructorType as any,
-      vehicleId: primaryVehicle?.id,
-      vehicleModel: primaryVehicle?.model,
-      transmission: primaryVehicle?.transmission as any,
-      availability:
-        instructor.availabilities?.map((a: any) => ({
-          id: a.id,
-          dayOfWeek: a.dayOfWeek,
-          startTime: a.startTime,
-          endTime: a.endTime,
-          isEnabled: a.isEnabled,
-        })) || [],
-      // CONTRAN 1.020/2025
-      birthDate: instructor.birthDate ? new Date(instructor.birthDate) : undefined,
-      cnhNumber: instructor.cnhNumber,
-      cnhCategory: instructor.cnhCategory,
-      cnhEar: instructor.cnhEar,
-      educationLevel: instructor.educationLevel,
-      renachNumber: instructor.renachNumber,
-      certidaoNegativa: instructor.certidaoNegativa,
-    };
-
+    (await cookies()).set("velo-token", authResult.access_token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
     return {
       success: true,
-      data: mapped,
-      token: token,
+      data: authResult.user,
+      token: authResult.access_token,
     };
   } catch (error: any) {
-    console.error("Register instructor error:", error.message);
     return { success: false, error: error.message };
   }
 }

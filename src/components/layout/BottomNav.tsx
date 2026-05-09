@@ -3,19 +3,29 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Calendar, Users, User, Settings } from 'lucide-react';
+import { Home, Calendar, CreditCard, User, BookOpen, Settings, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const navItems = [
-  { icon: Home, label: 'Início', href: '/app' },
-  { icon: Calendar, label: 'Agenda', href: '/app/schedule' },
-  { icon: Users, label: 'Alunos', href: '/app/students' },
-  { icon: User, label: 'Perfil', href: '/app/profile' },
-  { icon: Settings, label: 'Config', href: '/app/settings' },
+const studentNav = [
+  { icon: Home, label: 'Início', href: '/app/student/dashboard' },
+  { icon: Calendar, label: 'Agenda', href: '/app/student/schedule' },
+  { icon: Map, label: 'Navegador', href: '/app/student/concierge' },
+  { icon: CreditCard, label: 'Pagamentos', href: '/app/student/payments' },
+  { icon: User, label: 'Perfil', href: '/app/student/profile' },
+];
+
+const instructorNav = [
+  { icon: Home, label: 'Início', href: '/app/instructor/dashboard' },
+  { icon: Calendar, label: 'Agenda', href: '/app/instructor/schedule' },
+  { icon: CreditCard, label: 'Finanças', href: '/app/instructor/finance' },
+  { icon: User, label: 'Perfil', href: '/app/instructor/profile' },
+  { icon: Settings, label: 'Config', href: '/app/instructor/settings' },
 ];
 
 export const BottomNav = () => {
   const pathname = usePathname();
+  const isInstructor = pathname.startsWith('/app/instructor');
+  const navItems = isInstructor ? instructorNav : studentNav;
 
   return (
     <div className="flex items-center justify-around h-full px-2">

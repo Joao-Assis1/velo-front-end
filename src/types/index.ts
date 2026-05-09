@@ -126,6 +126,9 @@ export interface ScheduledClass {
   checkInTime?: Date;
   checkOutTime?: Date;
   durationMinutes?: number;
+  disputeOpened?: boolean;
+  disputeReason?: string;
+  paymentReleased?: boolean;
 }
 
 export interface DetranStage {

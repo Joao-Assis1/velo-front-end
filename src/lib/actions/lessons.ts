@@ -26,6 +26,9 @@ function mapLesson(lesson: any): LessonType {
       ? new Date(lesson.checkOutTime)
       : undefined,
     durationMinutes: lesson.durationMinutes || undefined,
+    disputeOpened: lesson.disputeOpened ?? false,
+    disputeReason: lesson.disputeReason || undefined,
+    paymentReleased: lesson.paymentReleased ?? false,
   };
 }
 
@@ -145,6 +148,20 @@ export async function submitBiometryAction(id: string, stage: BiometryStage, ima
       body: JSON.stringify({ stage, imageHash }),
     });
   } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function cancelLessonAction(id: string) {
+  try {
+    const apiResponse = await fetchWrapper<any>(`/lessons/${id}/cancel`, {
+      method: "PATCH",
+    });
+
+    revalidateTag("lessons", "default");
+    return { success: true, data: mapLesson(apiResponse?.data) };
+  } catch (error: any) {
+    console.error("Error cancelling lesson:", error);
     return { success: false, error: error.message };
   }
 }

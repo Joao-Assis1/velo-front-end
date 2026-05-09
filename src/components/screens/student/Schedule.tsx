@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Clock, LogOut, Star, MessageCircle, AlertTriangle, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -10,16 +11,18 @@ import { Card, Button } from '@/components/ui-custom';
 import { ScheduledClass } from '@/types';
 import { EmptyState } from '@/components/ui-custom/EmptyState';
 
-export const StudentSchedule = ({ 
-  classes, 
-  onCancelClass, 
+export const StudentSchedule = ({
+  classes,
+  onCancelClass,
   onRateClass
-}: { 
-  classes: ScheduledClass[], 
-  onCancelClass: (id: string) => void, 
+}: {
+  classes: ScheduledClass[],
+  onCancelClass: (id: string) => Promise<void>,
   onRateClass: (id: string, rating: number, text: string) => void
 }) => {
   const [classToCancel, setClassToCancel] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [classToRate, setClassToRate] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
@@ -37,7 +40,7 @@ export const StudentSchedule = ({
   };
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6">
+    <div className="pb-28 md:pb-10 space-y-6">
       <header>
         <h1 className="text-2xl font-bold text-slate-900">Minhas Aulas</h1>
         <p className="text-slate-500 text-sm">Gerencie seus agendamentos</p>
@@ -145,6 +148,18 @@ export const StudentSchedule = ({
                         <p className="text-xs text-slate-700">"{cls.instructorFeedback}"</p>
                       </div>
                     )}
+
+                    {!cls.disputeOpened && cls.checkOutTime &&
+                      (Date.now() - new Date(cls.checkOutTime).getTime() <= 48 * 60 * 60 * 1000) && (
+                      <div className="mt-2">
+                        <Link
+                          href="/app/student/dispute"
+                          className="text-xs text-red-500 font-medium hover:text-red-700 flex items-center gap-1 w-fit px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
+                        >
+                          <AlertTriangle size={12} /> Contestar pagamento
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 )}
               </Card>
@@ -178,21 +193,35 @@ export const StudentSchedule = ({
               <p className="text-slate-600 mb-6 text-center">
                 Tem certeza que deseja cancelar esta aula? Esta ação não pode ser desfeita.
               </p>
-              
+
+              {cancelError && (
+                <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 text-center">
+                  {cancelError}
+                </div>
+              )}
+
               <div className="flex gap-3">
-                <Button variant="ghost" className="flex-1" onClick={() => setClassToCancel(null)}>
+                <Button variant="ghost" className="flex-1" onClick={() => { setClassToCancel(null); setCancelError(null); }}>
                   Não, manter
                 </Button>
-                <Button 
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white shadow-red-200" 
-                  onClick={() => {
-                    if (classToCancel) {
-                      onCancelClass(classToCancel);
+                <Button
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white shadow-red-200"
+                  disabled={isCancelling}
+                  onClick={async () => {
+                    if (!classToCancel) return;
+                    setIsCancelling(true);
+                    setCancelError(null);
+                    try {
+                      await onCancelClass(classToCancel);
                       setClassToCancel(null);
+                    } catch (err: any) {
+                      setCancelError(err.message || 'Não foi possível cancelar a aula');
+                    } finally {
+                      setIsCancelling(false);
                     }
                   }}
                 >
-                  Sim, cancelar
+                  {isCancelling ? 'Cancelando...' : 'Sim, cancelar'}
                 </Button>
               </div>
             </motion.div>

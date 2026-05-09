@@ -12,6 +12,9 @@ vi.mock("@/lib/actions/lessons", () => ({
   checkOutAction: vi.fn(),
   submitStudentFeedbackAction: vi.fn(),
   submitInstructorFeedbackAction: vi.fn(),
+  submitBiometryAction: vi.fn(),
+  cancelLessonAction: vi.fn().mockResolvedValue({ success: true }),
+  getEscrowStatusAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock("@/lib/actions/auth", () => ({
@@ -20,10 +23,28 @@ vi.mock("@/lib/actions/auth", () => ({
   registerStudentAction: vi.fn(),
   registerInstructorAction: vi.fn(),
   forgotPasswordAction: vi.fn().mockResolvedValue({ success: true }),
+  resetPasswordAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock("@/lib/actions/instructors", () => ({
   getInstructorsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+}));
+
+vi.mock("@/lib/actions/students", () => ({
+  getStudentChecklistAction: vi.fn().mockResolvedValue({
+    success: true,
+    data: { medico: false, psicotecnico: false, teorico: false, pratico: false },
+  }),
+  updateChecklistStepAction: vi.fn().mockResolvedValue({ success: true }),
+  createStudentAction: vi.fn(),
+  getStudentAction: vi.fn(),
+  updateStudentAction: vi.fn(),
+  uploadLadvAction: vi.fn(),
+  getLadvStatusAction: vi.fn(),
+}));
+
+vi.mock("@/lib/actions/disputes", () => ({
+  openDisputeAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 // Mock Next.js navigation
@@ -38,10 +59,13 @@ import HomePage from "@/app/page";
 import LoginPage from "@/app/auth/login/page";
 import RegisterPage from "@/app/auth/register/page";
 import ForgotPasswordPage from "@/app/auth/forgot-password/page";
+import ResetPasswordPage from "@/app/auth/reset-password/page";
 import InstructorDashboardPage from "@/app/app/instructor/dashboard/page";
 import StudentAcademyPage from "@/app/app/student/academy/page";
 import StudentDashboardPage from "@/app/app/student/dashboard/page";
 import StudentInstructorsPage from "@/app/app/student/instructors/page";
+import StudentConciergePage from "@/app/app/student/concierge/page";
+import StudentDisputePage from "@/app/app/student/dispute/page";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
@@ -91,6 +115,21 @@ describe("Smoke Testing - All Pages", () => {
 
   it("renders ForgotPasswordPage without crashing", () => {
     const { container } = render(<ForgotPasswordPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders ResetPasswordPage without crashing (no token)", () => {
+    const { container } = render(<ResetPasswordPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Student Concierge (Navegador) page without crashing", () => {
+    const { container } = render(<StudentConciergePage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Student Dispute page without crashing", () => {
+    const { container } = render(<StudentDisputePage />, { wrapper });
     expect(container).toBeDefined();
   });
 });

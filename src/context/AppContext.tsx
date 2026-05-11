@@ -1,12 +1,13 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Screen, UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
+import { UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
 import { 
-  createLessonAction, 
-  checkInAction, 
-  checkOutAction, 
-  submitStudentFeedbackAction, 
+  createLessonAction,
+  cancelLessonAction,
+  checkInAction,
+  checkOutAction,
+  submitStudentFeedbackAction,
   submitInstructorFeedbackAction,
   getLessonsAction
 } from '@/lib/actions/lessons';
@@ -18,12 +19,10 @@ import {
 } from '@/lib/actions/auth';
 import { updateInstructorProfileAction } from '@/lib/actions/instructors';
 import { updateStudentProfileAction } from '@/lib/actions/profileActions';
-import { INITIAL_STUDENT_PROFILE, MOCK_DETRAN_STAGES, MOCK_ACADEMY_MODULES } from '../constants/mockData';
+import { INITIAL_STUDENT_PROFILE } from '../constants/mockData';
 
 interface AppContextType {
-  screen: Screen;
   userRole: UserRole;
-  selectedInstructorId: string | null;
   hasLadv: boolean;
   hasPaymentMethod: boolean;
   instructorProfile: Instructor | null;
@@ -37,9 +36,7 @@ interface AppContextType {
   activeClassId: string | null;
   
   // Actions
-  navigateTo: (screen: Screen) => void;
   setUserRole: (role: UserRole) => void;
-  selectInstructor: (id: string) => void;
   setHasLadv: (status: boolean) => void;
   setInstructorProfile: (profile: Instructor | null) => void;
   setStudentProfile: (profile: Student | null) => void;
@@ -49,14 +46,14 @@ interface AppContextType {
   setAcademyModules: (modules: AcademyModule[]) => void;
   setActiveClassId: (id: string | null) => void;
   
-  login: (credentials?: any) => Promise<void>;
+  login: (credentials?: any, forcedRole?: UserRole) => Promise<void>;
   register: (data: any) => Promise<void>;
   updateStudentProfile: (data: any) => Promise<void>;
   updateInstructorProfile: (data: any) => Promise<void>;
   logout: () => void;
   
   // Business logic
-  cancelClass: (id: string) => void;
+  cancelClass: (id: string) => Promise<void>;
   rateClass: (id: string, rating: number, text: string) => void;
   bookClass: (date: Date, startTime: string, endTime: string, instructor: Instructor) => void;
   giveFeedback: (id: string, feedback: string) => void;
@@ -69,25 +66,22 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [screen, setScreen] = useState<Screen>('splash');
   const [userRole, setUserRole] = useState<UserRole>(null);
-  const [selectedInstructorId, setSelectedInstructorId] = useState<string | null>(null);
   const [hasLadv, setHasLadv] = useState(false);
   const [instructorProfile, setInstructorProfile] = useState<Instructor | null>(null);
   const [studentProfile, setStudentProfile] = useState<Student | null>(null);
   const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [busySlots, setBusySlots] = useState<Record<string, string[]>>({});
-  const [detranStages, setDetranStages] = useState<DetranStage[]>(MOCK_DETRAN_STAGES);
-  const [academyModules, setAcademyModules] = useState<AcademyModule[]>(MOCK_ACADEMY_MODULES);
-  const [availableBalance, setAvailableBalance] = useState(1250.50);
-  const [pendingBalance, setPendingBalance] = useState(450.00);
+  const [detranStages, setDetranStages] = useState<DetranStage[]>([]);
+  const [academyModules, setAcademyModules] = useState<AcademyModule[]>([]);
+  const [availableBalance, setAvailableBalance] = useState(0);
+  const [pendingBalance, setPendingBalance] = useState(0);
   const [activeClassId, setActiveClassId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     try {
       const persistedUserRole = localStorage.getItem('velo-userRole');
-      const persistedScreen = localStorage.getItem('velo-screen');
       const persistedInstructorProfile = localStorage.getItem('velo-instructorProfile');
       const persistedStudentProfile = localStorage.getItem('velo-studentProfile');
       const persistedHasLadv = localStorage.getItem('velo-hasLadv');
@@ -99,7 +93,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
       }
       
-      if (persistedScreen) setScreen(persistedScreen as Screen);
       if (persistedInstructorProfile && persistedInstructorProfile !== 'undefined') setInstructorProfile(JSON.parse(persistedInstructorProfile));
       if (persistedStudentProfile && persistedStudentProfile !== 'undefined') setStudentProfile(JSON.parse(persistedStudentProfile));
       if (persistedHasLadv) setHasLadv(JSON.parse(persistedHasLadv));
@@ -111,7 +104,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!isHydrated) return;
-    localStorage.setItem('velo-screen', screen);
     localStorage.setItem('velo-userRole', JSON.stringify(userRole));
     localStorage.setItem('velo-hasLadv', JSON.stringify(hasLadv));
     if (instructorProfile) {
@@ -124,7 +116,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     } else {
       localStorage.removeItem('velo-studentProfile');
     }
-  }, [screen, userRole, hasLadv, instructorProfile, studentProfile, isHydrated]);
+  }, [userRole, hasLadv, instructorProfile, studentProfile, isHydrated]);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -145,20 +137,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [userRole, studentProfile?.id, instructorProfile?.id, isHydrated]);
 
-  const navigateTo = (newScreen: Screen) => {
-    setScreen(newScreen);
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
-  };
-
-  const selectInstructor = (id: string) => {
-    setSelectedInstructorId(id);
-    navigateTo('instructor-profile-view');
-  };
-
-  const login = async (credentials?: any) => {
-    if (userRole === 'student') {
+  const login = async (credentials?: any, forcedRole?: UserRole) => {
+    const roleToUse = forcedRole || userRole;
+    if (roleToUse === 'student') {
       const res = await loginStudentAction(credentials);
       if (!res.success || !res.data) {
         throw new Error(res.error || 'Credenciais inválidas');
@@ -167,9 +148,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('velo-token', res.token);
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
+      setUserRole('student');
       setStudentProfile(res.data as Student);
       setHasLadv((res.data as any).ladvUploaded ?? false);
-      navigateTo('student-home');
     } else {
       const res = await loginInstructorAction(credentials);
       if (!res.success || !res.data) {
@@ -179,8 +160,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('velo-token', res.token);
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
+      setUserRole('instructor');
       setInstructorProfile(res.data as Instructor);
-      navigateTo('instructor-dashboard');
     }
   };
 
@@ -195,7 +176,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
       setStudentProfile(res.data as Student);
-      navigateTo('student-home');
     } else {
       const res = await registerInstructorAction(data);
       if (!res.success || !res.data) {
@@ -213,18 +193,38 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         availability: res.data.availability ?? [],
         busySlots: res.data.busySlots ?? [],
       });
-      navigateTo('instructor-dashboard');
     }
   };
 
   const updateStudentProfile = async (data: any) => {
     if (!studentProfile?.id) return;
     try {
-      const res = await updateStudentProfileAction(studentProfile.id, data);
+      // Filtrar campos que o backend pode não aceitar ainda (whitelist)
+      const { 
+        id, email, cpf, termsAcceptedAt, birthDate, motherName, 
+        intendedCategory, ufDomicile, ...updateData 
+      } = data;
+
+      const res = await updateStudentProfileAction(studentProfile.id, {
+        ...updateData,
+        // Incluir novos campos se o backend permitir, senão eles serão ignorados pelo interceptor
+        birthDate,
+        motherName,
+        intendedCategory,
+        ufDomicile
+      });
+
       if (res.success) {
         setStudentProfile((prev) => (prev ? { ...prev, ...data } : null));
       } else {
-        throw new Error(res.error);
+        // Se falhar por campos extras, tentamos enviar sem eles para não quebrar o app
+        console.warn("Retrying profile update without CONTRAN fields due to backend restriction");
+        const retryRes = await updateStudentProfileAction(studentProfile.id, updateData);
+        if (retryRes.success) {
+          setStudentProfile((prev) => (prev ? { ...prev, ...data } : null));
+        } else {
+          throw new Error(retryRes.error || res.error);
+        }
       }
     } catch (err: any) {
       console.error("Failed to update student profile:", err);
@@ -235,17 +235,33 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const updateInstructorProfile = async (data: any) => {
     if (!instructorProfile?.id) return;
     try {
-      const { 
-        id, email, rating, reviewsCount, availability, busySlots, 
+      const {
+        id, email, rating, reviewsCount, availability, busySlots,
         vehicleId, vehicleModel, vehiclePlate, vehicleYear, transmission,
-        instructorType, ...updateData 
+        instructorType, birthDate, renachNumber, educationLevel, ...updateData
       } = data;
 
-      const res = await updateInstructorProfileAction(instructorProfile.id, updateData);
+      if (updateData.certidaoNegativa !== undefined) {
+        updateData.certidaoNegativa = String(updateData.certidaoNegativa);
+      }
+
+      const res = await updateInstructorProfileAction(instructorProfile.id, {
+        ...updateData,
+        birthDate,
+        renachNumber,
+        educationLevel,
+      });
+
       if (res.success) {
         setInstructorProfile((prev) => (prev ? { ...prev, ...data } : null));
       } else {
-        throw new Error(res.error);
+        console.warn("Retrying instructor profile update without CONTRAN fields");
+        const retryRes = await updateInstructorProfileAction(instructorProfile.id, updateData);
+        if (retryRes.success) {
+          setInstructorProfile((prev) => (prev ? { ...prev, ...data } : null));
+        } else {
+          throw new Error(retryRes.error || res.error);
+        }
       }
     } catch (err: any) {
       console.error("Failed to update instructor profile:", err);
@@ -260,11 +276,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setInstructorProfile(null);
     localStorage.removeItem('velo-token');
     document.cookie = "velo-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    setScreen('onboarding');
   };
 
-  const cancelClass = (id: string) => {
-    setScheduledClasses(prev => prev.filter(c => c.id !== id));
+  const cancelClass = async (id: string) => {
+    const result = await cancelLessonAction(id);
+    if (result.success) {
+      setScheduledClasses(prev => prev.filter(c => c.id !== id));
+    } else {
+      throw new Error(result.error || 'Não foi possível cancelar a aula');
+    }
   };
 
   const rateClass = async (id: string, rating: number, text: string) => {
@@ -379,9 +399,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AppContext.Provider
       value={{
-        screen,
         userRole,
-        selectedInstructorId,
         hasLadv,
         hasPaymentMethod,
         instructorProfile,
@@ -393,9 +411,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         availableBalance,
         pendingBalance,
         activeClassId,
-        navigateTo,
         setUserRole,
-        selectInstructor,
         setHasLadv,
         setInstructorProfile,
         setStudentProfile,

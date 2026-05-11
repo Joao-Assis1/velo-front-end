@@ -44,6 +44,7 @@ export interface Instructor {
   id: string;
   email: string;
   name: string;
+  phone?: string;
   profilePicture?: string;
   vehicleImage?: string;
   vehicleModel?: string;

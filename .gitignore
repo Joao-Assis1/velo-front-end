@@ -17,8 +17,14 @@ prisma
 prisma.config.ts
 .agent
 docs
+doc
 .agents/workflows
 FLUXO-INSTRUTOR.MD
 FLUXO-ALUNO.md
 velo.md
 velo-frontend-plan.md
+.gemini-kit
+GEMINI.md
+CLAUDE.md
+.claude/
+tsconfig.tsbuildinfo

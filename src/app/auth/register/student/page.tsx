@@ -1,0 +1,387 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useApp } from "@/context/AppContext";
+import Link from "next/link";
+
+const UF_LIST = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+
+type Step = 1 | 2 | 3;
+
+interface FormData {
+  // Step 1 — Acesso
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  // Step 2 — Dados pessoais (CONTRAN 1.020/25)
+  cpf: string;
+  phone: string;
+  birthDate: string;
+  motherName: string;
+  ufDomicile: string;
+  intendedCategory: "A" | "B" | "ACC" | "AB" | "";
+  // Step 3 — Termos e LADV
+  termsAccepted: boolean;
+  ladvSimulated: boolean;
+}
+
+const INITIAL: FormData = {
+  name: "", email: "", password: "", confirmPassword: "",
+  cpf: "", phone: "", birthDate: "", motherName: "", ufDomicile: "", intendedCategory: "",
+  termsAccepted: false, ladvSimulated: false,
+};
+
+function mask(value: string, pattern: string) {
+  let i = 0;
+  const v = value.replace(/\D/g, "");
+  return pattern.replace(/#/g, () => v[i++] || "").replace(/[#-]+$/, "");
+}
+
+export default function StudentRegisterPage() {
+  const router = useRouter();
+  const { register, setUserRole } = useApp();
+  const [step, setStep] = useState<Step>(1);
+  const [form, setForm] = useState<FormData>(INITIAL);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const set = (field: keyof FormData, value: string | boolean) =>
+    setForm((p) => ({ ...p, [field]: value }));
+
+  // --- Validations per step ---
+  const validateStep1 = () => {
+    if (!form.name.trim() || form.name.trim().split(" ").length < 2)
+      return "Informe nome e sobrenome.";
+    if (!form.email.includes("@")) return "E-mail inválido.";
+    if (form.password.length < 6) return "Senha deve ter mínimo 6 caracteres.";
+    if (form.password !== form.confirmPassword) return "As senhas não coincidem.";
+    return null;
+  };
+
+  const validateStep2 = () => {
+    const cpfRaw = form.cpf.replace(/\D/g, "");
+    if (cpfRaw.length !== 11) return "CPF deve ter 11 dígitos.";
+    const phone = form.phone.replace(/\D/g, "");
+    if (phone.length < 10) return "Telefone inválido.";
+    if (!form.birthDate) return "Data de nascimento obrigatória.";
+    const age = Math.floor((Date.now() - new Date(form.birthDate).getTime()) / 31557600000);
+    if (age < 16) return "Você deve ter pelo menos 16 anos.";
+    if (!form.motherName.trim()) return "Nome da mãe obrigatório.";
+    if (!form.ufDomicile) return "UF de domicílio obrigatória.";
+    if (!form.intendedCategory) return "Selecione a categoria pretendida.";
+    return null;
+  };
+
+  const validateStep3 = () => {
+    if (!form.termsAccepted) return "Você deve aceitar os Termos de Uso.";
+    if (!form.ladvSimulated) return "Simule o envio da Licença de Aprendizagem (LADV).";
+    return null;
+  };
+
+  const handleNext = () => {
+    setError("");
+    const err = step === 1 ? validateStep1() : step === 2 ? validateStep2() : null;
+    if (err) { setError(err); return; }
+    setStep((s) => (s + 1) as Step);
+  };
+
+  const handleSubmit = async () => {
+    setError("");
+    const err = validateStep3();
+    if (err) { setError(err); return; }
+
+    setLoading(true);
+    try {
+      setUserRole("student");
+      await register({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        phone: form.phone.replace(/\D/g, ""),
+        cpf: form.cpf.replace(/\D/g, ""),
+        birthDate: form.birthDate,
+        motherName: form.motherName.trim(),
+        intendedCategory: form.intendedCategory,
+        ufDomicile: form.ufDomicile,
+        ladvUploaded: form.ladvSimulated,
+      });
+      router.push("/app/student/dashboard");
+    } catch (e: any) {
+      setError(e?.message || "Erro ao criar conta. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const STEPS_LABEL = ["Acesso", "Dados Pessoais", "Documentos"];
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-start justify-center pt-8 pb-16 px-4">
+      <div className="w-full max-w-lg">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl shadow mb-3">
+            <span className="text-2xl font-black italic text-white">V</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Cadastro de Aluno</h1>
+          <p className="text-sm text-slate-500 mt-1">Conforme Resolução CONTRAN 1.020/25</p>
+        </div>
+
+        {/* Step indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {STEPS_LABEL.map((label, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                step === i + 1
+                  ? "bg-blue-600 text-white"
+                  : step > i + 1
+                  ? "bg-green-100 text-green-700"
+                  : "bg-slate-100 text-slate-400"
+              }`}>
+                <span>{step > i + 1 ? "✓" : i + 1}</span>
+                <span className="hidden sm:inline">{label}</span>
+              </div>
+              {i < 2 && <div className={`w-6 h-0.5 ${step > i + 1 ? "bg-green-400" : "bg-slate-200"}`} />}
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-5">
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100">
+              {error}
+            </div>
+          )}
+
+          {/* STEP 1 */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <h2 className="text-base font-bold text-slate-800">Dados de acesso</h2>
+              <Field label="Nome completo *" hint="Informe nome e sobrenome">
+                <input
+                  value={form.name}
+                  onChange={(e) => set("name", e.target.value)}
+                  placeholder="João da Silva"
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="E-mail *">
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => set("email", e.target.value)}
+                  placeholder="seu@email.com"
+                  className={inputCls}
+                  autoComplete="email"
+                />
+              </Field>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Senha *" hint="Mínimo 6 caracteres">
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => set("password", e.target.value)}
+                    placeholder="••••••••"
+                    className={inputCls}
+                    autoComplete="new-password"
+                  />
+                </Field>
+                <Field label="Confirmar senha *">
+                  <input
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={(e) => set("confirmPassword", e.target.value)}
+                    placeholder="••••••••"
+                    className={inputCls}
+                    autoComplete="new-password"
+                  />
+                </Field>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2 */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <h2 className="text-base font-bold text-slate-800">Dados pessoais</h2>
+              <p className="text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg p-2">
+                📋 Exigidos pela Res. CONTRAN 1.020/25 para habilitação de aprendizes.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="CPF *">
+                  <input
+                    value={form.cpf}
+                    onChange={(e) => set("cpf", mask(e.target.value, "###.###.###-##"))}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Telefone *">
+                  <input
+                    value={form.phone}
+                    onChange={(e) => set("phone", mask(e.target.value, "(##) #####-####"))}
+                    placeholder="(11) 99999-9999"
+                    maxLength={15}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Data de nascimento *" hint="Mínimo 16 anos">
+                  <input
+                    type="date"
+                    value={form.birthDate}
+                    onChange={(e) => set("birthDate", e.target.value)}
+                    max={new Date(Date.now() - 16 * 31557600000).toISOString().split("T")[0]}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="UF de domicílio *">
+                  <select value={form.ufDomicile} onChange={(e) => set("ufDomicile", e.target.value)} className={inputCls}>
+                    <option value="">Selecione</option>
+                    {UF_LIST.map((uf) => <option key={uf}>{uf}</option>)}
+                  </select>
+                </Field>
+              </div>
+
+              <Field label="Nome da mãe *" hint="Conforme documento de identidade">
+                <input
+                  value={form.motherName}
+                  onChange={(e) => set("motherName", e.target.value)}
+                  placeholder="Nome completo da mãe"
+                  className={inputCls}
+                />
+              </Field>
+
+              <Field label="Categoria pretendida *" hint="Tipo de habilitação que deseja obter">
+                <div className="grid grid-cols-4 gap-2">
+                  {(["A", "B", "ACC", "AB"] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => set("intendedCategory", cat)}
+                      className={`py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                        form.intendedCategory === cat
+                          ? "bg-blue-600 border-blue-600 text-white"
+                          : "bg-white border-slate-200 text-slate-600 hover:border-blue-300"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-400 mt-1">A=Moto · B=Carro · ACC=Automático · AB=Ambos</p>
+              </Field>
+            </div>
+          )}
+
+          {/* STEP 3 */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <h2 className="text-base font-bold text-slate-800">Documentos e Termos</h2>
+
+              {/* LADV */}
+              <div className="border-2 border-dashed border-slate-200 rounded-xl p-5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl mt-0.5">📄</span>
+                  <div>
+                    <p className="font-bold text-slate-800 text-sm">Licença de Aprendizagem (LADV)</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Obrigatória pela CONTRAN 1.020/25. Documento emitido pelo DETRAN após aprovação nos exames teórico e médico/psicológico.
+                    </p>
+                  </div>
+                </div>
+                {form.ladvSimulated ? (
+                  <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2.5 rounded-xl text-sm font-bold">
+                    <span>✓</span> LADV anexada com sucesso
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => set("ladvSimulated", true)}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold py-2.5 px-4 rounded-xl transition"
+                  >
+                    📎 Simular envio do PDF
+                  </button>
+                )}
+              </div>
+
+              {/* Terms */}
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <div className="relative mt-0.5">
+                  <input
+                    type="checkbox"
+                    checked={form.termsAccepted}
+                    onChange={(e) => set("termsAccepted", e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${
+                    form.termsAccepted ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
+                  }`}>
+                    {form.termsAccepted && <span className="text-white text-xs">✓</span>}
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Li e aceito os{" "}
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline">Termos de Uso</a> e a{" "}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> do Velo,
+                  incluindo o tratamento de dados biométricos e de geolocalização exigidos pela Res. CONTRAN 1.020/25.
+                </p>
+              </label>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
+                ⚠️ Seus dados serão tratados conforme a LGPD e utilizados exclusivamente para conformidade com a CONTRAN 1.020/25.
+              </div>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="flex gap-3 pt-2">
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={() => { setError(""); setStep((s) => (s - 1) as Step); }}
+                className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition"
+              >
+                ← Voltar
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={step < 3 ? handleNext : handleSubmit}
+              disabled={loading}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
+            >
+              {loading ? "Criando conta..." : step < 3 ? "Próximo →" : "✓ Criar Conta"}
+            </button>
+          </div>
+        </div>
+
+        <p className="text-center text-sm text-slate-400 mt-4">
+          Já tem conta?{" "}
+          <Link href="/auth/login" className="text-blue-600 font-bold hover:underline">
+            Fazer login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const inputCls =
+  "w-full border border-slate-200 bg-slate-50 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition";
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <label className="block text-xs font-bold text-slate-700">{label}</label>
+      {hint && <p className="text-xs text-slate-400">{hint}</p>}
+      {children}
+    </div>
+  );
+}

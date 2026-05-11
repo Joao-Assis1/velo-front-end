@@ -20,7 +20,6 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Button, CalendarWidget } from "@/components/ui-custom";
 import { Instructor } from "@/types";
-import { MOCK_INSTRUCTORS } from "@/constants/mockData";
 
 export const InstructorProfileView = ({
   instructor,
@@ -148,10 +147,11 @@ export const InstructorProfileView = ({
   const availableTimes = getAvailableTimes(selectedDate);
 
   const handleWhatsAppClick = () => {
+    if (!instructor.phone) return;
     setShowWhatsAppAnim(true);
     setTimeout(() => {
       setShowWhatsAppAnim(false);
-      alert("Redirecionando para o WhatsApp...");
+      window.open(`https://wa.me/${instructor.phone!.replace(/\D/g, '')}`, '_blank');
     }, 1500);
   };
 
@@ -195,7 +195,15 @@ export const InstructorProfileView = ({
           setShowSuccessModal(true);
         }
       } catch (error: any) {
-        setBookingError(error.message || "Erro inesperado ao agendar.");
+        const msg: string = error?.message || "";
+        const isConflict = /409|reservado|conflict|already booked|already/i.test(msg);
+        if (isConflict) {
+          setBookingError("Este horário acabou de ser reservado. Escolha outro horário.");
+          setShowBookingModal(false);
+          setSelectedTime(null);
+        } else {
+          setBookingError(msg || "Erro inesperado ao agendar.");
+        }
       } finally {
         setIsBooking(false);
       }
@@ -203,10 +211,11 @@ export const InstructorProfileView = ({
   };
 
   return (
-    <div className="bg-white min-h-screen pb-32">
-      <div className="pt-6 px-4 flex items-center justify-between mb-6">
+    <div className="pb-28 md:pb-10">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={onBack}
+          aria-label="Voltar"
           className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
         >
           <ChevronLeft size={24} />
@@ -220,6 +229,9 @@ export const InstructorProfileView = ({
               <img
                 src={instructor.profilePicture}
                 alt={instructor.name}
+                width={96}
+                height={96}
+                loading="lazy"
                 className="w-full h-full rounded-full object-cover"
               />
             </div>
@@ -296,6 +308,7 @@ export const InstructorProfileView = ({
             onSelectDate={(date) => {
               setSelectedDate(date);
               setSelectedTime(null);
+              setBookingError("");
             }}
           />
 
@@ -310,9 +323,10 @@ export const InstructorProfileView = ({
                 {availableTimes.map((time) => (
                   <button
                     key={time}
-                    onClick={() => setSelectedTime(time)}
+                    onClick={() => { setSelectedTime(time); setBookingError(""); }}
+                    aria-pressed={selectedTime === time}
                     className={cn(
-                      "py-2 px-1 rounded-lg border text-sm font-medium transition-colors",
+                      "py-2 px-1 rounded-lg border text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-velo-blue/30",
                       selectedTime === time
                         ? "bg-velo-blue text-white border-velo-blue shadow-sm"
                         : "border-slate-200 hover:border-velo-blue hover:text-velo-blue bg-white",
@@ -331,6 +345,15 @@ export const InstructorProfileView = ({
                 <p className="text-slate-500 text-sm">
                   Não há horários disponíveis para esta data.
                 </p>
+              </div>
+            )}
+
+            {bookingError && (
+              <div className={cn(
+                "mt-3 flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-red-600"
+              )}>
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <span>{bookingError}</span>
               </div>
             )}
           </div>
@@ -359,8 +382,9 @@ export const InstructorProfileView = ({
           ) : (
             <Button
               variant="secondary"
-              className="w-full md:flex-1 shadow-none bg-transparent border-2 border-velo-green text-velo-green hover:bg-velo-green/10"
+              className="w-full md:flex-1 shadow-none bg-transparent border-2 border-velo-green text-velo-green hover:bg-velo-green/10 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleWhatsAppClick}
+              disabled={!instructor.phone}
             >
               <MessageCircle size={24} />
               Falar no WhatsApp

@@ -10,10 +10,15 @@ import {
   Camera,
   Check,
   ArrowLeft,
+  Calendar,
+  Heart,
+  Award,
+  MapPin,
 } from "lucide-react";
 import { Button, Input } from "@/components/ui-custom";
 import { Student } from "@/types";
 import { updateStudentProfileAction } from "@/lib/actions/profileActions";
+import { maskCPF, maskPhone } from "@/lib/utils/masks";
 
 export const StudentPersonalData = ({
   profile,
@@ -35,6 +40,14 @@ export const StudentPersonalData = ({
       ladvUploaded: false,
     },
   );
+
+  // Helper to format date for input type="date"
+  const formatDateForInput = (date?: Date | string) => {
+    if (!date) return "";
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toISOString().split("T")[0];
+  };
+
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,7 +57,7 @@ export const StudentPersonalData = ({
       try {
         setIsLoading(true);
         const result = await updateStudentProfileAction(
-          localProfile.id,
+          localProfile.id || "",
           localProfile,
         );
 
@@ -71,10 +84,11 @@ export const StudentPersonalData = ({
     );
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6">
+    <div className="pb-28 md:pb-10 space-y-6">
       <header className="flex items-center gap-4 mb-6">
         <button
           onClick={onBack}
+          aria-label="Voltar"
           className="p-2 -ml-2 text-slate-400 hover:text-slate-600"
         >
           <ArrowLeft size={24} />
@@ -82,7 +96,7 @@ export const StudentPersonalData = ({
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Dados Pessoais</h1>
           <p className="text-slate-500 text-sm">
-            Mantenha seu perfil atualizado
+            Mantenha seu perfil atualizado (Res. 1.020/2025)
           </p>
         </div>
       </header>
@@ -91,17 +105,17 @@ export const StudentPersonalData = ({
         <div className="flex flex-col items-center">
           <div className="relative">
             <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-md">
-              <img
-                src={
-                  localProfile.profilePicture ||
-                  "https://ui-avatars.com/api/?name=User"
-                }
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
+              {localProfile.profilePicture ? (
+                <img src={localProfile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-500 font-bold text-2xl">
+                  {localProfile.name?.charAt(0)?.toUpperCase()}
+                </div>
+              )}
             </div>
             <button
               type="button"
+              aria-label="Alterar foto de perfil"
               className="absolute bottom-0 right-0 bg-velo-blue text-white p-2 rounded-full shadow-lg border-2 border-white"
             >
               <Camera size={16} />
@@ -120,7 +134,94 @@ export const StudentPersonalData = ({
                 setLocalProfile({ ...localProfile, name: e.target.value })
               }
               icon={<User size={18} />}
+              required
             />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 ml-1">
+                Data de Nascimento
+              </label>
+              <Input
+                type="date"
+                value={formatDateForInput(localProfile.birthDate)}
+                onChange={(e) =>
+                  setLocalProfile({ ...localProfile, birthDate: new Date(e.target.value) })
+                }
+                icon={<Calendar size={18} />}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 ml-1">CPF</label>
+              <Input
+                value={maskCPF(localProfile.cpf || "")}
+                icon={<Fingerprint size={18} />}
+                disabled
+                className="bg-slate-100 text-slate-500"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-bold text-slate-700 ml-1">
+              Nome da Mãe
+            </label>
+            <Input
+              value={localProfile.motherName || ""}
+              onChange={(e) =>
+                setLocalProfile({ ...localProfile, motherName: e.target.value })
+              }
+              icon={<Heart size={18} />}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 ml-1">
+                Categoria
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                  <Award size={18} />
+                </div>
+                <select
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-velo-blue/20 transition-colors appearance-none text-sm text-slate-700"
+                  value={localProfile.intendedCategory || "B"}
+                  onChange={(e) =>
+                    setLocalProfile({ ...localProfile, intendedCategory: e.target.value as any })
+                  }
+                >
+                  <option value="A">Cat. A</option>
+                  <option value="B">Cat. B</option>
+                  <option value="ACC">ACC</option>
+                  <option value="AB">Cat. AB</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-slate-700 ml-1">
+                UF Domicílio
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                  <MapPin size={18} />
+                </div>
+                <select
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-velo-blue/20 transition-colors appearance-none text-sm text-slate-700"
+                  value={localProfile.ufDomicile || "SP"}
+                  onChange={(e) =>
+                    setLocalProfile({ ...localProfile, ufDomicile: e.target.value })
+                  }
+                >
+                  {["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"].map(uf => (
+                    <option key={uf} value={uf}>{uf}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -134,6 +235,7 @@ export const StudentPersonalData = ({
                 setLocalProfile({ ...localProfile, email: e.target.value })
               }
               icon={<Mail size={18} />}
+              required
             />
           </div>
 
@@ -143,24 +245,12 @@ export const StudentPersonalData = ({
             </label>
             <Input
               type="tel"
-              value={localProfile.phone}
+              value={maskPhone(localProfile.phone || "")}
               onChange={(e) =>
-                setLocalProfile({ ...localProfile, phone: e.target.value })
+                setLocalProfile({ ...localProfile, phone: maskPhone(e.target.value) })
               }
               icon={<Phone size={18} />}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700 ml-1">CPF</label>
-            <Input
-              value={localProfile.cpf}
-              onChange={(e) =>
-                setLocalProfile({ ...localProfile, cpf: e.target.value })
-              }
-              icon={<Fingerprint size={18} />}
-              disabled
-              className="bg-slate-100 text-slate-500"
+              required
             />
           </div>
         </div>

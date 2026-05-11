@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { 
   BookOpen, 
@@ -19,17 +19,60 @@ import { useApp } from '@/context/AppContext';
 import Link from 'next/link';
 import { DetranStage } from '@/types';
 
-const mockAlerts = [
-  {
-    id: 'a1',
-    type: 'warning' as const,
-    title: 'Exame Médico Próximo',
-    message: 'Seu exame médico vence em 15 dias. Lembre-se de renovar para não travar suas aulas práticas.'
-  }
-];
-
 export default function StudentDashboard() {
-  const { studentProfile, detranStages } = useApp();
+  const { studentProfile } = useApp();
+
+  const detranStages = useMemo(() => {
+    const checklist = studentProfile?.checklist;
+    const hasCpf = !!studentProfile?.cpf;
+    const hasMedico = !!checklist?.medico;
+    const hasPsicotecnico = !!checklist?.psicotecnico;
+    const hasTeorico = !!checklist?.teorico;
+    const hasLadv = !!studentProfile?.ladvUploaded;
+
+    const stages: DetranStage[] = [
+      { id: '1', label: 'Cadastro/RENACH', status: hasCpf ? 'completed' : 'current' },
+      { id: '2', label: 'Exame Médico', status: hasMedico ? 'completed' : (hasCpf ? 'current' : 'locked') },
+      { id: '3', label: 'Psicotécnico', status: hasPsicotecnico ? 'completed' : (hasMedico ? 'current' : 'locked') },
+      { id: '4', label: 'Curso Teórico', status: hasTeorico ? 'completed' : (hasPsicotecnico ? 'current' : 'locked') },
+      { id: '5', label: 'LADV & Aulas', status: hasLadv ? 'completed' : (hasTeorico ? 'current' : 'locked') },
+    ];
+    return stages;
+  }, [studentProfile]);
+
+  const alerts = useMemo(() => {
+    const newAlerts = [];
+    if (!studentProfile?.cpf) {
+      newAlerts.push({
+        id: 'renach',
+        type: 'urgent' as const,
+        title: 'Cadastro Incompleto',
+        message: 'Você precisa preencher seus dados pessoais para iniciar o processo do RENACH.'
+      });
+    } else if (!studentProfile?.checklist?.medico) {
+      newAlerts.push({
+        id: 'medico',
+        type: 'warning' as const,
+        title: 'Exame Médico Pendente',
+        message: 'Agende seu exame médico em uma clínica credenciada pelo DETRAN para avançar.'
+      });
+    } else if (!studentProfile?.checklist?.psicotecnico) {
+       newAlerts.push({
+        id: 'psico',
+        type: 'warning' as const,
+        title: 'Exame Psicotécnico Pendente',
+        message: 'Agende seu exame psicotécnico em uma clínica credenciada pelo DETRAN.'
+      });
+    } else if (!studentProfile?.ladvUploaded) {
+      newAlerts.push({
+        id: 'ladv',
+        type: 'info' as const,
+        title: 'LADV Pendente',
+        message: 'Sua LADV ainda não foi validada. Você precisa dela para agendar as aulas práticas.'
+      });
+    }
+    return newAlerts;
+  }, [studentProfile]);
 
   return (
     <div className="pb-24 pt-6 px-4 md:px-8 space-y-8 max-w-5xl mx-auto">
@@ -45,7 +88,7 @@ export default function StudentDashboard() {
       </header>
 
       {/* Concierge Alerts */}
-      <BurocraticConcierge alerts={mockAlerts} onDismiss={(id) => console.log('Dismiss', id)} />
+      <BurocraticConcierge alerts={alerts} onDismiss={(id) => console.log('Dismiss', id)} />
 
       {/* DETRAN Progress */}
       <section className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-sm">

@@ -21,6 +21,7 @@ export const StudentPayments = ({
   const { studentProfile } = useApp();
   const queryClient = useQueryClient();
   const [isAdding, setIsAdding] = useState(false);
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   const { data: cards = [], isLoading: loadingCards } = useQuery({
     queryKey: ['payment-methods', studentProfile?.id],
@@ -49,14 +50,9 @@ export const StudentPayments = ({
     }
   });
 
-  const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja remover este cartão?')) {
-      deleteCardMutation.mutate(id);
-    }
-  };
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6 bg-white min-h-screen">
+    <div className="pb-28 md:pb-10 space-y-6">
       <header className="flex items-center gap-4">
         <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
           <ChevronLeft size={24} />
@@ -113,13 +109,35 @@ export const StudentPayments = ({
                         <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
                         <div className="flex justify-between items-start mb-8">
                           <CreditCard size={32} className="text-white/80" />
-                          <button 
-                            onClick={() => handleDelete(card.id)} 
-                            className="p-2 bg-red-500/10 hover:bg-red-500/40 rounded-full transition-colors text-red-100"
-                            title="Excluir cartão"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                          {deletingCardId === card.id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                aria-label="Confirmar exclusão"
+                                onClick={() => { deleteCardMutation.mutate(card.id); setDeletingCardId(null); }}
+                                className="p-2 rounded-full transition-colors text-red-400 hover:text-red-600"
+                              >
+                                <Check size={18} />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label="Cancelar"
+                                onClick={() => setDeletingCardId(null)}
+                                className="p-2 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              aria-label="Excluir cartão"
+                              onClick={() => setDeletingCardId(card.id)}
+                              className="p-2 bg-red-500/10 hover:bg-red-500/40 rounded-full transition-colors text-red-100"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
                         </div>
                         <p className="text-xl font-medium tracking-widest mb-6">•••• •••• •••• {card.last4}</p>
                         <div className="flex justify-between items-end">

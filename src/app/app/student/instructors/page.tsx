@@ -25,6 +25,9 @@ export default function InstructorMarketplace() {
   });
 
   const filteredInstructors = instructors.filter(instructor => {
+    // Hide inactive instructors (e.g. credential expired)
+    if (instructor.isActive === false) return false;
+
     const matchesSearch = instructor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (instructor.location?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     

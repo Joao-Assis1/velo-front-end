@@ -22,12 +22,18 @@ export const StudentProfile = ({
   ];
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6 bg-white min-h-screen">
+    <div className="pb-28 md:pb-10 space-y-6">
       <header className="text-center pt-4 pb-2">
         <div className="relative inline-block mb-4">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-50 shadow-md bg-slate-100 flex items-center justify-center">
             {profile ? (
-              <img src={profile.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}`} alt={profile.name} className="w-full h-full object-cover" />
+              profile.profilePicture ? (
+                <img src={profile.profilePicture} alt={profile.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold text-2xl">
+                  {profile.name?.charAt(0)?.toUpperCase()}
+                </div>
+              )
             ) : (
               <div className="animate-pulse w-full h-full bg-slate-200"></div>
             )}
@@ -37,7 +43,6 @@ export const StudentProfile = ({
           </div>
         </div>
         <h1 className="text-2xl font-bold text-slate-900">{profile?.name || "Carregando..."}</h1>
-        <p className="text-slate-500 text-sm">Aluno Velo • Nível 4</p>
       </header>
 
       <div className="grid grid-cols-1 gap-3">
@@ -45,7 +50,7 @@ export const StudentProfile = ({
           <button 
             key={item.id}
             onClick={() => onNavigate(item.id as Screen)}
-            className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all group active:scale-[0.98]"
+            className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors group active:scale-[0.98]"
           >
             <div className="flex items-center gap-4">
               <div className={`w-10 h-10 ${item.bg} ${item.color} rounded-xl flex items-center justify-center`}>
@@ -61,7 +66,7 @@ export const StudentProfile = ({
       <div className="pt-4">
         <button 
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 p-4 text-red-500 font-bold hover:bg-red-50 rounded-2xl transition-all active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 p-4 text-red-500 font-bold hover:bg-red-50 rounded-2xl transition-colors active:scale-[0.98]"
         >
           <LogOut size={20} />
           Sair da Conta

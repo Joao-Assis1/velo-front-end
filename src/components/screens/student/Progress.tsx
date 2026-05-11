@@ -79,7 +79,7 @@ export const StudentProgress = ({
   };
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6">
+    <div className="pb-28 md:pb-10 space-y-6">
       <header>
         <h1 className="text-2xl font-bold text-slate-900">Meu Progresso</h1>
         <p className="text-slate-500 text-sm">

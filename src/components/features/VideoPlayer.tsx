@@ -16,6 +16,24 @@ export const VideoPlayer = ({ url, title, onComplete }: VideoPlayerProps) => {
   const [progress, setProgress] = useState(0);
   const [isBuffering, setIsBuffering] = useState(true);
 
+  const handleRestart = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleFullscreen = () => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    } else if ((el as any).webkitRequestFullscreen) {
+      (el as any).webkitRequestFullscreen();
+    }
+  };
+
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -65,7 +83,7 @@ export const VideoPlayer = ({ url, title, onComplete }: VideoPlayerProps) => {
       )}>
         <div className="flex justify-between items-start">
           <h4 className="text-white font-bold text-lg drop-shadow-md">{title || "Aula Teórica"}</h4>
-          <button className="text-white/70 hover:text-white transition-colors">
+          <button onClick={handleRestart} className="text-white/70 hover:text-white transition-colors">
             <RotateCcw size={20} />
           </button>
         </div>
@@ -92,7 +110,7 @@ export const VideoPlayer = ({ url, title, onComplete }: VideoPlayerProps) => {
               </div>
             </div>
 
-            <button className="text-white/70 hover:text-white transition-colors">
+            <button onClick={handleFullscreen} className="text-white/70 hover:text-white transition-colors">
               <Maximize size={20} />
             </button>
           </div>

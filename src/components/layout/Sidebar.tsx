@@ -81,10 +81,13 @@ export const Sidebar = () => {
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
-              <img 
-                src={profile?.profilePicture || `https://ui-avatars.com/api/?name=${profile?.name || 'U'}`} 
-                alt={profile?.name || 'Usuário'} 
-              />
+              {profile?.profilePicture ? (
+                <img src={profile.profilePicture} alt={profile.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold text-sm">
+                  {(profile?.name || 'U').charAt(0).toUpperCase()}
+                </div>
+              )}
             </div>
             <div className="overflow-hidden">
               <p className="text-sm font-bold text-slate-900 truncate">{profile?.name || 'Carregando...'}</p>

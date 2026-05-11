@@ -17,9 +17,10 @@ interface QuizModuleProps {
   questions: QuizQuestion[];
   onFinish: (score: number) => void;
   onRestart: () => void;
+  onNextModule?: () => void;
 }
 
-export const QuizModule = ({ questions, onFinish, onRestart }: QuizModuleProps) => {
+export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: QuizModuleProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -100,9 +101,9 @@ export const QuizModule = ({ questions, onFinish, onRestart }: QuizModuleProps) 
         </div>
 
         <div className="flex flex-col gap-3">
-          <Button 
+          <Button
             className={cn("w-full py-4", passed ? "bg-velo-blue" : "bg-slate-900")}
-            onClick={passed ? () => {} : handleRestart}
+            onClick={passed ? (onNextModule ?? (() => onFinish(percentage))) : handleRestart}
           >
             {passed ? "Próximo Módulo" : "Tentar Novamente"}
           </Button>

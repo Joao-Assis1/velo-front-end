@@ -2,6 +2,15 @@
 
 import { fetchWrapper } from "../api-client";
 
+export async function getStudentProfileAction(id: string) {
+  try {
+    const apiResponse = await fetchWrapper<any>(`/students/${id}`);
+    return { success: true, data: apiResponse?.data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 export async function updateStudentProfileAction(id: string, data: any) {
   try {
     const apiResponse = await fetchWrapper<any>(`/students/${id}`, {
@@ -12,6 +21,10 @@ export async function updateStudentProfileAction(id: string, data: any) {
         phone: data.phone,
         ladvUploaded: data.ladvUploaded,
         profilePicture: data.profilePicture,
+        birthDate: data.birthDate,
+        motherName: data.motherName,
+        intendedCategory: data.intendedCategory,
+        ufDomicile: data.ufDomicile,
       }),
     });
 

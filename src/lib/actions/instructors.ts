@@ -10,9 +10,15 @@ export async function getInstructorsAction() {
       next: { tags: ["instructors"] },
     } as RequestInit & { next?: { tags: string[] } });
 
-    const data = apiResponse?.data ?? [];
+    // Resiliência: o dado pode vir em .data, .instructors ou direto na raiz
+    const data = apiResponse?.data ?? apiResponse?.instructors ?? apiResponse ?? [];
+    
+    if (!Array.isArray(data)) {
+        console.warn("API returned non-array data for instructors:", data);
+        return { success: true, data: [] };
+    }
 
-    const mappedInstructors: Instructor[] = (data as any[]).map(
+    const mappedInstructors: Instructor[] = data.map(
       (instructor) => {
         const primaryVehicle = instructor.vehicles?.[0];
 
@@ -35,6 +41,14 @@ export async function getInstructorsAction() {
           vehicleId: primaryVehicle?.id,
           availability: instructor.availabilities ?? [],
           busySlots: instructor.busySlots ?? [],
+          // CONTRAN 1.020/2025
+          birthDate: instructor.birthDate ? new Date(instructor.birthDate) : undefined,
+          cnhNumber: instructor.cnhNumber,
+          cnhCategory: instructor.cnhCategory,
+          cnhEar: instructor.cnhEar,
+          educationLevel: instructor.educationLevel,
+          renachNumber: instructor.renachNumber,
+          certidaoNegativa: instructor.certidaoNegativa,
         };
       },
     );

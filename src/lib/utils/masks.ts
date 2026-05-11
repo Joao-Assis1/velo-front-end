@@ -33,6 +33,36 @@ export const maskPlate = (value: string) => {
 };
 
 /**
+ * Masks a string as CNH (11 digits)
+ */
+export const maskCNH = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .substring(0, 11);
+};
+
+/**
+ * Masks a string as RENACH (11 digits)
+ */
+export const maskRENACH = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .substring(0, 11);
+};
+
+/**
+ * Masks a string as Date (DD/MM/YYYY)
+ */
+export const maskDate = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '$1/$2')
+    .replace(/(\d{2})(\d)/, '$1/$2')
+    .replace(/(\/\d{4})\d+?$/, '$1')
+    .substring(0, 10);
+};
+
+/**
  * Validates if a CPF is formatted correctly (basic length check)
  */
 export const isValidCPF = (cpf: string) => {

@@ -28,7 +28,7 @@ export const Button = ({
   return (
     <button 
       className={cn(
-        "rounded-xl font-semibold transition-all active:scale-95 flex items-center justify-center gap-2",
+        "rounded-xl font-semibold transition-colors active:scale-95 flex items-center justify-center gap-2",
         variants[variant],
         sizes[size],
         className
@@ -51,9 +51,11 @@ export const Card = ({
 export const Input = ({ 
   className, 
   icon, 
+  rightIcon,
   ...props 
 }: React.InputHTMLAttributes<HTMLInputElement> & { 
-  icon?: React.ReactNode 
+  icon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }) => (
   <div className="relative">
     {icon && (
@@ -63,12 +65,18 @@ export const Input = ({
     )}
     <input 
       className={cn(
-        "w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-velo-blue/20 transition-all",
+        "w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-velo-blue/20 transition-colors",
         icon && "pl-10",
+        rightIcon && "pr-12",
         className
       )}
       {...props}
     />
+    {rightIcon && (
+      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+        {rightIcon}
+      </div>
+    )}
   </div>
 );
 

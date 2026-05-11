@@ -20,11 +20,13 @@ export const InstructorCard = ({ instructor, onClick }: InstructorCardProps) => 
       {/* Profile Image & Rating */}
       <div className="relative shrink-0">
         <div className="w-24 h-24 sm:w-20 sm:h-20 rounded-3xl overflow-hidden border-4 border-white shadow-md group-hover:rotate-3 transition-transform">
-          <img 
-            src={instructor.profilePicture || `https://ui-avatars.com/api/?name=${instructor.name}`} 
-            alt={instructor.name} 
-            className="w-full h-full object-cover" 
-          />
+          {instructor.profilePicture ? (
+            <img src={instructor.profilePicture} alt={instructor.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-500 font-bold text-2xl">
+              {instructor.name?.charAt(0)?.toUpperCase()}
+            </div>
+          )}
         </div>
         <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1.5 shadow-sm">
           <div className="bg-slate-900 text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -46,10 +48,12 @@ export const InstructorCard = ({ instructor, onClick }: InstructorCardProps) => 
         </div>
 
         <div className="flex flex-wrap justify-center sm:justify-start gap-4 mb-4">
-          <div className="flex items-center gap-1.5 text-slate-500 text-sm">
-            <MapPin size={16} className="text-slate-400" />
-            <span>{instructor.location || 'Belo Horizonte, MG'}</span>
-          </div>
+          {instructor.location && (
+            <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+              <MapPin size={16} className="text-slate-400" />
+              <span>{instructor.location}</span>
+            </div>
+          )}
           <div className="flex items-center gap-1.5 text-slate-500 text-sm">
             <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold uppercase">
               {instructor.transmission || 'Manual'}
@@ -57,9 +61,9 @@ export const InstructorCard = ({ instructor, onClick }: InstructorCardProps) => 
           </div>
         </div>
 
-        <p className="text-sm text-slate-500 line-clamp-2 mb-2 italic">
-          {instructor.bio || "Instrutor experiente com mais de 10 anos de atuação, focado em alunos com medo de dirigir."}
-        </p>
+        {instructor.bio && (
+          <p className="text-sm text-slate-500 line-clamp-2 mb-2 italic">{instructor.bio}</p>
+        )}
       </div>
 
       {/* Price & Action */}

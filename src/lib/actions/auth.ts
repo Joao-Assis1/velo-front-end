@@ -127,15 +127,14 @@ export async function registerInstructorAction(data: any) {
 
 export async function forgotPasswordAction(
   email: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; token?: string; error?: string }> {
   try {
-    await fetchWrapper<any>("/auth/forgot-password", {
+    const response = await fetchWrapper<any>("/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
-    return { success: true };
+    return { success: true, token: response.data?.token };
   } catch (error: any) {
-    console.error("Forgot password error:", error.message);
     return { success: false, error: error.message };
   }
 }

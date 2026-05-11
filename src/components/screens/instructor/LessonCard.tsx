@@ -1,21 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CheckCircle2,
   Clock,
-  MapPin,
   MessageSquare,
   PlayCircle,
   User,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui-custom";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/context/AppContext";
 import { submitInstructorFeedbackAction } from "@/lib/actions/profileActions";
-import { BiometryOverlay } from "@/components/features/BiometryOverlay";
+import { getEscrowStatusAction } from "@/lib/actions/lessons";
+import { LessonEscrow } from "@/types";
 import { TelemetryHUD } from "@/components/features/TelemetryHUD";
+import EscrowStepper from "@/components/features/EscrowStepper";
 
 export type LessonData = {
   id: string;
@@ -26,6 +28,7 @@ export type LessonData = {
   studentImage?: string;
   location?: string;
   instructorFeedback?: string;
+  price?: number;
 };
 
 export const LessonCard = ({
@@ -41,47 +44,50 @@ export const LessonCard = ({
 
   // Modal States
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showEscrowModal, setShowEscrowModal] = useState(false);
   const [feedbackText, setFeedbackText] = useState(
     lesson.instructorFeedback || "",
   );
   const [hasFeedback, setHasFeedback] = useState(!!lesson.instructorFeedback);
 
+  const [escrowData, setEscrowData] = useState<LessonEscrow | null>(null);
+  const [escrowLoading, setEscrowLoading] = useState(false);
+
   // Compliance Flows
-  const [showBiometry, setShowBiometry] = useState<'check-in' | 'check-out' | null>(null);
   const [showTelemetry, setShowTelemetry] = useState(currentStatus === 'IN_PROGRESS');
 
-  const handleStartCheckIn = () => setShowBiometry('check-in');
-  
-  const executeCheckIn = async () => {
-    setShowBiometry(null);
+  useEffect(() => {
+    if (!showEscrowModal) return;
+    setEscrowLoading(true);
+    getEscrowStatusAction(lesson.id).then((res) => {
+      if (res && (res as any).data) setEscrowData((res as any).data as LessonEscrow);
+    }).finally(() => setEscrowLoading(false));
+  }, [showEscrowModal, lesson.id]);
+
+  const handleStartLesson = async () => {
     try {
       setIsLoading(true);
-      checkIn(lesson.id);
-      setCurrentStatus("IN_PROGRESS");
+      await checkIn(lesson.id);
+      setCurrentStatus('IN_PROGRESS');
       setShowTelemetry(true);
       if (onUpdate) onUpdate();
     } catch (error) {
-      console.error("Falha ao iniciar aula:", error);
+      console.error("Erro ao iniciar aula:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleTelemetryFinish = () => {
-    setShowTelemetry(false);
-    setShowBiometry('check-out');
-  };
-
-  const executeCheckOut = async () => {
-    setShowBiometry(null);
+  const handleTelemetryFinish = async () => {
     try {
       setIsLoading(true);
-      checkOut(lesson.id);
+      await checkOut(lesson.id);
+      setShowTelemetry(false);
       setCurrentStatus("COMPLETED");
-      setShowFeedbackModal(true); // Abre modal de feedback
+      setShowFeedbackModal(true);
       if (onUpdate) onUpdate();
     } catch (error) {
-      console.error("Falha ao finalizar aula:", error);
+      console.error("Erro ao finalizar aula:", error);
     } finally {
       setIsLoading(false);
     }
@@ -153,26 +159,36 @@ export const LessonCard = ({
           </div>
         </div>
 
-        <span
-          className={cn(
-            "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide",
-            currentStatus === "UPCOMING"
-              ? "bg-blue-50 text-velo-blue"
-              : currentStatus === "IN_PROGRESS"
-                ? "bg-green-50 text-velo-green"
-                : currentStatus === "COMPLETED"
-                  ? "bg-slate-100 text-slate-500"
-                  : "bg-red-50 text-red-500",
+        <div className="flex flex-col items-end gap-1">
+          <span
+            className={cn(
+              "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide",
+              currentStatus === "UPCOMING"
+                ? "bg-blue-50 text-velo-blue"
+                : currentStatus === "IN_PROGRESS"
+                  ? "bg-green-50 text-velo-green"
+                  : currentStatus === "COMPLETED"
+                    ? "bg-slate-100 text-slate-500"
+                    : "bg-red-50 text-red-500",
+            )}
+          >
+            {currentStatus === "IN_PROGRESS"
+              ? "Em Andamento"
+              : currentStatus === "COMPLETED"
+                ? "Concluída"
+                : currentStatus === "CANCELLED"
+                  ? "Cancelada"
+                  : "Agendada"}
+          </span>
+          {currentStatus === "COMPLETED" && (
+            <button 
+              onClick={() => setShowEscrowModal(true)}
+              className="text-[9px] font-black text-velo-blue uppercase tracking-widest flex items-center gap-1 hover:underline"
+            >
+              <ShieldCheck size={10} aria-hidden="true" /> Ver Repasse
+            </button>
           )}
-        >
-          {currentStatus === "IN_PROGRESS"
-            ? "Em Andamento"
-            : currentStatus === "COMPLETED"
-              ? "Concluída"
-              : currentStatus === "CANCELLED"
-                ? "Cancelada"
-                : "Agendada"}
-        </span>
+        </div>
       </div>
 
       {/* Action Buttons */}
@@ -180,7 +196,7 @@ export const LessonCard = ({
         {currentStatus === "UPCOMING" && (
           <Button
             className="w-full py-3 bg-velo-blue hover:bg-blue-600 flex items-center gap-2 justify-center"
-            onClick={handleStartCheckIn}
+            onClick={handleStartLesson}
             disabled={isLoading}
           >
             <PlayCircle size={18} />
@@ -247,7 +263,7 @@ export const LessonCard = ({
               </p>
 
               <textarea
-                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-velo-blue outline-none resize-none min-h-[120px] mb-4 bg-slate-50"
+                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus-visible:ring-2 focus-visible:ring-velo-blue outline-none resize-none min-h-[120px] mb-4 bg-slate-50"
                 placeholder="Pontos fortes, o que precisa melhorar na próxima aula..."
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
@@ -265,16 +281,49 @@ export const LessonCard = ({
         )}
       </AnimatePresence>
 
-      {/* Compliance Overlays */}
+      {/* Escrow Modal */}
       <AnimatePresence>
-        {showBiometry && (
-          <BiometryOverlay
-            lessonId={lesson.id}
-            stage={showBiometry === 'check-in' ? 'START' : 'END'}
-            studentName={lesson.studentName}
-            studentImage={lesson.studentImage}
-            onSuccess={showBiometry === 'check-in' ? executeCheckIn : executeCheckOut}
-          />
+        {showEscrowModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+              onClick={() => setShowEscrowModal(false)}
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-sm relative z-10"
+            >
+              {escrowLoading ? (
+                <div className={cn("flex items-center justify-center py-12 text-white/70 text-sm")}>
+                  Carregando...
+                </div>
+              ) : escrowData ? (
+                <EscrowStepper
+                  status={escrowData.status}
+                  amount={escrowData.amount}
+                  fee={escrowData.fee}
+                />
+              ) : (
+                <EscrowStepper
+                  status="LOCKED"
+                  amount={lesson.price || 80}
+                  fee={(lesson.price || 80) * 0.15}
+                />
+              )}
+              <Button 
+                variant="ghost" 
+                className="w-full mt-4 text-white hover:bg-white/10"
+                onClick={() => setShowEscrowModal(false)}
+              >
+                Fechar
+              </Button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -282,6 +331,8 @@ export const LessonCard = ({
         {showTelemetry && (
           <TelemetryHUD
             studentName={lesson.studentName}
+            studentImage={lesson.studentImage}
+            lessonId={lesson.id}
             onFinish={handleTelemetryFinish}
           />
         )}

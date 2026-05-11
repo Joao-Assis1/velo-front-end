@@ -85,7 +85,7 @@ export const InstructorAvailability = ({
   };
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6">
+    <div className="pb-28 md:pb-10 space-y-6">
       <header className="flex items-center gap-4 mb-6">
         <button
           onClick={onBack}

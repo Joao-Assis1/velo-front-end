@@ -1,26 +1,30 @@
 "use client";
 
-import React from 'react';
-import { ChevronLeft, CreditCard, TrendingUp, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
-import { Card } from '@/components/ui-custom';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ChevronLeft, CreditCard, TrendingUp, ArrowUpRight, ArrowDownLeft, CheckCircle2 } from 'lucide-react';
+import { Card, Button } from '@/components/ui-custom';
 import { ScheduledClass } from '@/types';
 
-export const InstructorFinance = ({ 
-  classes, 
-  onBack 
-}: { 
-  classes: ScheduledClass[], 
-  onBack: () => void 
+export const InstructorFinance = ({
+  classes,
+  onBack
+}: {
+  classes: ScheduledClass[],
+  onBack: () => void
 }) => {
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawRequested, setWithdrawRequested] = useState(false);
+
   const completedClasses = classes.filter(c => c.status === 'completed');
   const totalEarnings = completedClasses.reduce((acc, curr) => acc + (curr.price || 0), 0);
   const pendingEarnings = classes.filter(c => c.status === 'upcoming').reduce((acc, curr) => acc + (curr.price || 0), 0);
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6">
+    <div className="pb-28 md:pb-10 space-y-6">
       <header className="flex items-center gap-4">
-        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-          <ChevronLeft size={24} />
+        <button onClick={onBack} aria-label="Voltar" className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+          <ChevronLeft size={24} aria-hidden="true" />
         </button>
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Financeiro</h1>
@@ -88,9 +92,56 @@ export const InstructorFinance = ({
         </div>
       </section>
 
-      <button className="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-all">
-        Solicitar Saque
+      <button
+        onClick={() => !withdrawRequested && setShowWithdrawModal(true)}
+        disabled={totalEarnings === 0 || withdrawRequested}
+        className="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+      >
+        {withdrawRequested ? 'Solicitação Registrada' : 'Solicitar Saque'}
       </button>
+
+      <AnimatePresence>
+        {showWithdrawModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowWithdrawModal(false)}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl text-center"
+            >
+              <div className="w-14 h-14 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">Confirmar Saque</h3>
+              <p className="text-sm text-slate-500 mb-2">
+                Você deseja solicitar o saque de
+              </p>
+              <p className="text-2xl font-bold text-slate-900 mb-5">
+                {totalEarnings.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </p>
+              <div className="flex gap-3">
+                <Button variant="ghost" className="flex-1" onClick={() => setShowWithdrawModal(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white"
+                  onClick={() => { setShowWithdrawModal(false); setWithdrawRequested(true); }}
+                >
+                  Confirmar
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

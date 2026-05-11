@@ -92,10 +92,11 @@ export const InstructorVehicle = ({
   };
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6">
+    <div className="pb-28 md:pb-10 space-y-6">
       <header className="flex items-center gap-4 mb-6">
         <button
           onClick={onBack}
+          aria-label="Voltar"
           className="p-2 -ml-2 text-slate-400 hover:text-slate-600"
         >
           <ArrowLeft size={24} />
@@ -111,14 +112,18 @@ export const InstructorVehicle = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex flex-col items-center">
           <div className="relative w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-100 shadow-md bg-slate-100 group">
-            <img
-              src={
-                localProfile.vehicleImage ||
-                "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=600&fit=crop"
-              }
-              alt="Vehicle"
-              className="w-full h-full object-cover"
-            />
+            {localProfile.vehicleImage ? (
+              <img
+                src={localProfile.vehicleImage}
+                alt="Vehicle"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
+                <Upload size={40} />
+                <span className="text-sm font-medium">Adicionar foto do veículo</span>
+              </div>
+            )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <button
                 type="button"
@@ -130,10 +135,11 @@ export const InstructorVehicle = ({
             </div>
             <button
               type="button"
+              aria-label="Enviar foto do veículo"
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-4 right-4 bg-velo-blue text-white p-3 rounded-full shadow-lg border-2 border-white"
             >
-              <Camera size={20} />
+              <Camera size={20} aria-hidden="true" />
             </button>
             <input
               type="file"
@@ -176,7 +182,7 @@ export const InstructorVehicle = ({
                   })
                 }
                 placeholder="ABC-1234"
-                className={cn(plateError && "border-red-500 focus:ring-red-200")}
+                className={cn(plateError && "border-red-500 focus-visible:ring-red-200")}
               />
               {plateError && (
                 <p className="text-[10px] font-bold text-red-500 mt-1 ml-1">
@@ -220,7 +226,7 @@ export const InstructorVehicle = ({
                     })
                   }
                   className={cn(
-                    "flex-1 py-3 rounded-lg text-sm font-bold transition-all",
+                    "flex-1 py-3 rounded-lg text-sm font-bold transition-colors",
                     localProfile.transmission === t.id ||
                       (localProfile.transmission?.toString().toUpperCase() ===
                         "MANUAL" &&
@@ -238,6 +244,25 @@ export const InstructorVehicle = ({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Recursos de Instrução (Res. 1.020/25)
+            </h3>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="w-5 h-5 rounded border-slate-300 text-velo-blue focus-visible:ring-velo-blue"
+                checked={localProfile.hasDoubleCommand || false}
+                onChange={(e) =>
+                  setLocalProfile({ ...localProfile, hasDoubleCommand: e.target.checked })
+                }
+              />
+              <span className="text-sm text-slate-700">
+                Veículo possui <strong>Duplo Comando</strong> (Opcional p/ Autônomos)
+              </span>
+            </label>
           </div>
         </div>
 

@@ -2,39 +2,48 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { DollarSign, Users, MessageCircle, CheckCircle2 } from 'lucide-react';
-import { isToday, format } from 'date-fns';
+import { MessageCircle, CheckCircle2, AlertCircle, Calendar, History } from 'lucide-react';
+import { isToday, format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Card, Button } from '@/components/ui-custom';
+import { Button } from '@/components/ui-custom';
 import { ScheduledClass, Instructor } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { EmptyState } from '@/components/ui-custom/EmptyState';
-import { Calendar, History, AlertCircle } from 'lucide-react';
 import { KPISection } from '@/components/features/KPISection';
 
-export const InstructorDashboard = ({ 
+export const InstructorDashboard = ({
   profile,
-  onViewSchedule, 
-  classes, 
-  onGiveFeedback 
-}: { 
-  profile: Instructor | null,
-  onViewSchedule: () => void, 
-  classes: ScheduledClass[], 
-  onGiveFeedback: (id: string, feedback: string) => void 
+  onViewSchedule,
+  classes,
+  onGiveFeedback,
+  onRegularize,
+  onRenew,
+}: {
+  profile: Instructor | null;
+  onViewSchedule: () => void;
+  classes: ScheduledClass[];
+  onGiveFeedback: (id: string, feedback: string) => void;
+  onRegularize: () => void;
+  onRenew: () => void;
 }) => {
   const { availableBalance, pendingBalance } = useApp();
 
-  // Filter classes for the current instructor
-  const myClasses = classes.filter(c => c.instructorId === profile?.id);
-  
-  const todayClasses = myClasses.filter(c => isToday(c.date));
-  const completedClasses = myClasses.filter(c => c.status === 'completed').sort((a, b) => b.date.getTime() - a.date.getTime());
+  const myClasses = classes.filter((c) => c.instructorId === profile?.id);
+  const todayClasses = myClasses.filter((c) => isToday(c.date));
+  const completedClasses = myClasses
+    .filter((c) => c.status === 'completed')
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  // Mock financial data (additional)
-  const monthlyEarnings = 3800.00;
-  const growth = 12.5;
+  const now = new Date();
+  const monthlyEarnings = completedClasses
+    .filter(
+      (c) =>
+        c.date.getMonth() === now.getMonth() &&
+        c.date.getFullYear() === now.getFullYear()
+    )
+    .reduce((sum, c) => sum + (c.price ?? 0), 0);
+  const growth = 0;
 
   const [feedbackClassId, setFeedbackClassId] = useState<string | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
@@ -47,178 +56,260 @@ export const InstructorDashboard = ({
     }
   };
 
+  const daysToExpiry = profile?.cnhExpiry
+    ? differenceInDays(new Date(profile.cnhExpiry), new Date())
+    : null;
+  const isExpiring = daysToExpiry !== null && daysToExpiry > 0 && daysToExpiry <= 30;
+  const isExpired = daysToExpiry !== null && daysToExpiry <= 0;
+  const isInactive = profile?.isActive === false || isExpired;
+
+  const firstName = profile?.name?.split(' ')[0] || 'Instrutor';
+  const todayLabel = format(now, "EEEE, dd 'de' MMMM", { locale: ptBR });
+
   return (
-    <div className="pb-24 pt-6 px-4 md:px-8 space-y-8 max-w-5xl mx-auto">
-      <header className="flex justify-between items-center">
+    <div className="pb-28 md:pb-10 space-y-6">
+
+      {/* Header */}
+      <header className="flex justify-between items-start">
         <div>
-          <p className="text-slate-500 text-sm font-medium">Painel de Gestão</p>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Olá, {profile?.name?.split(' ')[0] || 'Instrutor'}</h1>
+          <p className="text-xs font-semibold tracking-widest uppercase text-slate-400">
+            {todayLabel}
+          </p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight mt-1">
+            Olá, {firstName}
+          </h1>
         </div>
-        <div className="w-12 h-12 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl overflow-hidden bg-slate-100 ring-2 ring-white shadow-sm shrink-0">
           {profile ? (
-            <img src={profile.profilePicture || "https://ui-avatars.com/api/?name=" + profile.name} alt="Profile" className="w-full h-full object-cover" />
+            profile.profilePicture ? (
+              <img src={profile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-500 font-bold text-lg">
+                {profile.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )
           ) : (
-            <div className="animate-pulse w-full h-full bg-slate-300"></div>
+            <div className="animate-pulse w-full h-full bg-slate-200" />
           )}
         </div>
       </header>
 
-      {/* Critical Alerts */}
-      <section className="bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-4 items-center">
-        <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-red-600 shrink-0">
-          <AlertCircle size={24} />
+      {/* Alerts */}
+      {isInactive && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-4 items-center">
+          <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-red-600 shrink-0">
+            <AlertCircle size={20} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-bold text-red-900">Conta Inativa / Credencial Vencida</h4>
+            <p className="text-xs text-red-700 mt-0.5">
+              Seu perfil está oculto no marketplace. Regularize para receber alunos.
+            </p>
+          </div>
+          <Button size="sm" variant="primary" className="bg-red-600 hover:bg-red-700 shrink-0" onClick={onRegularize}>
+            Regularizar
+          </Button>
         </div>
-        <div className="flex-1">
-          <h4 className="text-sm font-bold text-red-900">Credencial Vencendo</h4>
-          <p className="text-xs text-red-700">Sua credencial do DETRAN vence em 5 dias. Regularize para evitar bloqueios.</p>
+      )}
+
+      {!isInactive && isExpiring && (
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex gap-4 items-center">
+          <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 shrink-0">
+            <AlertCircle size={20} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-bold text-orange-900">Credencial Vencendo</h4>
+            <p className="text-xs text-orange-800 mt-0.5">
+              Sua credencial do DETRAN vence em {daysToExpiry} dias. Renove para evitar bloqueios.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="primary"
+            className="bg-orange-500 hover:bg-orange-600 shrink-0 text-white"
+            onClick={onRenew}
+          >
+            Renovar
+          </Button>
         </div>
-        <Button size="sm" variant="primary" className="bg-red-600 hover:bg-red-700 shadow-none text-[10px] px-3 py-1">Renovar</Button>
-      </section>
+      )}
 
       {/* KPIs */}
-      <KPISection 
+      <KPISection
         availableBalance={availableBalance}
         pendingBalance={pendingBalance}
         monthlyEarnings={monthlyEarnings}
         growth={growth}
       />
 
-      {/* Today's Schedule */}
-      <section className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-slate-900">Agenda de Hoje</h2>
-          {todayClasses.length > 0 && (
-            <button onClick={onViewSchedule} className="text-velo-blue text-sm font-medium">Ver tudo</button>
-          )}
-        </div>
-        
-        <div className="space-y-3">
-          {todayClasses.length > 0 ? (
-            todayClasses.map((item, i) => (
-              <div key={i} className="flex gap-4 items-center">
-                <div className="w-14 text-center">
-                  <p className="font-bold text-slate-900">{item.startTime}</p>
-                </div>
-                <Card className={cn(
-                  "flex-1 flex justify-between items-center p-3 border-l-4",
-                  item.status === 'completed' ? "border-l-velo-green bg-slate-50 opacity-70" : 
-                  item.status === 'in-progress' ? "border-l-orange-500 bg-orange-50/50" : "border-l-velo-blue"
-                )}>
-                  <div>
-                    <p className="font-bold text-slate-900">{item.studentName || 'Aluno'}</p>
-                    <p className={cn("text-xs font-medium", item.status === 'in-progress' ? "text-orange-600" : "text-slate-500")}>
-                      {item.status === 'in-progress' ? 'Em andamento' : 'Aula Prática'}
-                    </p>
-                  </div>
-                  {item.status === 'completed' ? (
-                    <CheckCircle2 size={20} className="text-velo-green" />
-                  ) : (
-                    <button onClick={() => alert(`Abrindo chat...`)} className="w-8 h-8 rounded-full bg-velo-blue-light text-velo-blue flex items-center justify-center hover:bg-velo-blue hover:text-white transition-colors">
-                      <MessageCircle size={16} />
-                    </button>
-                  )}
-                </Card>
-              </div>
-            ))
-          ) : (
-            <EmptyState 
-              icon={Calendar}
-              title="Sem aulas para hoje"
-              description="Sua agenda está livre. Aproveite para descansar ou organizar seus horários."
-              className="py-8 bg-slate-50 rounded-2xl border border-slate-100 border-dashed"
-            />
-          )}
-        </div>
-      </section>
+      {/* Desktop 2-column: Schedule (60%) + Feedback (40%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
 
-      {/* Completed Classes / Feedback */}
-      <section>
-        <h2 className="text-lg font-bold text-slate-900 mb-4">Aulas Concluídas (Feedback)</h2>
-        <div className="space-y-3">
+        {/* Today's Schedule */}
+        <section className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 p-6">
+          <div className="flex justify-between items-center mb-5">
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Agenda de Hoje</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {todayClasses.length} aula{todayClasses.length !== 1 ? 's' : ''} agendada{todayClasses.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            {todayClasses.length > 0 && (
+              <button
+                onClick={onViewSchedule}
+                className="text-velo-blue text-sm font-semibold hover:underline underline-offset-2"
+              >
+                Ver agenda →
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {todayClasses.length > 0 ? (
+              todayClasses.map((item, i) => (
+                <div key={i} className="flex gap-3 items-stretch">
+                  <div className="w-14 text-center shrink-0 flex flex-col justify-center">
+                    <p className="font-bold text-slate-900 text-sm tabular-nums">{item.startTime}</p>
+                  </div>
+                  <div
+                    className={cn(
+                      'flex-1 flex justify-between items-center p-3 rounded-xl border-l-4',
+                      item.status === 'completed'
+                        ? 'border-l-velo-green bg-slate-50 opacity-70'
+                        : item.status === 'in-progress'
+                        ? 'border-l-orange-500 bg-orange-50/60'
+                        : 'border-l-velo-blue bg-slate-50'
+                    )}
+                  >
+                    <div>
+                      <p className="font-bold text-slate-900 text-sm">{item.studentName || 'Aluno'}</p>
+                      <p
+                        className={cn(
+                          'text-xs font-medium mt-0.5',
+                          item.status === 'in-progress' ? 'text-orange-600' : 'text-slate-500'
+                        )}
+                      >
+                        {item.status === 'in-progress' ? 'Em andamento' : 'Aula Prática'}
+                      </p>
+                    </div>
+                    {item.status === 'completed' ? (
+                      <CheckCircle2 size={18} className="text-velo-green" />
+                    ) : (
+                      <button
+                        disabled
+                        title="Chat disponível em breve"
+                        aria-label="Enviar mensagem"
+                        className="w-8 h-8 rounded-lg bg-velo-blue-light text-velo-blue flex items-center justify-center opacity-50 cursor-not-allowed"
+                      >
+                        <MessageCircle size={14} aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <EmptyState
+                icon={Calendar}
+                title="Sem aulas para hoje"
+                description="Sua agenda está livre. Aproveite para organizar seus horários."
+                className="py-10 rounded-xl border border-dashed border-slate-200"
+              />
+            )}
+          </div>
+        </section>
+
+        {/* Completed Classes / Feedback */}
+        <section className="lg:col-span-2 space-y-3">
+          <div className="mb-5">
+            <h2 className="text-base font-bold text-slate-900">Aulas Concluídas</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Feedback pendente ou enviado</p>
+          </div>
+
           {completedClasses.length > 0 ? (
-            completedClasses.map((cls) => (
-              <Card key={cls.id} className="bg-slate-50">
-                <div className="flex justify-between items-start mb-2">
+            completedClasses.slice(0, 6).map((cls) => (
+              <div key={cls.id} className="bg-white rounded-xl border border-slate-100 p-4">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <p className="font-bold text-slate-900">{cls.studentName || 'Aluno'}</p>
-                    <p className="text-sm text-slate-500">
-                      {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} • {cls.startTime}
+                    <p className="font-bold text-slate-900 text-sm">{cls.studentName || 'Aluno'}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 tabular-nums">
+                      {format(cls.date, 'dd/MM/yyyy', { locale: ptBR })} · {cls.startTime}
                     </p>
                   </div>
-                  <span className="text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100 shrink-0">
                     Concluída
                   </span>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                   {cls.instructorFeedback ? (
-                      <div className="bg-white p-3 rounded-lg border border-slate-100">
-                        <p className="text-xs font-bold text-velo-blue mb-1 flex items-center gap-1">
-                          <CheckCircle2 size={12} /> Feedback Enviado
-                        </p>
-                        <p className="text-xs text-slate-600 italic">"{cls.instructorFeedback}"</p>
-                      </div>
-                   ) : (
-                      <button 
-                        onClick={() => setFeedbackClassId(cls.id)}
-                        className="w-full py-2 text-sm font-medium text-velo-blue bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        <MessageCircle size={16} /> Dar Feedback ao Aluno
-                      </button>
-                   )}
-                </div>
-              </Card>
+                {cls.instructorFeedback ? (
+                  <div className="bg-slate-50 p-2.5 rounded-lg">
+                    <p className="text-[11px] font-bold text-velo-blue mb-1 flex items-center gap-1">
+                      <CheckCircle2 size={11} aria-hidden="true" /> Feedback enviado
+                    </p>
+                    <p className="text-xs text-slate-500 italic leading-relaxed">
+                      "{cls.instructorFeedback}"
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setFeedbackClassId(cls.id)}
+                    className="w-full py-2 text-xs font-semibold text-velo-blue bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <MessageCircle size={13} aria-hidden="true" /> Dar Feedback
+                  </button>
+                )}
+              </div>
             ))
           ) : (
-            <EmptyState 
+            <EmptyState
               icon={History}
               title="Nenhum histórico"
-              description="Suas aulas concluídas aparecerão aqui para você dar feedback aos alunos."
-              className="py-8"
+              description="Suas aulas concluídas aparecerão aqui."
+              className="py-10"
             />
           )}
-        </div>
-      </section>
+        </section>
+      </div>
 
+      {/* Feedback Modal */}
       <AnimatePresence>
         {feedbackClassId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setFeedbackClassId(null)}
             />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl"
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="bg-white rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl"
             >
-              <h3 className="text-xl font-bold text-slate-900 mb-4 text-center">Feedback para o Aluno</h3>
-              
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Comentário</label>
-                <textarea
-                  value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value)}
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-velo-blue focus:border-transparent outline-none resize-none text-sm"
-                  rows={4}
-                  placeholder="Como foi o desempenho do aluno?"
-                />
-              </div>
-              
+              <h3 className="text-xl font-bold text-slate-900 mb-1">Feedback ao Aluno</h3>
+              <p className="text-sm text-slate-500 mb-5">Como foi o desempenho durante a aula?</p>
+
+              <textarea
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                className="w-full p-3 border border-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-velo-blue/20 focus-visible:border-velo-blue outline-none resize-none text-sm mb-4"
+                rows={4}
+                placeholder="Descreva o desempenho do aluno..."
+                autoFocus
+              />
+
               <div className="flex gap-3">
                 <Button variant="ghost" className="flex-1" onClick={() => setFeedbackClassId(null)}>
                   Cancelar
                 </Button>
-                <Button 
-                  className="flex-1 bg-velo-blue hover:bg-velo-blue-dark text-white" 
+                <Button
+                  className="flex-1 bg-velo-blue hover:bg-velo-blue-dark text-white"
                   onClick={handleFeedbackSubmit}
                   disabled={!feedbackText.trim()}
                 >
-                  Enviar Feedback
+                  Enviar
                 </Button>
               </div>
             </motion.div>

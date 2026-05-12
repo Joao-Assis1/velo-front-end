@@ -10,13 +10,15 @@ export default function InstructorDashboardPage() {
   const { instructorProfile, scheduledClasses, giveFeedback } = useApp();
 
   return (
-    <InstructorDashboard
-      profile={instructorProfile}
-      classes={scheduledClasses}
-      onViewSchedule={() => router.push("/app/instructor/schedule")}
-      onGiveFeedback={giveFeedback}
-      onRegularize={() => router.push("/app/instructor/settings")}
-      onRenew={() => router.push("/app/instructor/settings")}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-6xl mx-auto">
+      <InstructorDashboard
+        profile={instructorProfile}
+        classes={scheduledClasses}
+        onViewSchedule={() => router.push("/app/instructor/schedule")}
+        onGiveFeedback={giveFeedback}
+        onRegularize={() => router.push("/app/instructor/settings")}
+        onRenew={() => router.push("/app/instructor/settings")}
+      />
+    </div>
   );
 }

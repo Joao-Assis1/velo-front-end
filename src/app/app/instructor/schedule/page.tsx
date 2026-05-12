@@ -14,15 +14,17 @@ export default function InstructorSchedulePage() {
   const { scheduledClasses, giveFeedback, checkIn, checkOut } = useApp();
 
   return (
-    <InstructorSchedule
-      classes={scheduledClasses}
-      onGiveFeedback={giveFeedback}
-      onCheckIn={checkIn}
-      onCheckOut={checkOut}
-      onNavigate={(screen) => {
-        const path = SCREEN_TO_PATH[screen];
-        if (path) router.push(path);
-      }}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
+      <InstructorSchedule
+        classes={scheduledClasses}
+        onGiveFeedback={giveFeedback}
+        onCheckIn={checkIn}
+        onCheckOut={checkOut}
+        onNavigate={(screen) => {
+          const path = SCREEN_TO_PATH[screen];
+          if (path) router.push(path);
+        }}
+      />
+    </div>
   );
 }

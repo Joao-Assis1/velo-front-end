@@ -16,13 +16,15 @@ export default function StudentProfilePage() {
   const { studentProfile, logout } = useApp();
 
   return (
-    <StudentProfile
-      profile={studentProfile}
-      onNavigate={(screen) => {
-        const path = SCREEN_TO_PATH[screen];
-        if (path) router.push(path);
-      }}
-      onLogout={logout}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
+      <StudentProfile
+        profile={studentProfile}
+        onNavigate={(screen) => {
+          const path = SCREEN_TO_PATH[screen];
+          if (path) router.push(path);
+        }}
+        onLogout={logout}
+      />
+    </div>
   );
 }

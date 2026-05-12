@@ -10,13 +10,15 @@ export default function InstructorVehiclePage() {
   const { instructorProfile, setInstructorProfile } = useApp();
 
   return (
-    <InstructorVehicle
-      profile={instructorProfile}
-      onSave={(updated) => {
-        setInstructorProfile(updated);
-        router.back();
-      }}
-      onBack={() => router.back()}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
+      <InstructorVehicle
+        profile={instructorProfile}
+        onSave={(updated) => {
+          setInstructorProfile(updated);
+          router.back();
+        }}
+        onBack={() => router.back()}
+      />
+    </div>
   );
 }

@@ -18,13 +18,15 @@ export default function InstructorAvailabilityPage() {
   }
 
   return (
-    <InstructorAvailability
-      profile={instructorProfile}
-      onSave={(updated) => {
-        setInstructorProfile(updated);
-        router.back();
-      }}
-      onBack={() => router.back()}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-4xl mx-auto">
+      <InstructorAvailability
+        profile={instructorProfile}
+        onSave={(updated) => {
+          setInstructorProfile(updated);
+          router.back();
+        }}
+        onBack={() => router.back()}
+      />
+    </div>
   );
 }

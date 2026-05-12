@@ -6,17 +6,15 @@ import { BottomNav } from './BottomNav';
 
 export const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="min-h-screen bg-velo-bg flex flex-col md:flex-row">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 fixed h-full z-30">
+    <div className="min-h-screen bg-velo-bg">
+      {/* Desktop Sidebar — fixed to viewport, fora do flow */}
+      <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-72 md:z-30">
         <Sidebar />
       </aside>
 
-      {/* Content Area */}
-      <main className="flex-1 md:pl-72 min-h-screen pb-20 md:pb-0">
-        <div className="max-w-7xl mx-auto h-full">
-          {children}
-        </div>
+      {/* Content Area — margin-left libera espaço para o sidebar */}
+      <main className="min-h-screen md:ml-72 pb-20 md:pb-0">
+        {children}
       </main>
 
       {/* Mobile Bottom Navigation */}

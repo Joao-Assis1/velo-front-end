@@ -10,14 +10,16 @@ export default function InstructorEditProfilePage() {
   const { instructorProfile, setInstructorProfile, updateInstructorProfile } = useApp();
 
   return (
-    <InstructorEditProfile
-      profile={instructorProfile}
-      onSave={async (updated) => {
-        await updateInstructorProfile(updated);
-        setInstructorProfile(updated);
-        router.back();
-      }}
-      onBack={() => router.back()}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
+      <InstructorEditProfile
+        profile={instructorProfile}
+        onSave={async (updated) => {
+          await updateInstructorProfile(updated);
+          setInstructorProfile(updated);
+          router.back();
+        }}
+        onBack={() => router.back()}
+      />
+    </div>
   );
 }

@@ -3,13 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Calendar, CreditCard, User, BookOpen, Settings, Map } from 'lucide-react';
+import { Home, Calendar, CreditCard, User, BookOpen, Settings, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const studentNav = [
   { icon: Home, label: 'Início', href: '/app/student/dashboard' },
   { icon: Calendar, label: 'Agenda', href: '/app/student/schedule' },
-  { icon: Map, label: 'Navegador', href: '/app/student/concierge' },
+  { icon: Users, label: 'Instrutores', href: '/app/student/instructors' },
   { icon: CreditCard, label: 'Pagamentos', href: '/app/student/payments' },
   { icon: User, label: 'Perfil', href: '/app/student/profile' },
 ];

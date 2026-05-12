@@ -12,7 +12,7 @@ import {
   LogOut,
   ChevronRight,
   BookOpen,
-  Map
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/AppContext';
@@ -21,7 +21,7 @@ const studentNav = [
   { icon: Home, label: 'Início', href: '/app/student/dashboard' },
   { icon: Calendar, label: 'Agenda', href: '/app/student/schedule' },
   { icon: BookOpen, label: 'Progresso', href: '/app/student/progress' },
-  { icon: Map, label: 'Navegador', href: '/app/student/concierge' },
+  { icon: Users, label: 'Instrutores', href: '/app/student/instructors' },
   { icon: CreditCard, label: 'Pagamentos', href: '/app/student/payments' },
   { icon: User, label: 'Meu Perfil', href: '/app/student/profile' },
   { icon: Settings, label: 'Configurações', href: '/app/student/settings' },

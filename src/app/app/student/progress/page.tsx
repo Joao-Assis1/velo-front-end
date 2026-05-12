@@ -6,5 +6,9 @@ import { useApp } from "@/context/AppContext";
 
 export default function ProgressPage() {
   const { scheduledClasses } = useApp();
-  return <StudentProgress classes={scheduledClasses} />;
+  return (
+    <div className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
+      <StudentProgress classes={scheduledClasses} />
+    </div>
+  );
 }

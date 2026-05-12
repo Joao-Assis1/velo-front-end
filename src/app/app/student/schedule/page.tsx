@@ -8,10 +8,12 @@ export default function StudentSchedulePage() {
   const { scheduledClasses, cancelClass, rateClass } = useApp();
 
   return (
-    <StudentSchedule
-      classes={scheduledClasses}
-      onCancelClass={cancelClass}
-      onRateClass={rateClass}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
+      <StudentSchedule
+        classes={scheduledClasses}
+        onCancelClass={cancelClass}
+        onRateClass={rateClass}
+      />
+    </div>
   );
 }

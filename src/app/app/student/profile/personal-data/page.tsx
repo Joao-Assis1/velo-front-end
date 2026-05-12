@@ -73,14 +73,16 @@ export default function StudentPersonalDataPage() {
   }
 
   return (
-    <StudentPersonalData
-      profile={profile}
-      onSave={(updated) => {
-        setProfile(updated);
-        setStudentProfile(updated);
-        router.push("/app/student/profile");
-      }}
-      onBack={() => router.push("/app/student/profile")}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
+      <StudentPersonalData
+        profile={profile}
+        onSave={(updated) => {
+          setProfile(updated);
+          setStudentProfile(updated);
+          router.push("/app/student/profile");
+        }}
+        onBack={() => router.push("/app/student/profile")}
+      />
+    </div>
   );
 }

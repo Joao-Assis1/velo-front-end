@@ -6,5 +6,9 @@ import { InstructorSettings } from "@/components/screens/instructor/Settings";
 
 export default function InstructorSettingsPage() {
   const router = useRouter();
-  return <InstructorSettings onBack={() => router.back()} />;
+  return (
+    <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
+      <InstructorSettings onBack={() => router.back()} />
+    </div>
+  );
 }

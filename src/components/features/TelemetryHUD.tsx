@@ -7,6 +7,7 @@ import { SwipeButton } from '@/components/ui-custom/SwipeButton';
 import { cn } from '@/lib/utils';
 import { BiometryOverlay } from './BiometryOverlay';
 import { BiometryStage } from '@/types';
+import { submitTelemetryBatchAction } from '@/lib/actions/lessons';
 
 interface TelemetryHUDProps {
   onFinish: () => void;
@@ -22,6 +23,8 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
   const [distance, setDistance] = useState(0);
   const [lastCoords, setLastCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [activeBiometry, setActiveBiometry] = useState<BiometryStage | null>(null);
+  const [telemetryPoints, setTelemetryPoints] = useState<any[]>([]);
+  const [isFinishing, setIsFinishing] = useState(false);
 
   // Timer and Biometry Triggers
   useEffect(() => {
@@ -60,6 +63,7 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const { latitude, longitude, speed: gpsSpeed, accuracy } = pos.coords;
+        const timestamp = new Date().toISOString();
 
         // Accuracy threshold for signal quality
         if (accuracy < 20) setGpsStatus('strong');
@@ -69,6 +73,14 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
         // Update Speed (m/s to km/h)
         const currentSpeedKmh = gpsSpeed ? Math.round(gpsSpeed * 3.6) : 0;
         setSpeed(currentSpeedKmh);
+
+        // Add to telemetry batch
+        setTelemetryPoints(prev => [...prev, {
+          latitude,
+          longitude,
+          speed: currentSpeedKmh,
+          timestamp
+        }]);
 
         // Calculate Cumulative Distance
         if (lastCoords) {
@@ -112,6 +124,22 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
     return R * c;
   };
 
+  const handleFinish = async () => {
+    if (isFinishing) return;
+    setIsFinishing(true);
+    
+    try {
+      // Send the final batch of telemetry
+      if (telemetryPoints.length > 0) {
+        await submitTelemetryBatchAction(lessonId, telemetryPoints);
+      }
+      onFinish();
+    } catch (error) {
+      console.error("Error sending final telemetry:", error);
+      onFinish();
+    }
+  };
+
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60);
     const secs = s % 60;
@@ -129,7 +157,7 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
             stage={activeBiometry}
             onSuccess={() => {
               if (activeBiometry === 'END') {
-                onFinish();
+                handleFinish();
               }
               setActiveBiometry(null);
             }}
@@ -186,9 +214,9 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
       {/* Footer / Action */}
       <footer className="mt-auto pt-8">
         <SwipeButton
-          text="Deslize para finalizar"
+          text={isFinishing ? "Finalizando..." : "Deslize para finalizar"}
           successText="Aula Finalizada"
-          onSwipe={onFinish}
+          onSwipe={handleFinish}
           className="max-w-md mx-auto"
         />
         <p className="text-center text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-6">

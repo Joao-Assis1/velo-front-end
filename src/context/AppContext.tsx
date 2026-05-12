@@ -20,6 +20,7 @@ import {
 import { updateInstructorProfileAction } from '@/lib/actions/instructors';
 import { updateStudentProfileAction } from '@/lib/actions/profileActions';
 import { processPaymentAction } from '@/lib/actions/payments';
+import { getAcademyModulesAction, seedAcademyAction } from '@/lib/actions/academy';
 import { INITIAL_STUDENT_PROFILE } from '../constants/mockData';
 
 interface AppContextType {
@@ -122,9 +123,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadInitialData = async () => {
       if (userRole === 'student' && studentProfile?.id) {
+        // Fetch Lessons
         const lessonsRes = await getLessonsAction({ studentId: studentProfile.id });
         if (lessonsRes.success && lessonsRes.data) {
           setScheduledClasses(lessonsRes.data as ScheduledClass[]);
+        }
+
+        // Fetch Academy Modules
+        let academyRes = await getAcademyModulesAction();
+        if (academyRes.success) {
+          if (!academyRes.data || academyRes.data.length === 0) {
+            // Auto-seed if empty
+            await seedAcademyAction();
+            academyRes = await getAcademyModulesAction();
+          }
+          if (academyRes.data) {
+            setAcademyModules(academyRes.data as AcademyModule[]);
+          }
         }
       } else if (userRole === 'instructor' && instructorProfile?.id) {
         const lessonsRes = await getLessonsAction({ instructorId: instructorProfile.id });
@@ -406,10 +421,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const checkOutTime = new Date();
         const checkInTime = c.checkInTime || new Date();
         const durationMinutes = Math.max(1, Math.round((checkOutTime.getTime() - checkInTime.getTime()) / 60000));
-        
-        // Update balances simulation
-        setAvailableBalance(prev => prev + (c.price || 0));
-        setPendingBalance(prev => Math.max(0, prev - (c.price || 0)));
         
         return { ...c, status: 'completed', checkOutTime, durationMinutes };
       }

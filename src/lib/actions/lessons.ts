@@ -173,3 +173,14 @@ export async function getEscrowStatusAction(id: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function submitTelemetryBatchAction(lessonId: string, points: any[]) {
+  try {
+    return await fetchWrapper<any>("/telemetria/batch", {
+      method: "POST",
+      body: JSON.stringify({ lessonId, points }),
+    });
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

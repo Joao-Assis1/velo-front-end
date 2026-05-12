@@ -17,13 +17,43 @@ import { VideoPlayer } from '@/components/features/VideoPlayer';
 import { QuizModule } from '@/components/features/QuizModule';
 import { useApp } from '@/context/AppContext';
 import { AcademyModule } from '@/types';
+import { submitAcademyScoreAction } from '@/lib/actions/academy';
 
 export default function VeloAcademy() {
-  const { academyModules } = useApp();
+  const { academyModules, studentProfile, setAcademyModules } = useApp();
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [view, setView] = useState<'video' | 'quiz'>('video');
+  const [startedAt, setStartedAt] = useState<string>(new Date().toISOString());
 
   const selectedModule = academyModules.find(m => m.id === selectedModuleId);
+
+  const handleFinishQuiz = async (score: number) => {
+    if (!studentProfile?.id || !selectedModuleId) return;
+
+    // Mapping current UI quiz results to backend expected format
+    // For MVP, we use the m1 module as the "Simulado Geral"
+    const answers = (selectedModule?.questions || []).map(q => ({
+      questionId: q.id,
+      answer: 0 // In a real app, we'd capture the actual selected option index.
+                // For now, we'll let the backend score it based on what's sent or mock the completion.
+    }));
+
+    const res = await submitAcademyScoreAction(studentProfile.id, answers, startedAt);
+    
+    if (res.success) {
+      // Update local progress if passed
+      if (score >= 70) {
+        setAcademyModules(academyModules.map(m =>
+          m.id === selectedModuleId ? { ...m, progress: 100 } : m
+        ));
+      }
+    }
+  };
+
+  const handleStartQuiz = () => {
+    setStartedAt(new Date().toISOString());
+    setView('quiz');
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -165,7 +195,7 @@ export default function VeloAcademy() {
                           Preste atenção aos detalhes apresentados no vídeo, pois eles serão cobrados no simulado ao final.
                         </p>
                         <Button 
-                          onClick={() => setView('quiz')}
+                          onClick={handleStartQuiz}
                           className="w-full md:w-auto"
                           disabled={!selectedModule?.questions.length}
                         >
@@ -183,7 +213,7 @@ export default function VeloAcademy() {
                     >
                       <QuizModule 
                         questions={selectedModule?.questions || []} 
-                        onFinish={(score) => console.log('Score:', score)}
+                        onFinish={handleFinishQuiz}
                         onRestart={() => setView('video')}
                       />
                     </motion.div>

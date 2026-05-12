@@ -212,96 +212,121 @@ export const InstructorProfileView = ({
 
   return (
     <div className="pb-28 md:pb-10">
-      <div className="flex items-center justify-between mb-6">
-        <button
-          onClick={onBack}
-          aria-label="Voltar"
-          className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
-        >
-          <ChevronLeft size={24} />
-        </button>
-      </div>
+      {/* Hero Header */}
+      <div className="relative -mx-4 md:-mx-0 mb-0">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white rounded-b-[2rem]" />
 
-      <div className="px-6">
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="relative mb-4">
-            <div className="w-28 h-28 rounded-full p-1 border-2 border-slate-100">
-              <img
-                src={instructor.profilePicture}
-                alt={instructor.name}
-                width={96}
-                height={96}
-                loading="lazy"
-                className="w-full h-full rounded-full object-cover"
-              />
+        <div className="relative px-4 pt-5 pb-8">
+          {/* Back button */}
+          <button
+            onClick={onBack}
+            aria-label="Voltar"
+            className="w-9 h-9 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center text-slate-600 hover:bg-white transition-colors shadow-sm border border-white/60 mb-6"
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          <div className="flex flex-col items-center text-center">
+            {/* Photo */}
+            <div className="relative mb-4">
+              <div className={cn(
+                "w-32 h-32 rounded-[2rem] overflow-hidden border-4 bg-slate-100 shadow-xl",
+                instructor.instructorType === "Credenciado"
+                  ? "border-blue-100"
+                  : "border-orange-100"
+              )}>
+                {instructor.profilePicture ? (
+                  <img
+                    src={instructor.profilePicture}
+                    alt={instructor.name}
+                    width={128}
+                    height={128}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400 font-black text-4xl">
+                    {instructor.name?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-black px-3 py-1 rounded-full flex items-center gap-1 shadow-md border-2 border-white whitespace-nowrap">
+                <Star size={10} className="fill-yellow-400 text-yellow-400" />
+                {instructor.rating}
+                <span className="text-slate-400 font-medium">({instructor.reviewsCount})</span>
+              </div>
             </div>
-            <div className="absolute bottom-1 right-1 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border-2 border-white">
-              <Star size={10} fill="currentColor" />
-              {instructor.rating}
-            </div>
-          </div>
 
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">
-            {instructor.name}
-          </h1>
-          <p className="text-slate-500 text-sm flex items-center justify-center gap-1 mb-4">
-            <MapPin size={14} /> {instructor.location}
-          </p>
+            <h1 className="text-2xl font-black text-slate-900 mt-3 mb-1 tracking-tight">
+              {instructor.name}
+            </h1>
+            {instructor.location && (
+              <p className="text-slate-400 text-sm flex items-center justify-center gap-1 mb-4">
+                <MapPin size={13} /> {instructor.location}
+              </p>
+            )}
 
-          <div className="flex flex-wrap justify-center gap-2">
-            <span
-              className={cn(
-                "text-xs px-3 py-1.5 rounded-full font-medium border transition-colors",
+            <div className="flex flex-wrap justify-center gap-2">
+              <span className={cn(
+                "text-xs px-3 py-1.5 rounded-full font-bold border",
                 instructor.instructorType === "Credenciado"
                   ? "bg-blue-50 text-velo-blue border-blue-100"
                   : "bg-orange-50 text-orange-600 border-orange-100",
-              )}
-            >
-              {instructor.instructorType}
-            </span>
-            <span className="text-xs px-3 py-1.5 rounded-full font-medium border border-slate-100 bg-slate-50 text-slate-600 flex items-center gap-1">
-              <Car size={12} />
-              {instructor.vehicleModel}
-            </span>
-            <span className="text-xs px-3 py-1.5 rounded-full font-medium border border-slate-100 bg-slate-50 text-slate-600">
-              {instructor.transmission}
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 mb-8">
-          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center justify-center text-center">
-            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
-              Valor Hora/Aula
-            </span>
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-xl font-bold text-slate-900">
-                R$ {instructor.pricePerClass ?? 0}
+              )}>
+                {instructor.instructorType}
               </span>
+              {instructor.vehicleModel && (
+                <span className="text-xs px-3 py-1.5 rounded-full font-medium border border-slate-200 bg-white text-slate-600 flex items-center gap-1">
+                  <Car size={11} />
+                  {instructor.vehicleModel}
+                </span>
+              )}
+              {instructor.transmission && (
+                <span className="text-xs px-3 py-1.5 rounded-full font-medium border border-slate-200 bg-white text-slate-600">
+                  {instructor.transmission}
+                </span>
+              )}
             </div>
           </div>
-          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col items-center justify-center text-center">
-            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+        </div>
+      </div>
+
+      <div className="px-4 md:px-6">
+        {/* Stats Row */}
+        <div className="flex gap-3 mb-8 mt-2">
+          <div className="flex-1 bg-velo-blue rounded-2xl p-4 text-center">
+            <span className="text-blue-200 text-[10px] font-bold uppercase tracking-wider block mb-0.5">
+              Por aula
+            </span>
+            <span className="text-2xl font-black text-white">
+              R${instructor.pricePerClass ?? 0}
+            </span>
+          </div>
+          <div className="flex-1 bg-slate-50 rounded-2xl p-4 border border-slate-100 text-center">
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-0.5">
               Experiência
             </span>
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-xl font-bold text-slate-900">
+            <div className="flex items-baseline justify-center gap-1">
+              <span className="text-2xl font-black text-slate-900">
                 {instructor.reviewsCount}
               </span>
-              <span className="text-xs text-slate-500 font-medium">aulas</span>
+              <span className="text-xs text-slate-400 font-medium">aulas</span>
             </div>
           </div>
         </div>
 
-        <div className="mb-8">
-          <h3 className="font-bold text-slate-900 mb-2 text-lg">Sobre</h3>
-          <p className="text-slate-600 leading-relaxed text-sm">
-            {instructor.bio}
-          </p>
-        </div>
+        {instructor.bio && (
+          <div className="mb-8">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Sobre</h3>
+            <p className="text-slate-600 leading-relaxed text-sm">
+              {instructor.bio}
+            </p>
+          </div>
+        )}
 
-        <div className="mt-8">
-          <h3 className="font-bold text-slate-900 mb-4">Disponibilidade</h3>
+        <div className="mt-6">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">Disponibilidade</h3>
 
           <CalendarWidget
             selectedDate={selectedDate}
@@ -360,7 +385,7 @@ export const InstructorProfileView = ({
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-100 z-50 flex flex-col md:flex-row md:left-64 gap-3">
+      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-white/95 backdrop-blur-sm border-t border-slate-100 z-50 flex flex-col md:flex-row md:left-72 gap-3">
         <Button
           className="w-full text-lg py-4 md:flex-1"
           onClick={handleBookClick}

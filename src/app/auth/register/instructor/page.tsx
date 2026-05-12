@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
+import { maskCNH, maskRENACH, maskPlate } from "@/lib/utils/masks";
 
 const UF_LIST = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const CNH_CATS = ["A","B","C","D","E","AB","AC","AD","AE"];
@@ -286,8 +287,8 @@ export default function InstructorRegisterPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Nº CNH *" hint="11 dígitos">
                   <input value={form.cnhNumber}
-                    onChange={(e) => set("cnhNumber", e.target.value.replace(/\D/g, "").slice(0, 11))}
-                    placeholder="00000000000" maxLength={11} className={inputCls} />
+                    onChange={(e) => set("cnhNumber", maskCNH(e.target.value))}
+                    placeholder="00000000000" maxLength={11} inputMode="numeric" className={inputCls} />
                 </Field>
                 <Field label="Categoria CNH *">
                   <select value={form.cnhCategory} onChange={(e) => set("cnhCategory", e.target.value)} className={inputCls}>
@@ -304,9 +305,10 @@ export default function InstructorRegisterPage() {
                     min={new Date().toISOString().split("T")[0]}
                     className={inputCls} />
                 </Field>
-                <Field label="Nº RENACH *" hint="Registro Nacional CNH">
-                  <input value={form.renachNumber} onChange={(e) => set("renachNumber", e.target.value)}
-                    placeholder="SP000000000" className={inputCls} />
+                <Field label="Nº RENACH *" hint="11 dígitos do Registro Nacional CNH">
+                  <input value={form.renachNumber}
+                    onChange={(e) => set("renachNumber", maskRENACH(e.target.value))}
+                    placeholder="00000000000" maxLength={11} inputMode="numeric" className={inputCls} />
                 </Field>
               </div>
 
@@ -359,7 +361,7 @@ export default function InstructorRegisterPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Placa *">
                   <input value={form.vehiclePlate}
-                    onChange={(e) => set("vehiclePlate", e.target.value.toUpperCase())}
+                    onChange={(e) => set("vehiclePlate", maskPlate(e.target.value))}
                     placeholder="ABC-1234 ou ABC1D23" maxLength={8} className={inputCls} />
                 </Field>
                 <Field label="Ano *">

@@ -105,45 +105,49 @@ export default function StudentDashboard() {
         <DetranStepper stages={detranStages} />
       </section>
 
-      {/* Quick Actions & Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Academy Card */}
-        <Link href="/app/student/academy" className="group">
-          <Card className="h-full border-none bg-slate-900 text-white p-6 overflow-hidden relative transition-transform hover:scale-[1.02] active:scale-[0.98]">
-            <div className="relative z-10">
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-4 backdrop-blur-md">
-                <BookOpen className="text-white" size={24} />
-              </div>
-              <h3 className="text-xl font-bold mb-1">Velo Academy</h3>
-              <p className="text-slate-400 text-sm mb-6">Continue seu curso teórico de onde parou.</p>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-velo-blue w-[65%]" />
-                </div>
-                <span className="text-xs font-bold">65%</span>
-              </div>
+      {/* Marketplace Hero */}
+      <Link href="/app/student/instructors" className="group block">
+        <div className="relative overflow-hidden rounded-3xl bg-velo-blue p-6 transition-all hover:shadow-2xl hover:shadow-velo-blue/30 active:scale-[0.98]">
+          <div className="relative z-10">
+            <p className="text-blue-300 text-[11px] font-black uppercase tracking-widest mb-2">Marketplace</p>
+            <h3 className="text-2xl font-black text-white leading-tight mb-1">
+              Encontre Seu<br />Instrutor Ideal
+            </h3>
+            <p className="text-blue-200 text-sm mb-5">
+              Instrutores credenciados com disponibilidade na sua cidade.
+            </p>
+            <div className="inline-flex items-center gap-2 bg-white text-velo-blue text-sm font-black px-4 py-2.5 rounded-2xl shadow-sm group-hover:gap-3 transition-all">
+              Buscar agora <ArrowRight size={16} />
             </div>
-            {/* Background Decoration */}
-            <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-velo-blue/20 rounded-full blur-3xl" />
-          </Card>
-        </Link>
+          </div>
+          <div className="absolute -right-10 -top-10 w-52 h-52 bg-white/5 rounded-full" />
+          <div className="absolute right-6 -bottom-6 w-28 h-28 bg-blue-900/50 rounded-full" />
+          <div className="absolute right-20 top-4 w-10 h-10 bg-white/10 rounded-full" />
+        </div>
+      </Link>
 
-        {/* Marketplace Card */}
-        <Link href="/app/student/instructors" className="group">
-          <Card className="h-full border-2 border-slate-100 p-6 hover:border-velo-blue/30 transition-all hover:shadow-xl hover:shadow-slate-200/50 active:scale-[0.98]">
-            <div className="w-12 h-12 bg-velo-blue-light rounded-xl flex items-center justify-center mb-4">
-              <Search className="text-velo-blue" size={24} />
+      {/* Academy Card */}
+      <Link href="/app/student/academy" className="group block">
+        <Card className="border-none bg-slate-900 text-white p-6 overflow-hidden relative transition-transform hover:scale-[1.01] active:scale-[0.98]">
+          <div className="relative z-10 flex items-center justify-between">
+            <div>
+              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3 backdrop-blur-md">
+                <BookOpen className="text-white" size={20} />
+              </div>
+              <h3 className="text-lg font-bold mb-0.5">Velo Academy</h3>
+              <p className="text-slate-400 text-sm">Continue seu curso teórico</p>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-1">Buscar Instrutor</h3>
-            <p className="text-slate-500 text-sm mb-6">Encontre os melhores instrutores credenciados perto de você.</p>
-            
-            <div className="flex items-center text-velo-blue font-bold text-sm group-hover:gap-2 transition-all">
-              Ver marketplace <ArrowRight size={18} className="ml-1" />
+            <div className="text-right">
+              <span className="text-3xl font-black text-white">65%</span>
+              <p className="text-slate-400 text-xs">concluído</p>
             </div>
-          </Card>
-        </Link>
-      </div>
+          </div>
+          <div className="mt-4 h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-velo-blue w-[65%] rounded-full" />
+          </div>
+          <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-velo-blue/20 rounded-full blur-3xl" />
+        </Card>
+      </Link>
 
       {/* Next Lesson Preview */}
       <section className="space-y-4">

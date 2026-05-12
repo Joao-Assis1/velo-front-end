@@ -3,11 +3,19 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { addPaymentMethodAction } from '@/lib/actions/payment-methods';
+import { maskCardNumber, maskCVV } from '@/lib/utils/masks';
 
 interface AddCardFormProps {
   onSuccess?: () => void;
   onClose?: () => void;
 }
+
+const asaasErrorMap: Record<string, string> = {
+  invalid_credit_card: 'Cartão inválido. Verifique o número.',
+  expired_credit_card: 'Cartão vencido.',
+  insufficient_funds: 'Cartão recusado por saldo insuficiente.',
+  invalid_cvv: 'CVV inválido.',
+};
 
 export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) => {
   const { studentProfile } = useApp();
@@ -22,8 +30,7 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    // Simple masking for expiry date (MM/YY)
+
     if (name === 'expiryDate') {
       const cleanValue = value.replace(/\D/g, '').substring(0, 4);
       if (cleanValue.length >= 3) {
@@ -32,7 +39,9 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
         setFormData(prev => ({ ...prev, [name]: cleanValue }));
       }
     } else if (name === 'cardNumber') {
-      setFormData(prev => ({ ...prev, [name]: value.replace(/\D/g, '').substring(0, 16) }));
+      setFormData(prev => ({ ...prev, [name]: maskCardNumber(value) }));
+    } else if (name === 'cvv') {
+      setFormData(prev => ({ ...prev, [name]: maskCVV(value) }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -51,27 +60,30 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
       setLoading(false);
       return;
     }
-    
-      const month = parts[0].padStart(2, '0');
-      const year = parts[1];
-      
-      try {
-        const res = await addPaymentMethodAction({
-          studentId: studentProfile.id,
-          cardNumber: formData.cardNumber,
-          cardholderName: formData.cardholderName,
-          expiryMonth: month,
-          expiryYear: '20' + year,
-          cvv: formData.cvv,
-          isDefault: true
-        });
+
+    const month = parts[0].padStart(2, '0');
+    const year = parts[1];
+
+    try {
+      const res = await addPaymentMethodAction({
+        studentId: studentProfile.id,
+        cardNumber: formData.cardNumber.replace(/\s/g, ''),
+        cardholderName: formData.cardholderName,
+        expiryMonth: month,
+        expiryYear: '20' + year,
+        cvv: formData.cvv,
+        isDefault: true
+      });
 
       if (res.success) {
         if (onSuccess) onSuccess();
       } else {
-        setError(res.error || 'Erro ao adicionar cartão');
+        const mappedError =
+          asaasErrorMap[res.error ?? ''] ??
+          (res.error || 'Cartão não autorizado. Tente outro.');
+        setError(mappedError);
       }
-    } catch (err) {
+    } catch {
       setError('Erro de conexão');
     } finally {
       setLoading(false);
@@ -81,11 +93,11 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full">
       <h3 className="text-xl font-bold mb-4">Adicionar Cartão</h3>
-      
+
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Nome no Cartão</label>
-          <input 
+          <input
             name="cardholderName"
             value={formData.cardholderName}
             onChange={handleChange}
@@ -97,11 +109,12 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Número do Cartão</label>
-          <input 
+          <input
             name="cardNumber"
             value={formData.cardNumber}
             onChange={handleChange}
             placeholder="0000 0000 0000 0000"
+            inputMode="numeric"
             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
             required
           />
@@ -110,22 +123,24 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
         <div className="flex gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">Validade (MM/AA)</label>
-            <input 
+            <input
               name="expiryDate"
               value={formData.expiryDate}
               onChange={handleChange}
               placeholder="MM/AA"
+              inputMode="numeric"
               className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
               required
             />
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-            <input 
+            <input
               name="cvv"
               value={formData.cvv}
               onChange={handleChange}
               placeholder="123"
+              inputMode="numeric"
               className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
               required
             />
@@ -141,7 +156,7 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
 
       <div className="flex gap-3 mt-6">
         {onClose && (
-          <button 
+          <button
             type="button"
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-600"
@@ -149,7 +164,7 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
             Cancelar
           </button>
         )}
-        <button 
+        <button
           type="submit"
           disabled={loading}
           className={`flex-1 py-3 px-4 rounded-xl font-bold text-white transition-all ${

@@ -19,6 +19,7 @@ import {
 } from '@/lib/actions/auth';
 import { updateInstructorProfileAction } from '@/lib/actions/instructors';
 import { updateStudentProfileAction } from '@/lib/actions/profileActions';
+import { processPaymentAction } from '@/lib/actions/payments';
 import { INITIAL_STUDENT_PROFILE } from '../constants/mockData';
 
 interface AppContextType {
@@ -302,6 +303,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const bookClass = async (date: Date, startTime: string, endTime: string, instructor: Instructor) => {
     try {
+      const defaultPM = (studentProfile as any)?.paymentMethods?.find(
+        (pm: any) => pm.isDefault && !pm.isDeleted
+      );
+      if (!defaultPM && instructor.pricePerClass) {
+        throw new Error('Nenhum cartão padrão cadastrado. Adicione um cartão antes de agendar.');
+      }
+
       const lessonDto = {
         studentId: studentProfile?.id || '00000000-0000-0000-0000-000000000000',
         instructorId: instructor.id,
@@ -311,13 +319,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         price: instructor.pricePerClass,
         vehicleId: instructor.vehicleId
       };
-      
+
       const result = await createLessonAction(lessonDto);
-      if (result.success && result.data) {
-        setScheduledClasses(prev => [...prev, result.data as ScheduledClass]);
-      } else {
+      if (!result.success || !result.data) {
         throw new Error(result.error || 'Failed to book class');
       }
+
+      const lesson = result.data as ScheduledClass;
+
+      if (instructor.pricePerClass && defaultPM) {
+        const paymentResult = await processPaymentAction({
+          amount: instructor.pricePerClass,
+          studentId: studentProfile?.id || '',
+          paymentMethodId: defaultPM.id,
+          lessonId: lesson.id,
+        });
+
+        if (!paymentResult.success) {
+          await cancelLessonAction(lesson.id);
+          throw new Error(paymentResult.error || 'Pagamento falhou. Aula cancelada.');
+        }
+      }
+
+      setScheduledClasses(prev => [...prev, lesson]);
     } catch (err) {
       console.error('Failed to book class:', err);
       throw err;

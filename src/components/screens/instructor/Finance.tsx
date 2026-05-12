@@ -1,21 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, CreditCard, TrendingUp, ArrowUpRight, ArrowDownLeft, CheckCircle2 } from 'lucide-react';
-import { Card, Button } from '@/components/ui-custom';
+import React from 'react';
+import Link from 'next/link';
+import { ChevronLeft, CreditCard, TrendingUp, ArrowUpRight, ArrowDownLeft, AlertTriangle } from 'lucide-react';
+import { Card } from '@/components/ui-custom';
 import { ScheduledClass } from '@/types';
 
 export const InstructorFinance = ({
   classes,
+  pixKey,
   onBack
 }: {
   classes: ScheduledClass[],
+  pixKey?: string,
   onBack: () => void
 }) => {
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawRequested, setWithdrawRequested] = useState(false);
-
   const completedClasses = classes.filter(c => c.status === 'completed');
   const totalEarnings = completedClasses.reduce((acc, curr) => acc + (curr.price || 0), 0);
   const pendingEarnings = classes.filter(c => c.status === 'upcoming').reduce((acc, curr) => acc + (curr.price || 0), 0);
@@ -57,7 +56,7 @@ export const InstructorFinance = ({
           <Card className="p-4 border-slate-100">
             <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
               <ArrowDownLeft size={14} className="text-blue-500" />
-              <span>Saques</span>
+              <span>Transferido</span>
             </div>
             <p className="font-bold text-slate-900">R$ 0,00</p>
           </Card>
@@ -92,56 +91,36 @@ export const InstructorFinance = ({
         </div>
       </section>
 
-      <button
-        onClick={() => !withdrawRequested && setShowWithdrawModal(true)}
-        disabled={totalEarnings === 0 || withdrawRequested}
-        className="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
-      >
-        {withdrawRequested ? 'Solicitação Registrada' : 'Solicitar Saque'}
-      </button>
-
-      <AnimatePresence>
-        {showWithdrawModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={() => setShowWithdrawModal(false)}
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl text-center"
-            >
-              <div className="w-14 h-14 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-1">Confirmar Saque</h3>
-              <p className="text-sm text-slate-500 mb-2">
-                Você deseja solicitar o saque de
-              </p>
-              <p className="text-2xl font-bold text-slate-900 mb-5">
-                {totalEarnings.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-              </p>
-              <div className="flex gap-3">
-                <Button variant="ghost" className="flex-1" onClick={() => setShowWithdrawModal(false)}>
-                  Cancelar
-                </Button>
-                <Button
-                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white"
-                  onClick={() => { setShowWithdrawModal(false); setWithdrawRequested(true); }}
-                >
-                  Confirmar
-                </Button>
-              </div>
-            </motion.div>
+      {!pixKey && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
+          <AlertTriangle size={18} className="shrink-0 mt-0.5 text-amber-500" />
+          <div>
+            <p className="text-sm font-bold text-amber-900 mb-1">Chave PIX não cadastrada</p>
+            <p className="text-sm text-amber-700">
+              Cadastre sua chave PIX para receber os pagamentos das suas aulas.{' '}
+              <Link href="/app/instructor/settings" className="underline font-semibold">
+                Configurar agora
+              </Link>
+            </p>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
+
+      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-3">
+        <div className="shrink-0 mt-0.5 text-blue-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div>
+          <p className="text-sm font-bold text-blue-900 mb-1">Transferências automáticas</p>
+          <p className="text-sm text-blue-700">
+            Seu saldo é transferido para sua chave PIX em até 5 minutos após cada aula concluída (descontada a taxa da plataforma de 20%).
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

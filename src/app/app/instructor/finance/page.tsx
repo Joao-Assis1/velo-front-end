@@ -7,12 +7,15 @@ import { useApp } from "@/context/AppContext";
 
 export default function InstructorFinancePage() {
   const router = useRouter();
-  const { scheduledClasses } = useApp();
+  const { scheduledClasses, instructorProfile } = useApp();
 
   return (
-    <InstructorFinance
-      classes={scheduledClasses}
-      onBack={() => router.back()}
-    />
+    <div className="px-4 md:px-8 py-6 max-w-4xl mx-auto">
+      <InstructorFinance
+        classes={scheduledClasses}
+        pixKey={instructorProfile?.pixKey}
+        onBack={() => router.back()}
+      />
+    </div>
   );
 }

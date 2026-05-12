@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Clock, LogOut, Star, MessageCircle, AlertTriangle, X } from 'lucide-react';
+import { Calendar, Star, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Card, Button } from '@/components/ui-custom';
+import { Button } from '@/components/ui-custom';
 import { ScheduledClass } from '@/types';
 import { EmptyState } from '@/components/ui-custom/EmptyState';
 
@@ -27,8 +27,12 @@ export const StudentSchedule = ({
   const [rating, setRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
 
-  const upcomingClasses = classes.filter(c => c.status === 'upcoming' || c.status === 'in-progress').sort((a, b) => a.date.getTime() - b.date.getTime());
-  const pastClasses = classes.filter(c => c.status === 'completed' || c.status === 'cancelled').sort((a, b) => b.date.getTime() - a.date.getTime());
+  const upcomingClasses = classes
+    .filter(c => c.status === 'upcoming' || c.status === 'in-progress')
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  const pastClasses = classes
+    .filter(c => c.status === 'completed' || c.status === 'cancelled')
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   const handleRateSubmit = () => {
     if (classToRate && rating > 0) {
@@ -40,172 +44,206 @@ export const StudentSchedule = ({
   };
 
   return (
-    <div className="pb-28 md:pb-10 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-slate-900">Minhas Aulas</h1>
-        <p className="text-slate-500 text-sm">Gerencie seus agendamentos</p>
+    <div className="pb-28 md:pb-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Minhas Aulas</h1>
+        <p className="text-slate-400 text-sm mt-0.5">
+          {upcomingClasses.length > 0
+            ? `${upcomingClasses.length} agendada${upcomingClasses.length !== 1 ? 's' : ''}`
+            : 'Gerencie seus agendamentos'}
+        </p>
       </header>
 
-      <section>
-        <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <Calendar size={20} className="text-velo-blue" />
-          Próximas Aulas
-        </h2>
-        <div className="space-y-3">
-          {upcomingClasses.length > 0 ? (
-            upcomingClasses.map((cls) => (
-              <Card key={cls.id} className={cn("border-l-4", cls.status === 'in-progress' ? "border-l-orange-500" : "border-l-velo-blue")}>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <p className="font-bold text-slate-900">{cls.instructorName}</p>
-                    <p className="text-sm text-slate-500 flex items-center gap-1">
-                      <Clock size={14} />
-                      {format(cls.date, "dd 'de' MMM", { locale: ptBR })} às {cls.startTime}
-                    </p>
+      <section className="mb-10">
+        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Próximas</h2>
+        {upcomingClasses.length > 0 ? (
+          <div className="space-y-2">
+            {upcomingClasses.map((cls, i) => (
+              <motion.div
+                key={cls.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06, duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="flex gap-4 items-center bg-white rounded-2xl p-4 border border-slate-100 hover:border-slate-200 transition-colors"
+              >
+                <div className="shrink-0 w-11 text-center">
+                  <div className={cn(
+                    "text-2xl font-black leading-none tabular-nums",
+                    cls.status === 'in-progress' ? "text-orange-500" : "text-velo-blue"
+                  )}>
+                    {format(cls.date, "dd")}
                   </div>
-                  <div className="text-right flex flex-col items-end gap-2">
-                     <span className={cn(
-                       "text-xs font-bold px-2 py-1 rounded-full",
-                       cls.status === 'in-progress' ? "bg-orange-50 text-orange-600" : "bg-blue-50 text-velo-blue"
-                     )}>
-                       {cls.status === 'in-progress' ? 'Em andamento' : 'Agendada'}
-                     </span>
-                     {cls.status === 'upcoming' && (
-                       <button 
-                         onClick={() => setClassToCancel(cls.id)}
-                         className="text-xs text-red-500 font-medium hover:text-red-700 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
-                       >
-                         <LogOut size={12} /> Cancelar
-                       </button>
-                     )}
+                  <div className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">
+                    {format(cls.date, "MMM", { locale: ptBR })}
                   </div>
                 </div>
 
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-slate-900 text-sm leading-tight truncate">{cls.instructorName}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{cls.startTime}</p>
+                  {cls.payment?.status && cls.payment.status !== 'COMPLETED' && (
+                    <p className={cn(
+                      "text-[10px] font-bold mt-0.5",
+                      cls.payment.status === 'PENDING' ? "text-amber-500" :
+                      cls.payment.status === 'OVERDUE' ? "text-red-500" :
+                      cls.payment.status === 'REFUNDED' ? "text-blue-500" : "text-slate-400"
+                    )}>
+                      {cls.payment.status === 'PENDING' ? 'Pagamento pendente' :
+                       cls.payment.status === 'OVERDUE' ? 'Pagamento vencido' :
+                       cls.payment.status === 'REFUNDED' ? 'Reembolsado' : ''}
+                    </p>
+                  )}
+                </div>
 
-              </Card>
-            ))
-          ) : (
-            <EmptyState 
-              icon={Calendar}
-              title="Nenhuma aula agendada"
-              description="Você ainda não possui aulas marcadas para os próximos dias."
-            />
-          )}
-        </div>
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  <span className={cn(
+                    "text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide",
+                    cls.status === 'in-progress'
+                      ? "bg-orange-100 text-orange-600"
+                      : "bg-blue-50 text-velo-blue"
+                  )}>
+                    {cls.status === 'in-progress' ? 'Em andamento' : 'Agendada'}
+                  </span>
+                  {cls.status === 'upcoming' && (
+                    <button
+                      onClick={() => setClassToCancel(cls.id)}
+                      className="text-[10px] text-red-400 font-bold hover:text-red-600 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Calendar}
+            title="Nenhuma aula agendada"
+            description="Vá ao marketplace e escolha um instrutor para sua próxima aula."
+          />
+        )}
       </section>
 
       <section>
-        <h2 className="text-lg font-bold text-slate-900 mb-4">Histórico</h2>
-        <div className="space-y-3">
-          {pastClasses.length > 0 ? (
-            pastClasses.map((cls) => (
-              <Card key={cls.id} className="bg-slate-50">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-bold text-slate-900">{cls.instructorName}</p>
-                    <p className="text-sm text-slate-500">
-                      {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} • {cls.startTime}
-                    </p>
+        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Histórico</h2>
+        {pastClasses.length > 0 ? (
+          <div className="divide-y divide-slate-100">
+            {pastClasses.map((cls, i) => (
+              <motion.div
+                key={cls.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.04 }}
+                className="py-4 first:pt-0"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex gap-3 items-start">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full mt-1.5 shrink-0",
+                      cls.status === 'completed' ? "bg-velo-green" : "bg-red-400"
+                    )} />
+                    <div>
+                      <p className="font-bold text-slate-900 text-sm leading-tight">{cls.instructorName}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} · {cls.startTime}
+                      </p>
+                    </div>
                   </div>
                   <span className={cn(
-                    "text-xs font-bold px-2 py-1 rounded-full",
-                    cls.status === 'completed' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    "text-[10px] font-black px-2 py-0.5 rounded-full uppercase shrink-0",
+                    cls.status === 'completed'
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-600"
                   )}>
                     {cls.status === 'completed' ? 'Concluída' : 'Cancelada'}
                   </span>
                 </div>
-                
+
                 {cls.status === 'completed' && (
-                  <div className="mt-3 pt-3 border-t border-slate-200">
-                    {(cls.studentFeedbackRating !== undefined) ? (
-                      <div className="bg-white p-3 rounded-lg border border-slate-100">
-                        <div className="flex items-center gap-1 mb-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              size={12} 
-                              className={i < cls.studentFeedbackRating! ? "fill-yellow-400 text-yellow-400" : "text-slate-300"} 
+                  <div className="ml-5 mt-3 space-y-2">
+                    {cls.studentFeedbackRating !== undefined ? (
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, j) => (
+                            <Star
+                              key={j}
+                              size={11}
+                              className={j < cls.studentFeedbackRating! ? "fill-yellow-400 text-yellow-400" : "text-slate-200"}
                             />
                           ))}
-                          <span className="text-xs font-bold text-slate-700 ml-1">Sua avaliação</span>
                         </div>
-                        <p className="text-xs text-slate-600 italic">"{cls.studentFeedbackText}"</p>
+                        {cls.studentFeedbackText && (
+                          <p className="text-xs text-slate-400 italic truncate">"{cls.studentFeedbackText}"</p>
+                        )}
                       </div>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => setClassToRate(cls.id)}
-                        className="w-full py-2 text-sm font-medium text-velo-blue bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-2"
+                        className="text-xs font-bold text-velo-blue hover:text-velo-blue-dark flex items-center gap-1.5 transition-colors"
                       >
-                        <Star size={16} /> Avaliar Aula
+                        <Star size={12} /> Avaliar aula
                       </button>
                     )}
 
                     {cls.instructorFeedback && (
-                      <div className="mt-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                        <p className="text-xs font-bold text-velo-blue mb-1 flex items-center gap-1">
-                          <MessageCircle size={12} /> Feedback do Instrutor
-                        </p>
-                        <p className="text-xs text-slate-700">"{cls.instructorFeedback}"</p>
+                      <div className="bg-blue-50/60 px-3 py-2 rounded-lg">
+                        <p className="text-[10px] font-black text-velo-blue uppercase tracking-wider mb-1">Instrutor</p>
+                        <p className="text-xs text-slate-600">"{cls.instructorFeedback}"</p>
                       </div>
                     )}
 
                     {!cls.disputeOpened && cls.checkOutTime &&
                       (Date.now() - new Date(cls.checkOutTime).getTime() <= 48 * 60 * 60 * 1000) && (
-                      <div className="mt-2">
-                        <Link
-                          href="/app/student/dispute"
-                          className="text-xs text-red-500 font-medium hover:text-red-700 flex items-center gap-1 w-fit px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
-                        >
-                          <AlertTriangle size={12} /> Contestar pagamento
-                        </Link>
-                      </div>
+                      <Link
+                        href="/app/student/dispute"
+                        className="text-xs text-red-400 font-bold hover:text-red-600 flex items-center gap-1 transition-colors w-fit"
+                      >
+                        <AlertTriangle size={11} /> Contestar pagamento
+                      </Link>
                     )}
                   </div>
                 )}
-              </Card>
-            ))
-          ) : (
-            <p className="text-sm text-slate-400 text-center py-8">Nenhum histórico disponível.</p>
-          )}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400 text-center py-8">Nenhum histórico disponível.</p>
+        )}
       </section>
 
       <AnimatePresence>
         {classToCancel && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6">
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
               onClick={() => setClassToCancel(null)}
             />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl"
+            <motion.div
+              initial={{ y: 16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 16, opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10"
             >
-              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2 text-center">Cancelar Aula?</h3>
-              <p className="text-slate-600 mb-6 text-center">
-                Tem certeza que deseja cancelar esta aula? Esta ação não pode ser desfeita.
-              </p>
+              <h3 className="text-lg font-black text-slate-900 mb-1">Cancelar aula?</h3>
+              <p className="text-slate-500 text-sm mb-5">Esta ação não pode ser desfeita.</p>
 
               {cancelError && (
-                <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 text-center">
+                <div className="mb-4 px-4 py-3 bg-red-50 rounded-xl text-sm text-red-600">
                   {cancelError}
                 </div>
               )}
 
               <div className="flex gap-3">
                 <Button variant="ghost" className="flex-1" onClick={() => { setClassToCancel(null); setCancelError(null); }}>
-                  Não, manter
+                  Manter
                 </Button>
                 <Button
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white shadow-red-200"
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white"
                   disabled={isCancelling}
                   onClick={async () => {
                     if (!classToCancel) return;
@@ -215,7 +253,7 @@ export const StudentSchedule = ({
                       await onCancelClass(classToCancel);
                       setClassToCancel(null);
                     } catch (err: any) {
-                      setCancelError(err.message || 'Não foi possível cancelar a aula');
+                      setCancelError(err.message || 'Não foi possível cancelar');
                     } finally {
                       setIsCancelling(false);
                     }
@@ -229,58 +267,57 @@ export const StudentSchedule = ({
         )}
 
         {classToRate && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6">
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
               onClick={() => setClassToRate(null)}
             />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl"
+            <motion.div
+              initial={{ y: 16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 16, opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10"
             >
-              <h3 className="text-xl font-bold text-slate-900 mb-4 text-center">Avaliar Aula</h3>
-              
-              <div className="flex justify-center gap-2 mb-6">
+              <h3 className="text-lg font-black text-slate-900 mb-1">Avaliar aula</h3>
+              <p className="text-slate-500 text-sm mb-5">Como foi esta experiência?</p>
+
+              <div className="flex justify-center gap-3 mb-6">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button 
+                  <button
                     key={star}
                     onClick={() => setRating(star)}
-                    className="p-1 transition-transform hover:scale-110 active:scale-95"
+                    className="transition-transform hover:scale-110 active:scale-95"
                   >
-                    <Star 
-                      size={32} 
-                      className={star <= rating ? "fill-yellow-400 text-yellow-400" : "text-slate-200"} 
+                    <Star
+                      size={32}
+                      className={star <= rating ? "fill-yellow-400 text-yellow-400" : "text-slate-200 fill-slate-100"}
                     />
                   </button>
                 ))}
               </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Comentário (Opcional)</label>
-                <textarea
-                  value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value)}
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-velo-blue focus:border-transparent outline-none resize-none text-sm"
-                  rows={3}
-                  placeholder="Como foi a aula?"
-                />
-              </div>
-              
+              <textarea
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-velo-blue/20 focus:border-velo-blue/40 outline-none resize-none text-sm bg-slate-50 mb-5"
+                rows={3}
+                placeholder="Comentário opcional..."
+              />
+
               <div className="flex gap-3">
                 <Button variant="ghost" className="flex-1" onClick={() => setClassToRate(null)}>
                   Cancelar
                 </Button>
-                <Button 
-                  className="flex-1 bg-velo-blue hover:bg-velo-blue-dark text-white" 
+                <Button
+                  className="flex-1 bg-velo-blue text-white"
                   onClick={handleRateSubmit}
                   disabled={rating === 0}
                 >
-                  Enviar Avaliação
+                  Enviar
                 </Button>
               </div>
             </motion.div>

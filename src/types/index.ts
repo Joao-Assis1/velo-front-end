@@ -72,6 +72,7 @@ export interface Instructor {
   isActive?: boolean;
   cnhExpiry?: Date;
   hasDoubleCommand?: boolean;
+  pixKey?: string;
 }
 
 export interface Student {
@@ -130,6 +131,7 @@ export interface ScheduledClass {
   disputeOpened?: boolean;
   disputeReason?: string;
   paymentReleased?: boolean;
+  payment?: { status: 'PENDING' | 'COMPLETED' | 'OVERDUE' | 'REFUNDED' } | null;
 }
 
 export interface DetranStage {

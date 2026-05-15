@@ -2,11 +2,11 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { 
-  BookOpen, 
-  Search, 
-  CheckCircle2, 
-  Clock, 
+import {
+  BookOpen,
+  Search,
+  CheckCircle2,
+  Clock,
   ArrowRight,
   TrendingUp,
   MapPin
@@ -18,8 +18,11 @@ import { DetranStepper } from '@/components/features/DetranStepper';
 import { useApp } from '@/context/AppContext';
 import Link from 'next/link';
 import { DetranStage } from '@/types';
+import { NextStepCard } from '@/components/journey/NextStepCard';
+import { useJourney } from '@/hooks/useJourney';
 
 export default function StudentDashboard() {
+  const { data: journey, isLoading: journeyLoading } = useJourney();
   const { studentProfile } = useApp();
 
   const detranStages = useMemo(() => {
@@ -76,6 +79,11 @@ export default function StudentDashboard() {
 
   return (
     <div className="pb-24 pt-6 px-4 md:px-8 space-y-8 max-w-5xl mx-auto">
+      {/* Journey next step */}
+      {!journeyLoading && journey && (
+        <NextStepCard blockers={journey.blockers} stage={journey.stage} />
+      )}
+
       {/* Header */}
       <header className="flex justify-between items-center">
         <div>

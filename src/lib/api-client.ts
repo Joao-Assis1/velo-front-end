@@ -1,53 +1,59 @@
+async function resolveAuthHeader(): Promise<Record<string, string>> {
+  let token: string | null = null;
+  if (typeof window === "undefined") {
+    const { cookies } = await import("next/headers");
+    token = (await cookies()).get("velo-token")?.value ?? null;
+  } else {
+    const match = document.cookie.match(/(^|;)\s*velo-token\s*=\s*([^;]+)/);
+    token = match ? match[2] : null;
+  }
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function resolveBaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_API_URL?.replace("localhost", "127.0.0.1") ||
+    "http://127.0.0.1:3001/api/v1"
+  );
+}
+
 export async function fetchWrapper<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  // Fallback seguro forçando IPv4 caso a env falhe ou contenha localhost
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL?.replace("localhost", "127.0.0.1") ||
-    "http://127.0.0.1:3001/api/v1";
-
-  const url = `${baseUrl}${endpoint}`;
-
-  let token = null;
-  if (typeof window === "undefined") {
-    // No servidor (Server Actions)
-    const { cookies } = await import("next/headers");
-    token = (await cookies()).get("velo-token")?.value;
-  } else {
-    // No cliente (Componentes React)
-    const match = document.cookie.match(/(^|;)\s*velo-token\s*=\s*([^;]+)/);
-    token = match ? match[2] : null;
-  }
-
-  try {
-    const isFormData = options.body instanceof FormData;
-
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        ...(isFormData ? {} : { "Content-Type": "application/json" }),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...options.headers,
-      },
-      // Desabilita cache agressivo para requisições dinâmicas (Aulas, Instrutores)
-      cache: options.cache || "no-store",
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(
-        errorData?.message ||
-          `Erro na requisição: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    return response.json();
-  } catch (error: any) {
-    console.error(
-      `[FetchError] ${options.method || "GET"} ${url}:`,
-      error.message,
+  const url = `${resolveBaseUrl()}${endpoint}`;
+  const isFormData = options.body instanceof FormData;
+  const auth = await resolveAuthHeader();
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...auth,
+      ...options.headers,
+    },
+    cache: options.cache || "no-store",
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(
+      errorData?.message ||
+        `Erro na requisição: ${response.status} ${response.statusText}`,
     );
-    throw error;
   }
+  return response.json();
+}
+
+export async function fetchBlob(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<Blob> {
+  const url = `${resolveBaseUrl()}${endpoint}`;
+  const auth = await resolveAuthHeader();
+  const response = await fetch(url, {
+    ...options,
+    headers: { ...auth, ...options.headers },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`Falha ao baixar: ${response.status}`);
+  return response.blob();
 }

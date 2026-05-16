@@ -12,13 +12,26 @@ import {
   LogOut,
   ChevronRight,
   BookOpen,
-  Users
+  Users,
+  Compass,
+  FileText,
+  Stethoscope,
+  Brain,
+  GraduationCap,
+  IdCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/AppContext';
 
 const studentNav = [
   { icon: Home, label: 'Início', href: '/app/student/dashboard' },
+  { icon: Compass, label: 'Minha Jornada', href: '/app/student/concierge' },
+  { icon: BookOpen, label: 'Curso teórico', href: '/app/student/theory-course' },
+  { icon: FileText, label: 'RENACH', href: '/app/student/renach' },
+  { icon: Stethoscope, label: 'Exame médico', href: '/app/student/exams/medical' },
+  { icon: Brain, label: 'Exame psicológico', href: '/app/student/exams/psychological' },
+  { icon: GraduationCap, label: 'Exame teórico', href: '/app/student/exams/theory-official' },
+  { icon: IdCard, label: 'LADV', href: '/app/student/ladv' },
   { icon: Calendar, label: 'Agenda', href: '/app/student/schedule' },
   { icon: BookOpen, label: 'Progresso', href: '/app/student/progress' },
   { icon: Users, label: 'Instrutores', href: '/app/student/instructors' },

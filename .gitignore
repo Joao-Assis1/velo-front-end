@@ -16,8 +16,8 @@ API_DATA_FLOW.md
 prisma
 prisma.config.ts
 .agent
-docs
 doc
+!docs/journey-smoke-test.md
 .agents/workflows
 FLUXO-INSTRUTOR.MD
 FLUXO-ALUNO.md
@@ -28,3 +28,5 @@ GEMINI.md
 CLAUDE.md
 .claude/
 tsconfig.tsbuildinfo
+.gemini/settings.json
+.agents/plan.md

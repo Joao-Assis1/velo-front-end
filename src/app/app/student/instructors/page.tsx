@@ -62,6 +62,9 @@ export default function InstructorMarketplace() {
                     </span>
                   </p>
                 )}
+                <p className="mt-0.5 text-xs text-slate-400">
+                  Apenas instrutores credenciados pelo DETRAN-MS, conforme Res. CONTRAN 1.020/2025.
+                </p>
               </div>
               <button
                 onClick={() => setIsFilterOpen(true)}
@@ -142,9 +145,15 @@ export default function InstructorMarketplace() {
                   {/* Card body */}
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-bold text-slate-900 text-base leading-tight">
-                        {instructor.name}
-                      </h3>
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-base leading-tight">
+                          {instructor.name}
+                        </h3>
+                        <div className="flex items-center gap-1 text-xs text-emerald-700 mt-0.5">
+                          <ShieldCheck className="h-3 w-3" aria-hidden />
+                          DETRAN-MS credenciado
+                        </div>
+                      </div>
                       <div className="text-right shrink-0">
                         <p className="text-lg font-black text-slate-900 tabular-nums leading-none">
                           R${instructor.pricePerClass ?? '—'}

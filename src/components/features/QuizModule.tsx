@@ -112,7 +112,7 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
         <div className="flex flex-col gap-3">
           <Button
             className={cn("w-full py-4", passed ? "bg-velo-blue" : "bg-slate-900")}
-            onClick={passed ? (onNextModule ?? (() => onFinish(percentage))) : handleRestart}
+            onClick={passed ? (onNextModule ?? (() => onFinish(percentage, userAnswers))) : handleRestart}
           >
             {passed ? "Próximo Módulo" : "Tentar Novamente"}
           </Button>

@@ -10,7 +10,7 @@ import {
   RenachStatus,
 } from "@/lib/api/stages";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 
 type FormShape = {
   renachNumber: string;
@@ -30,14 +30,18 @@ export default function RenachPage() {
 
   useEffect(() => {
     let cancel = false;
-    Promise.all([getRenachGuide("MS"), getMyRenach()])
-      .then(([g, s]) => {
-        if (!cancel) {
-          setGuide(g);
-          setStatus(s);
+    Promise.allSettled([getRenachGuide("MS"), getMyRenach()]).then(
+      ([guideResult, statusResult]) => {
+        if (cancel) return;
+        if (guideResult.status === "fulfilled") setGuide(guideResult.value);
+        if (statusResult.status === "fulfilled") setStatus(statusResult.value);
+        if (statusResult.status === "rejected") {
+          const msg: string = (statusResult.reason as any)?.message ?? "";
+          if (!/not found|404/i.test(msg))
+            setError(msg || "Erro ao carregar dados do RENACH.");
         }
-      })
-      .catch((e) => !cancel && setError(e?.message ?? "Erro ao carregar."));
+      },
+    );
     return () => {
       cancel = true;
     };
@@ -74,22 +78,13 @@ export default function RenachPage() {
       {guide && (
         <section className="rounded-xl border border-zinc-200 bg-white p-4">
           <h2 className="text-base font-semibold">
-            Instruções para {guide.detranName}
+            Instruções para o DETRAN-{guide.uf}
           </h2>
           <ol className="ml-5 mt-2 list-decimal space-y-1 text-sm text-zinc-800">
-            {guide.instructions.map((line, i) => (
+            {guide.steps.map((line, i) => (
               <li key={i}>{line}</li>
             ))}
           </ol>
-          <a
-            href={guide.detranUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-blue-700 underline"
-          >
-            Abrir portal DETRAN-MS{" "}
-            <ExternalLink className="h-4 w-4" aria-hidden />
-          </a>
         </section>
       )}
 

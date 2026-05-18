@@ -44,7 +44,10 @@ export async function getJourneyState(): Promise<JourneyState> {
 
 export async function getTimeline(): Promise<TimelineStep[]> {
   const res = await fetchWrapper<Wrapped<TimelineStep[]>>("/journey/me/timeline");
-  return res.data;
+  return (res.data ?? []).map((s) => ({
+    ...s,
+    status: (s.status === ("locked" as string) ? "upcoming" : s.status) as TimelineStep["status"],
+  }));
 }
 
 export async function declareReadyForExam(): Promise<JourneyState> {

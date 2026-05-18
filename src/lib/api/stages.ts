@@ -21,9 +21,7 @@ export type RenachStatus = {
 
 export type RenachGuide = {
   uf: string;
-  detranName: string;
-  detranUrl: string;
-  instructions: string[];
+  steps: string[];
 };
 
 export async function getRenachGuide(uf: string): Promise<RenachGuide> {
@@ -168,7 +166,7 @@ export type LadvStatus = {
 
 export type LadvGuide = {
   uf: string;
-  instructions: string[];
+  steps: string[];
 };
 
 export async function getLadvGuide(uf: string): Promise<LadvGuide> {

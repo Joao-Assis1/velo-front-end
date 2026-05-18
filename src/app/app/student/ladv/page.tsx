@@ -30,12 +30,17 @@ export default function LadvPage() {
   const { register, handleSubmit, formState } = useForm<ManualShape>();
 
   useEffect(() => {
-    Promise.all([getLadvGuide("MS"), getMyLadv()])
-      .then(([g, s]) => {
-        setGuide(g);
-        setStatus(s);
-      })
-      .catch((e) => setError(e?.message ?? "Erro ao carregar."));
+    Promise.allSettled([getLadvGuide("MS"), getMyLadv()]).then(
+      ([guideResult, statusResult]) => {
+        if (guideResult.status === "fulfilled") setGuide(guideResult.value);
+        if (statusResult.status === "fulfilled") setStatus(statusResult.value);
+        if (statusResult.status === "rejected") {
+          const msg: string = (statusResult.reason as any)?.message ?? "";
+          if (!/not found|404/i.test(msg))
+            setError(msg || "Erro ao carregar dados da LADV.");
+        }
+      },
+    );
   }, []);
 
   async function handleUpload(file: File) {
@@ -92,7 +97,7 @@ export default function LadvPage() {
             Como obter a LADV em {guide.uf}
           </h2>
           <ol className="ml-5 mt-2 list-decimal space-y-1 text-sm text-zinc-800">
-            {guide.instructions.map((l, i) => (
+            {guide.steps.map((l, i) => (
               <li key={i}>{l}</li>
             ))}
           </ol>

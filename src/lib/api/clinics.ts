@@ -11,6 +11,7 @@ export type Clinic = {
   active: boolean;
 };
 
+type Paginated<T> = { items: T[]; page: number; pageSize: number; total: number };
 type Wrapped<T> = { success: boolean; data: T; message?: string };
 
 export async function listClinics(params: {
@@ -22,6 +23,6 @@ export async function listClinics(params: {
   qs.set("type", params.type);
   if (params.uf) qs.set("uf", params.uf);
   if (params.city) qs.set("city", params.city);
-  const res = await fetchWrapper<Wrapped<Clinic[]>>(`/clinics?${qs}`);
-  return res.data;
+  const res = await fetchWrapper<Wrapped<Paginated<Clinic>>>(`/clinics?${qs}`);
+  return res.data?.items ?? [];
 }

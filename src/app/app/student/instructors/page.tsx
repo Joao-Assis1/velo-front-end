@@ -11,9 +11,11 @@ import { EmptyState } from '@/components/ui-custom/EmptyState';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useApp } from '@/context/AppContext';
 
 export default function InstructorMarketplace() {
   const router = useRouter();
+  const { studentProfile } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterType>({});
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -55,11 +57,11 @@ export default function InstructorMarketplace() {
               <div className="flex-1">
                 <h1 className="text-xl font-black text-slate-900 tracking-tight">Instrutores</h1>
                 {!isLoading && (
-                  <p className="text-xs text-slate-400 font-medium">
-                    {filteredInstructors.length} disponíveis ·{' '}
-                    <span className="inline-flex items-center gap-0.5">
-                      <MapPin size={10} /> Belo Horizonte, MG
-                    </span>
+                  <p className="text-xs text-slate-400 font-medium inline-flex items-center gap-1">
+                    {filteredInstructors.length} disponíveis
+                    {studentProfile?.ufDomicile && (
+                      <><span>·</span><MapPin size={10} />{studentProfile.ufDomicile}</>
+                    )}
                   </p>
                 )}
                 <p className="mt-0.5 text-xs text-slate-400">

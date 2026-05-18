@@ -7,6 +7,16 @@ import Link from "next/link";
 
 const UF_LIST = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
+function isValidCPF(cpf: string): boolean {
+  const d = cpf.replace(/\D/g, "");
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+  const calc = (n: number) =>
+    d.slice(0, n).split("").reduce((s, v, i) => s + +v * (n + 1 - i), 0);
+  const d1 = (calc(9) * 10) % 11 % 10;
+  const d2 = (calc(10) * 10) % 11 % 10;
+  return d1 === +d[9] && d2 === +d[10];
+}
+
 type Step = 1 | 2 | 3;
 
 interface FormData {
@@ -21,7 +31,7 @@ interface FormData {
   birthDate: string;
   motherName: string;
   ufDomicile: string;
-  intendedCategory: "A" | "B" | "ACC" | "AB" | "";
+  intendedCategory: "B" | "";
   // Step 3 — Termos e LADV
   termsAccepted: boolean;
   ladvSimulated: boolean;
@@ -29,7 +39,7 @@ interface FormData {
 
 const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
-  cpf: "", phone: "", birthDate: "", motherName: "", ufDomicile: "", intendedCategory: "",
+  cpf: "", phone: "", birthDate: "", motherName: "", ufDomicile: "", intendedCategory: "B",
   termsAccepted: false, ladvSimulated: false,
 };
 
@@ -61,16 +71,14 @@ export default function StudentRegisterPage() {
   };
 
   const validateStep2 = () => {
-    const cpfRaw = form.cpf.replace(/\D/g, "");
-    if (cpfRaw.length !== 11) return "CPF deve ter 11 dígitos.";
+    if (!isValidCPF(form.cpf)) return "CPF inválido.";
     const phone = form.phone.replace(/\D/g, "");
     if (phone.length < 10) return "Telefone inválido.";
     if (!form.birthDate) return "Data de nascimento obrigatória.";
     const age = Math.floor((Date.now() - new Date(form.birthDate).getTime()) / 31557600000);
-    if (age < 16) return "Você deve ter pelo menos 16 anos.";
+    if (age < 18) return "Você deve ter pelo menos 18 anos.";
     if (!form.motherName.trim()) return "Nome da mãe obrigatório.";
     if (!form.ufDomicile) return "UF de domicílio obrigatória.";
-    if (!form.intendedCategory) return "Selecione a categoria pretendida.";
     return null;
   };
 
@@ -109,7 +117,9 @@ export default function StudentRegisterPage() {
       });
       router.push("/app/student/dashboard");
     } catch (e: any) {
-      setError(e?.message || "Erro ao criar conta. Tente novamente.");
+      const msg: string = e?.message || "Erro ao criar conta. Tente novamente.";
+      if (msg.includes("CPF")) { setStep(2); }
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -232,12 +242,12 @@ export default function StudentRegisterPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Data de nascimento *" hint="Mínimo 16 anos">
+                <Field label="Data de nascimento *" hint="Mínimo 18 anos">
                   <input
                     type="date"
                     value={form.birthDate}
                     onChange={(e) => set("birthDate", e.target.value)}
-                    max={new Date(Date.now() - 16 * 31557600000).toISOString().split("T")[0]}
+                    max={new Date(Date.now() - 18 * 31557600000).toISOString().split("T")[0]}
                     className={inputCls}
                   />
                 </Field>
@@ -258,24 +268,11 @@ export default function StudentRegisterPage() {
                 />
               </Field>
 
-              <Field label="Categoria pretendida *" hint="Tipo de habilitação que deseja obter">
-                <div className="grid grid-cols-4 gap-2">
-                  {(["A", "B", "ACC", "AB"] as const).map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => set("intendedCategory", cat)}
-                      className={`py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
-                        form.intendedCategory === cat
-                          ? "bg-blue-600 border-blue-600 text-white"
-                          : "bg-white border-slate-200 text-slate-600 hover:border-blue-300"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+              <Field label="Categoria pretendida" hint="Apenas a categoria B (Carro) está disponível no momento">
+                <div className="flex items-center gap-3 bg-blue-50 border-2 border-blue-200 rounded-xl px-4 py-3">
+                  <span className="text-lg font-black text-blue-700">B</span>
+                  <span className="text-sm text-blue-700 font-medium">Veículo de passeio (Carro)</span>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">A=Moto · B=Carro · ACC=Automático · AB=Ambos</p>
               </Field>
             </div>
           )}
@@ -312,27 +309,26 @@ export default function StudentRegisterPage() {
               </div>
 
               {/* Terms */}
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <div className="relative mt-0.5">
-                  <input
-                    type="checkbox"
-                    checked={form.termsAccepted}
-                    onChange={(e) => set("termsAccepted", e.target.checked)}
-                    className="sr-only"
-                  />
-                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${
-                    form.termsAccepted ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
-                  }`}>
-                    {form.termsAccepted && <span className="text-white text-xs">✓</span>}
-                  </div>
+              <div
+                role="checkbox"
+                aria-checked={form.termsAccepted}
+                tabIndex={0}
+                className="flex items-start gap-3 cursor-pointer"
+                onClick={() => set("termsAccepted", !form.termsAccepted)}
+                onKeyDown={(e) => (e.key === " " || e.key === "Enter") && set("termsAccepted", !form.termsAccepted)}
+              >
+                <div className={`mt-0.5 w-5 h-5 shrink-0 rounded flex items-center justify-center border-2 transition-all ${
+                  form.termsAccepted ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
+                }`}>
+                  {form.termsAccepted && <span className="text-white text-xs font-bold">✓</span>}
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
                   Li e aceito os{" "}
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline">Termos de Uso</a> e a{" "}
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> do Velo,
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Termos de Uso</a> e a{" "}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> do Velo,
                   incluindo o tratamento de dados biométricos e de geolocalização exigidos pela Res. CONTRAN 1.020/25.
                 </p>
-              </label>
+              </div>
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
                 ⚠️ Seus dados serão tratados conforme a LGPD e utilizados exclusivamente para conformidade com a CONTRAN 1.020/25.

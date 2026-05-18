@@ -13,11 +13,18 @@ const QK = {
   timeline: ["journey", "me", "timeline"] as const,
 };
 
+function noRetryOnAuthOrNotFound(failureCount: number, error: unknown) {
+  const msg = (error as Error)?.message ?? "";
+  if (/unauthorized|401|404|not found/i.test(msg)) return false;
+  return failureCount < 3;
+}
+
 export function useJourney() {
   return useQuery<JourneyState>({
     queryKey: QK.state,
     queryFn: getJourneyState,
     staleTime: 30_000,
+    retry: noRetryOnAuthOrNotFound,
   });
 }
 
@@ -26,6 +33,7 @@ export function useJourneyTimeline() {
     queryKey: QK.timeline,
     queryFn: getTimeline,
     staleTime: 30_000,
+    retry: noRetryOnAuthOrNotFound,
   });
 }
 

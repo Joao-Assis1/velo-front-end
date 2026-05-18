@@ -9,9 +9,9 @@ export async function processPaymentAction(dto: {
   lessonId?: string;
 }) {
   try {
-    const res = await fetchWrapper<any>("/payments/process", {
+    const res = await fetchWrapper<any>("/payments-stripe/charge", {
       method: "POST",
-      body: JSON.stringify(dto),
+      body: JSON.stringify({ lessonId: dto.lessonId, paymentMethodId: dto.paymentMethodId }),
     });
     return { success: true, data: res.data };
   } catch (error: any) {

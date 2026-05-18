@@ -74,8 +74,13 @@ export function AddCardStripe({ onDone }: { onDone: () => void }) {
     try {
       const intent = await createSetupIntent();
       setClientSecret(intent.clientSecret);
-    } catch (e: any) {
-      setError(e?.message ?? "Erro ao iniciar SetupIntent.");
+    } catch (e: unknown) {
+      const msg = (e as any)?.message ?? "";
+      setError(
+        /unauthorized|401/i.test(msg)
+          ? "Sessão expirada. Faça login novamente."
+          : msg || "Erro ao iniciar pagamento.",
+      );
     }
   }
 

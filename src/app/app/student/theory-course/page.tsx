@@ -5,7 +5,7 @@ import { startTheoryCourse } from "@/lib/api/stages";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, BookOpen } from "lucide-react";
 
-const APP_CNH_BRASIL = "https://www.gov.br/transportes/cnh-do-brasil";
+const APP_CNH_BRASIL = "https://www.gov.br/transportes/pt-br/cnh-do-brasil";
 
 export default function TheoryCoursePage() {
   const journey = useJourney();
@@ -51,8 +51,8 @@ export default function TheoryCoursePage() {
         <li>Faça login com sua conta gov.br nível ouro/prata.</li>
         <li>Conclua os módulos teóricos no próprio app (45 horas mínimas).</li>
         <li>
-          Ao terminar, volte aqui e clique em{" "}
-          <strong>"Já comecei"</strong> para liberar a próxima etapa.
+          Ao terminar, volte aqui e clique em <strong>"Já comecei"</strong> para
+          liberar a próxima etapa.
         </li>
       </ol>
 

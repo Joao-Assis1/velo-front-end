@@ -33,3 +33,10 @@ tsconfig.tsbuildinfo
 .playwright-mcp
 cenario*.png
 payments-page.png
+# AI-generated plans and local tooling
+docs/superpowers/
+src/docs/
+.mcp.json
+# Playwright artifacts
+test-results/
+playwright-report/

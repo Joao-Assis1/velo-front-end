@@ -15,7 +15,7 @@ export interface QuizQuestion {
 
 interface QuizModuleProps {
   questions: QuizQuestion[];
-  onFinish: (score: number) => void;
+  onFinish: (score: number, answers: { questionId: string; answer: number }[]) => void;
   onRestart: () => void;
   onNextModule?: () => void;
 }
@@ -26,6 +26,7 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [userAnswers, setUserAnswers] = useState<{ questionId: string; answer: number }[]>([]);
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
@@ -39,7 +40,14 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
   const handleConfirmAnswer = () => {
     if (!selectedOptionId || isAnswered) return;
 
+    const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = selectedOptionId === currentQuestion.correctOptionId;
+    
+    // Map A=0, B=1, C=2, D=3
+    const answerIndex = selectedOptionId.charCodeAt(0) - 65;
+
+    setUserAnswers(prev => [...prev, { questionId: currentQuestion.id, answer: answerIndex }]);
+
     if (isCorrect) {
       setScore(prev => prev + 1);
     }
@@ -47,13 +55,13 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < totalQuestions - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedOptionId(null);
       setIsAnswered(false);
     } else {
       setShowResult(true);
-      onFinish((score / totalQuestions) * 100);
+      onFinish((score / questions.length) * 100, userAnswers);
     }
   };
 
@@ -63,6 +71,7 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
     setIsAnswered(false);
     setScore(0);
     setShowResult(false);
+    setUserAnswers([]);
     onRestart();
   };
 

@@ -8,7 +8,7 @@ import { maskCNH, maskRENACH, maskPlate } from "@/lib/utils/masks";
 
 const UF_LIST = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const CNH_CATS = ["A","B","C","D","E","AB","AC","AD","AE"];
-const EDU_LEVELS = ["Fundamental Incompleto","Fundamental Completo","Médio Incompleto","Médio Completo","Superior Incompleto","Superior Completo","Pós-Graduação"];
+const EDU_LEVELS = ["Médio Completo","Superior Incompleto","Superior Completo","Pós-Graduação"];
 
 interface FormData {
   // Step 1 — Acesso
@@ -16,7 +16,7 @@ interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
-  // Step 2 — Dados pessoais (CONTRAN 1.020/25 Art. 4º)
+  // Step 2 — Dados pessoais
   cpf: string;
   phone: string;
   birthDate: string;
@@ -24,7 +24,7 @@ interface FormData {
   location: string;
   bio: string;
   pricePerClass: string;
-  // Step 3 — Habilitação e Credencial DETRAN (CONTRAN 1.020/25 Art. 5º)
+  // Step 3 — Habilitação e Credencial
   cnhNumber: string;
   cnhCategory: string;
   cnhExpiry: string;
@@ -32,6 +32,10 @@ interface FormData {
   renachNumber: string;
   instructorType: "Credenciado" | "Autônomo" | "";
   certidaoNegativa: string; // número/protocolo
+  // Novos requisitos
+  noGravissima: boolean;
+  hasInstructorCourse: boolean;
+  noCassacao: boolean;
   // Step 4 — Veículo e Termos
   vehiclePlate: string;
   vehicleModel: string;
@@ -45,6 +49,7 @@ const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
   cpf: "", phone: "", birthDate: "", educationLevel: "", location: "", bio: "", pricePerClass: "",
   cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", instructorType: "", certidaoNegativa: "",
+  noGravissima: false, hasInstructorCourse: false, noCassacao: false,
   vehiclePlate: "", vehicleModel: "", vehicleYear: "", transmission: "",
   hasDoubleCommand: false,
   termsAccepted: false,
@@ -80,8 +85,10 @@ export default function InstructorRegisterPage() {
     if (form.phone.replace(/\D/g, "").length < 10) return "Telefone inválido.";
     if (!form.birthDate) return "Data de nascimento obrigatória.";
     const age = Math.floor((Date.now() - new Date(form.birthDate).getTime()) / 31557600000);
-    if (age < 25) return "Instrutor deve ter no mínimo 25 anos (CONTRAN 1.020/25).";
+    if (age < 21) return "Instrutor deve ter no mínimo 21 anos.";
     if (!form.educationLevel) return "Nível de escolaridade obrigatório.";
+    const validEdu = ["Médio Completo", "Superior Incompleto", "Superior Completo", "Pós-Graduação"];
+    if (!validEdu.includes(form.educationLevel)) return "É necessário ter concluído ao menos o Ensino Médio.";
     if (!form.location.trim()) return "Localização obrigatória.";
     if (!form.pricePerClass || Number(form.pricePerClass) <= 0) return "Informe o valor por aula.";
     return null;
@@ -96,6 +103,11 @@ export default function InstructorRegisterPage() {
     if (!form.renachNumber.trim()) return "Número RENACH obrigatório.";
     if (!form.instructorType) return "Selecione o tipo de instrutor.";
     if (!form.certidaoNegativa.trim()) return "Nº da Certidão Negativa obrigatório.";
+    
+    if (!form.noGravissima) return "Você declara não ter infração gravíssima nos últimos 60 dias?";
+    if (!form.hasInstructorCourse) return "É obrigatório possuir certificado de curso específico.";
+    if (!form.noCassacao) return "Você declara não ter sofrido penalidade de cassação da CNH?";
+    
     return null;
   };
 
@@ -147,7 +159,6 @@ export default function InstructorRegisterPage() {
         vehicleModel: form.vehicleModel.trim(),
         vehicleYear: Number(form.vehicleYear),
         transmission: form.transmission,
-        hasDoubleCommand: form.hasDoubleCommand,
       });
       router.push("/app/instructor/dashboard");
     } catch (e: any) {
@@ -222,8 +233,13 @@ export default function InstructorRegisterPage() {
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="text-base font-bold text-slate-800">Dados pessoais e profissionais</h2>
-              <div className="text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg p-2">
-                📋 CONTRAN 1.020/25, Art. 4º: instrutor deve ter ≥25 anos e ≥3 anos de habilitação.
+              <div className="text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg p-3 space-y-1">
+                <p className="font-bold mb-1 uppercase tracking-wider text-[10px] text-blue-700">Requisitos para ser instrutor:</p>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  <li>Ter no mínimo 21 anos de idade</li>
+                  <li>Ter habilitação legal há pelo menos 2 anos</li>
+                  <li>Ter concluído o ensino médio</li>
+                </ul>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -240,10 +256,10 @@ export default function InstructorRegisterPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Data de nascimento *" hint="Mínimo 25 anos">
+                <Field label="Data de nascimento *" hint="Mínimo 21 anos">
                   <input type="date" value={form.birthDate}
                     onChange={(e) => set("birthDate", e.target.value)}
-                    max={new Date(Date.now() - 25 * 31557600000).toISOString().split("T")[0]}
+                    max={new Date(Date.now() - 21 * 31557600000).toISOString().split("T")[0]}
                     className={inputCls} />
                 </Field>
                 <Field label="Escolaridade *">
@@ -279,9 +295,26 @@ export default function InstructorRegisterPage() {
           {/* STEP 3 — Habilitação */}
           {step === 3 && (
             <div className="space-y-4">
-              <h2 className="text-base font-bold text-slate-800">Habilitação e Credencial DETRAN</h2>
-              <div className="text-xs text-slate-500 bg-amber-50 border border-amber-100 rounded-lg p-2">
-                ⚠️ CONTRAN 1.020/25, Art. 5º: documentos obrigatórios para exercício da atividade de instrutor autônomo.
+              <h2 className="text-base font-bold text-slate-800">Habilitação e Credencial</h2>
+              
+              <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Declarações Obrigatórias</p>
+                
+                <CheckDeclaration
+                  checked={form.noGravissima}
+                  onChange={(v) => set("noGravissima", v)}
+                  label="Não cometi infração gravíssima nos últimos 60 dias *"
+                />
+                <CheckDeclaration
+                  checked={form.hasInstructorCourse}
+                  onChange={(v) => set("hasInstructorCourse", v)}
+                  label="Possuo certificado de curso específico pelo DETRAN *"
+                />
+                <CheckDeclaration
+                  checked={form.noCassacao}
+                  onChange={(v) => set("noCassacao", v)}
+                  label="Não sofri penalidade de cassação da CNH *"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -390,43 +423,28 @@ export default function InstructorRegisterPage() {
                 </div>
               </Field>
 
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
-                <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Recursos de Instrução</p>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <div className="relative">
-                    <input type="checkbox" checked={form.hasDoubleCommand}
-                      onChange={(e) => set("hasDoubleCommand", e.target.checked)} className="sr-only" />
-                    <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${
-                      form.hasDoubleCommand ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
-                    }`}>
-                      {form.hasDoubleCommand && <span className="text-white text-xs font-bold">✓</span>}
-                    </div>
-                  </div>
-                  <span className="text-xs text-slate-600 font-medium">
-                    Veículo possui <strong>duplo comando</strong> (opcional p/ autônomos conforme Res. 1.020/25)
-                  </span>
-                </label>
-              </div>
-
               {/* Terms */}
-              <label className="flex items-start gap-3 cursor-pointer mt-2">
-                <div className="relative mt-0.5">
-                  <input type="checkbox" checked={form.termsAccepted}
-                    onChange={(e) => set("termsAccepted", e.target.checked)} className="sr-only" />
-                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all ${
-                    form.termsAccepted ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
-                  }`}>
-                    {form.termsAccepted && <span className="text-white text-xs font-bold">✓</span>}
-                  </div>
+              <div
+                role="checkbox"
+                aria-checked={form.termsAccepted}
+                tabIndex={0}
+                className="flex items-start gap-3 cursor-pointer mt-2"
+                onClick={() => set("termsAccepted", !form.termsAccepted)}
+                onKeyDown={(e) => (e.key === " " || e.key === "Enter") && set("termsAccepted", !form.termsAccepted)}
+              >
+                <div className={`mt-0.5 w-5 h-5 shrink-0 rounded flex items-center justify-center border-2 transition-all ${
+                  form.termsAccepted ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
+                }`}>
+                  {form.termsAccepted && <span className="text-white text-xs font-bold">✓</span>}
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
                   Declaro que as informações são verdadeiras e aceito os{" "}
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline">Termos de Uso</a>,{" "}
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> e as obrigações
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Termos de Uso</a>,{" "}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> e as obrigações
                   previstas na <span className="font-bold">Resolução CONTRAN 1.020/25</span>, incluindo coleta de
                   dados biométricos e de geolocalização durante as aulas.
                 </p>
-              </label>
+              </div>
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
                 ⚠️ Declarações falsas implicam cancelamento imediato do cadastro e podem acarretar responsabilidade civil e criminal.
@@ -472,6 +490,26 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       <label className="block text-xs font-bold text-slate-700">{label}</label>
       {hint && <p className="text-xs text-slate-400">{hint}</p>}
       {children}
+    </div>
+  );
+}
+
+function CheckDeclaration({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <div
+      role="checkbox"
+      aria-checked={checked}
+      tabIndex={0}
+      className="flex items-start gap-3 cursor-pointer"
+      onClick={() => onChange(!checked)}
+      onKeyDown={(e) => (e.key === " " || e.key === "Enter") && onChange(!checked)}
+    >
+      <div className={`mt-0.5 w-5 h-5 shrink-0 rounded flex items-center justify-center border-2 transition-all ${
+        checked ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
+      }`}>
+        {checked && <span className="text-white text-xs font-bold">✓</span>}
+      </div>
+      <span className="text-xs text-slate-600 leading-tight">{label}</span>
     </div>
   );
 }

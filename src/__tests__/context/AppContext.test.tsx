@@ -25,6 +25,7 @@ import React from "react";
 vi.mock("@/lib/actions/lessons", () => ({
   getLessonsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
   createLessonAction: vi.fn(),
+  cancelLessonAction: vi.fn().mockResolvedValue({ success: true }),
   checkInAction: vi.fn(),
   checkOutAction: vi.fn(),
   submitStudentFeedbackAction: vi.fn(),
@@ -36,6 +37,28 @@ vi.mock("@/lib/actions/auth", () => ({
   loginInstructorAction: vi.fn(),
   registerStudentAction: vi.fn(),
   registerInstructorAction: vi.fn(),
+}));
+
+vi.mock("@/lib/actions/payments", () => ({
+  processPaymentAction: vi.fn().mockResolvedValue({ success: true }),
+  getStudentPaymentsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  getPaymentByIdAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/academy", () => ({
+  getAcademyModulesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  seedAcademyAction: vi.fn().mockResolvedValue({ success: true }),
+  submitAcademyScoreAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/profileActions", () => ({
+  getStudentProfileAction: vi.fn().mockResolvedValue({ success: true }),
+  updateStudentProfileAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/instructors", () => ({
+  getInstructorsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  updateInstructorProfileAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 import {
@@ -79,6 +102,7 @@ const mockStudent = {
   name: "Ana",
   email: "ana@velo.com",
   ladvUploaded: true,
+  paymentMethods: [{ id: "pm-1", isDefault: true, isDeleted: false }],
 };
 
 // ── wrapper ───────────────────────────────────────────────────────────────
@@ -219,6 +243,11 @@ describe("AppContext", () => {
       });
 
       const { result } = renderHook(() => useApp(), { wrapper });
+
+      await act(async () => {
+        result.current.setStudentProfile(mockStudent as any);
+        result.current.setUserRole("student");
+      });
 
       await expect(
         act(async () => {

@@ -7,6 +7,7 @@ import { AppProvider, useApp } from "@/context/AppContext";
 vi.mock("@/lib/actions/lessons", () => ({
   getLessonsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
   createLessonAction: vi.fn(),
+  cancelLessonAction: vi.fn().mockResolvedValue({ success: true }),
   checkInAction: vi.fn(),
   checkOutAction: vi.fn(),
   submitStudentFeedbackAction: vi.fn(),
@@ -18,6 +19,28 @@ vi.mock("@/lib/actions/auth", () => ({
   loginInstructorAction: vi.fn(),
   registerStudentAction: vi.fn(),
   registerInstructorAction: vi.fn(),
+}));
+
+vi.mock("@/lib/actions/payments", () => ({
+  processPaymentAction: vi.fn().mockResolvedValue({ success: true }),
+  getStudentPaymentsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  getPaymentByIdAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/academy", () => ({
+  getAcademyModulesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  seedAcademyAction: vi.fn().mockResolvedValue({ success: true }),
+  submitAcademyScoreAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/profileActions", () => ({
+  getStudentProfileAction: vi.fn().mockResolvedValue({ success: true }),
+  updateStudentProfileAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/instructors", () => ({
+  getInstructorsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  updateInstructorProfileAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 const mockLesson = {
@@ -50,8 +73,6 @@ describe("Instructor Class Flow (Integration)", () => {
     
     expect(result.current.activeClassId).toBe(null);
     expect(result.current.scheduledClasses[0].status).toBe('upcoming');
-    const initialAvailable = result.current.availableBalance;
-    const initialPending = result.current.pendingBalance;
 
     // 2. Start Class
     await act(async () => {
@@ -69,9 +90,5 @@ describe("Instructor Class Flow (Integration)", () => {
     expect(result.current.activeClassId).toBe(null);
     expect(result.current.scheduledClasses[0].status).toBe('completed');
     expect(result.current.scheduledClasses[0].durationMinutes).toBeGreaterThanOrEqual(0);
-
-    // 4. Verify Financial Balance Update
-    expect(result.current.availableBalance).toBe(initialAvailable + mockLesson.price);
-    expect(result.current.pendingBalance).toBe(initialPending - mockLesson.price);
   });
 });

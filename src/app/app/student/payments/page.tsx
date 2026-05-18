@@ -10,6 +10,12 @@ import { AddCardStripe } from "@/components/journey/AddCardStripe";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Trash2, Star } from "lucide-react";
 
+function friendlyError(e: unknown, fallback: string): string {
+  const msg = (e as any)?.message ?? "";
+  if (/unauthorized|401/i.test(msg)) return "Sessão expirada. Faça login novamente.";
+  return msg || fallback;
+}
+
 export default function PaymentsPage() {
   const [cards, setCards] = useState<SavedCard[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -18,8 +24,8 @@ export default function PaymentsPage() {
   async function reload() {
     try {
       setCards(await listCards());
-    } catch (e: any) {
-      setError(e?.message ?? "Erro ao carregar cartões.");
+    } catch (e: unknown) {
+      setError(friendlyError(e, "Erro ao carregar cartões."));
     }
   }
 
@@ -32,8 +38,8 @@ export default function PaymentsPage() {
     try {
       await deleteCard(id);
       await reload();
-    } catch (e: any) {
-      setError(e?.message ?? "Erro ao remover cartão.");
+    } catch (e: unknown) {
+      setError(friendlyError(e, "Erro ao remover cartão."));
     } finally {
       setBusy(false);
     }
@@ -44,8 +50,8 @@ export default function PaymentsPage() {
     try {
       await setDefaultCard(id);
       await reload();
-    } catch (e: any) {
-      setError(e?.message ?? "Erro ao definir padrão.");
+    } catch (e: unknown) {
+      setError(friendlyError(e, "Erro ao definir padrão."));
     } finally {
       setBusy(false);
     }

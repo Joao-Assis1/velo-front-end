@@ -2,17 +2,16 @@ import { fetchWrapper } from "../api-client";
 
 export async function getAcademyModulesAction() {
   try {
-    // Current backend returns questions for a single simulado
-    // For MVP, we'll wrap this into a single "Simulado Geral" module 
-    // until the backend supports multiple modules.
-    const res = await fetchWrapper<any[]>("/academy/simulado");
-    
-    if (!res || res.length === 0) {
+    // Backend wraps all responses in { success, message, data, timestamp }
+    const res = await fetchWrapper<{ data: any[] }>("/academy/simulado");
+    const questions = res.data ?? [];
+
+    if (questions.length === 0) {
       return { success: true, data: [] };
     }
 
     // Mapping backend Question to frontend QuizQuestion
-    const mappedQuestions = res.map((q: any) => ({
+    const mappedQuestions = questions.map((q: any) => ({
       id: q.id,
       text: q.text,
       options: q.options.map((opt: string, idx: number) => ({

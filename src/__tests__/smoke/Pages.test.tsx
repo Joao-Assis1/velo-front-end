@@ -47,11 +47,29 @@ vi.mock("@/lib/actions/disputes", () => ({
   openDisputeAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("@/lib/actions/payments", () => ({
+  processPaymentAction: vi.fn().mockResolvedValue({ success: true }),
+  getStudentPaymentsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  getPaymentByIdAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/academy", () => ({
+  getAcademyModulesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  seedAcademyAction: vi.fn().mockResolvedValue({ success: true }),
+  submitAcademyScoreAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/profileActions", () => ({
+  getStudentProfileAction: vi.fn().mockResolvedValue({ success: true }),
+  updateStudentProfileAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 // Mock Next.js navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn(),
 }));
 
 // Import pages

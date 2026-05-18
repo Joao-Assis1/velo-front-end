@@ -44,7 +44,7 @@ export default function InstructorFinancePage() {
     <div className="px-4 md:px-8 py-6 max-w-4xl mx-auto">
       <InstructorFinance
         earningsData={earningsData}
-        pixKey={instructorProfile?.pixKey}
+        stripePayoutsEnabled={instructorProfile?.stripePayoutsEnabled}
         onBack={() => router.back()}
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}

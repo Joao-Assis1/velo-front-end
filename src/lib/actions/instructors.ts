@@ -35,12 +35,29 @@ function mapInstructor(instructor: any): Instructor {
     certidaoNegativa: instructor.certidaoNegativa,
     isActive: instructor.isActive,
     pixKey: instructor.pixKey,
+    stripeAccountId: instructor.stripeAccountId,
+    stripeAccountStatus: instructor.stripeAccountStatus,
+    stripePayoutsEnabled: instructor.stripePayoutsEnabled,
   };
 }
 
-export async function getInstructorsAction() {
+export async function getInstructorsAction(filters: {
+  maxPrice?: number;
+  minRating?: number;
+  transmission?: string;
+  type?: string;
+} = {}) {
   try {
-    const apiResponse = await fetchWrapper<any>("/instructors", {
+    const params = new URLSearchParams();
+    if (filters.maxPrice && filters.maxPrice < 150) params.append("maxPrice", filters.maxPrice.toString());
+    if (filters.minRating && filters.minRating > 0) params.append("minRating", filters.minRating.toString());
+    if (filters.transmission && filters.transmission !== 'Todos') params.append("transmission", filters.transmission);
+    if (filters.type && filters.type !== 'Todos') params.append("type", filters.type);
+
+    const queryString = params.toString();
+    const url = `/instructors${queryString ? `?${queryString}` : ""}`;
+
+    const apiResponse = await fetchWrapper<any>(url, {
       next: { tags: ["instructors"] },
     } as RequestInit & { next?: { tags: string[] } });
 

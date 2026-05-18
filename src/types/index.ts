@@ -69,10 +69,16 @@ export interface Instructor {
   educationLevel?: string;
   renachNumber?: string;
   certidaoNegativa?: boolean;
+  noGravissima?: boolean;
+  hasInstructorCourse?: boolean;
+  noCassacao?: boolean;
   isActive?: boolean;
   cnhExpiry?: Date;
   hasDoubleCommand?: boolean;
   pixKey?: string;
+  stripeAccountId?: string;
+  stripeAccountStatus?: 'PENDING' | 'ONBOARDING' | 'ACTIVE' | 'RESTRICTED';
+  stripePayoutsEnabled?: boolean;
 }
 
 export interface Student {

@@ -46,7 +46,7 @@ interface AppContextType {
   setScheduledClasses: (classes: ScheduledClass[]) => void;
   setBusySlots: (slots: Record<string, string[]>) => void;
   setDetranStages: (stages: DetranStage[]) => void;
-  setAcademyModules: (modules: AcademyModule[]) => void;
+  setAcademyModules: React.Dispatch<React.SetStateAction<AcademyModule[]>>;
   setActiveClassId: (id: string | null) => void;
   
   login: (credentials?: any, forcedRole?: UserRole) => Promise<void>;

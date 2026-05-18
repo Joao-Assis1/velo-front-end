@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  Camera,
   MapPin,
   User,
   FileText,
@@ -15,6 +14,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { Button, Input } from "@/components/ui-custom";
+import { AvatarUploader } from "@/components/ui-custom/AvatarUploader";
 import { Instructor } from "@/types";
 import { maskCNH, maskRENACH } from "@/lib/utils/masks";
 
@@ -62,11 +62,11 @@ export const InstructorEditProfile = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (localProfile) {
-      // Validação de idade mínima (25 anos) conforme Res. 1.020/25
+      // Validação de idade mínima (21 anos)
       if (localProfile.birthDate) {
         const age = Math.floor((Date.now() - new Date(localProfile.birthDate).getTime()) / 31557600000);
-        if (age < 25) {
-          alert("O instrutor deve ter no mínimo 25 anos conforme Resolução CONTRAN 1.020/25.");
+        if (age < 21) {
+          alert("O instrutor deve ter no mínimo 21 anos.");
           return;
         }
       }
@@ -103,26 +103,13 @@ export const InstructorEditProfile = ({
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="flex flex-col items-center">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-md">
-              {localProfile.profilePicture ? (
-                <img src={localProfile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-500 font-bold text-2xl">
-                  {localProfile.name?.charAt(0)?.toUpperCase()}
-                </div>
-              )}
-            </div>
-            <button
-              type="button"
-              aria-label="Alterar foto de perfil"
-              className="absolute bottom-0 right-0 bg-velo-blue text-white p-2 rounded-full shadow-lg border-2 border-white"
-            >
-              <Camera size={16} aria-hidden="true" />
-            </button>
-          </div>
-        </div>
+        <AvatarUploader
+          currentImage={localProfile.profilePicture}
+          name={localProfile.name}
+          onImage={(base64) =>
+            setLocalProfile({ ...localProfile, profilePicture: base64 })
+          }
+        />
 
         <div className="space-y-4">
           <div className="space-y-1.5">
@@ -242,11 +229,57 @@ export const InstructorEditProfile = ({
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Declarações Obrigatórias
             </h3>
+            
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 className="mt-1 w-5 h-5 rounded border-slate-300 text-velo-blue focus-visible:ring-velo-blue"
-                checked={localProfile.certidaoNegativa || false}
+                checked={localProfile.noGravissima || false}
+                onChange={(e) =>
+                  setLocalProfile({ ...localProfile, noGravissima: e.target.checked })
+                }
+                required
+              />
+              <span className="text-xs text-slate-600 leading-tight">
+                Não cometi nenhuma infração de trânsito gravíssima nos últimos 60 dias.
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1 w-5 h-5 rounded border-slate-300 text-velo-blue focus-visible:ring-velo-blue"
+                checked={localProfile.hasInstructorCourse || false}
+                onChange={(e) =>
+                  setLocalProfile({ ...localProfile, hasInstructorCourse: e.target.checked })
+                }
+                required
+              />
+              <span className="text-xs text-slate-600 leading-tight">
+                Possuo certificado de curso específico realizado pelo órgão executivo de trânsito.
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1 w-5 h-5 rounded border-slate-300 text-velo-blue focus-visible:ring-velo-blue"
+                checked={localProfile.noCassacao || false}
+                onChange={(e) =>
+                  setLocalProfile({ ...localProfile, noCassacao: e.target.checked })
+                }
+                required
+              />
+              <span className="text-xs text-slate-600 leading-tight">
+                Não sofri penalidade de cassação da CNH.
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1 w-5 h-5 rounded border-slate-300 text-velo-blue focus-visible:ring-velo-blue"
+                checked={typeof localProfile.certidaoNegativa === 'string' ? !!localProfile.certidaoNegativa : localProfile.certidaoNegativa || false}
                 onChange={(e) =>
                   setLocalProfile({ ...localProfile, certidaoNegativa: e.target.checked })
                 }
@@ -254,7 +287,7 @@ export const InstructorEditProfile = ({
               />
               <span className="text-xs text-slate-600 leading-tight">
                 Declaro possuir as certidões negativas criminais e de débitos exigidas 
-                pela Resolução 1.020/25 para o exercício da atividade.
+                para o exercício da atividade.
               </span>
             </label>
           </div>

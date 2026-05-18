@@ -6,17 +6,16 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, Star, Loader2, AlertCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getInstructorsAction } from '@/lib/actions/instructors';
+import Link from 'next/link';
 import { FilterModal } from './FilterModal';
 import { Instructor } from '@/types';
 import { EmptyState } from '@/components/ui-custom/EmptyState';
 import { useApp } from '@/context/AppContext';
-import { LadvUpload } from '@/components/features/LadvUpload';
 
 export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: string) => void }) => {
   const { hasLadv, studentProfile } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [isLadvModalOpen, setIsLadvModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     maxPrice: 150,
     minRating: 0,
@@ -25,9 +24,9 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
   });
 
   const { data: instructors = [], isLoading, error } = useQuery({
-    queryKey: ['instructors'],
+    queryKey: ['instructors', filters],
     queryFn: async () => {
-      const response = await getInstructorsAction();
+      const response = await getInstructorsAction(filters);
       if (!response.success) throw new Error(response.error || 'Não foi possível carregar os instrutores.');
       return response.data as Instructor[] || [];
     },
@@ -37,15 +36,12 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
 
   const filteredInstructors = instructorList.filter((instructor) => {
     if (!instructor) return false;
-    const matchesSearch =
+    if (!searchQuery) return true;
+    
+    return (
       (instructor.name?.toLowerCase() ?? '').includes(searchQuery.toLowerCase()) ||
-      (instructor.location?.toLowerCase() ?? '').includes(searchQuery.toLowerCase());
-    if (!matchesSearch) return false;
-    if ((instructor.pricePerClass ?? 0) > filters.maxPrice) return false;
-    if ((instructor.rating ?? 0) < filters.minRating) return false;
-    if (filters.transmission !== 'Todos' && instructor.transmission !== filters.transmission) return false;
-    if (filters.type !== 'Todos' && instructor.instructorType !== filters.type) return false;
-    return true;
+      (instructor.location?.toLowerCase() ?? '').includes(searchQuery.toLowerCase())
+    );
   });
 
   const activeFilterCount =
@@ -87,12 +83,12 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
               Faça o upload da LADV para agendar suas aulas
             </p>
           </div>
-          <button
-            onClick={() => setIsLadvModalOpen(true)}
+          <Link
+            href="/app/student/ladv"
             className="text-orange-600 font-bold text-sm underline underline-offset-2 shrink-0 hover:text-orange-700 transition-colors"
           >
             Enviar agora
-          </button>
+          </Link>
         </div>
       )}
 
@@ -189,16 +185,6 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
             filters={filters}
             onApply={setFilters}
           />
-        )}
-        {isLadvModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-              <LadvUpload
-                onClose={() => setIsLadvModalOpen(false)}
-                onSuccess={() => setIsLadvModalOpen(false)}
-              />
-            </motion.div>
-          </div>
         )}
       </AnimatePresence>
 

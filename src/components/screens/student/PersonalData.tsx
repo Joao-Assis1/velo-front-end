@@ -7,7 +7,6 @@ import {
   Mail,
   Phone,
   Fingerprint,
-  Camera,
   Check,
   ArrowLeft,
   Calendar,
@@ -16,6 +15,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { Button, Input } from "@/components/ui-custom";
+import { AvatarUploader } from "@/components/ui-custom/AvatarUploader";
 import { Student } from "@/types";
 import { updateStudentProfileAction } from "@/lib/actions/profileActions";
 import { maskCPF, maskPhone } from "@/lib/utils/masks";
@@ -102,26 +102,13 @@ export const StudentPersonalData = ({
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="flex flex-col items-center">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 shadow-md">
-              {localProfile.profilePicture ? (
-                <img src={localProfile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-500 font-bold text-2xl">
-                  {localProfile.name?.charAt(0)?.toUpperCase()}
-                </div>
-              )}
-            </div>
-            <button
-              type="button"
-              aria-label="Alterar foto de perfil"
-              className="absolute bottom-0 right-0 bg-velo-blue text-white p-2 rounded-full shadow-lg border-2 border-white"
-            >
-              <Camera size={16} />
-            </button>
-          </div>
-        </div>
+        <AvatarUploader
+          currentImage={localProfile.profilePicture}
+          name={localProfile.name}
+          onImage={(base64) =>
+            setLocalProfile({ ...localProfile, profilePicture: base64 })
+          }
+        />
 
         <div className="space-y-4">
           <div className="space-y-1.5">

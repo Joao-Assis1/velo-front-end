@@ -1,6 +1,18 @@
 # BUGS.md — Registro de Bugs (Teste Manual)
 
 > Criado em 2026-05-17 | Branch: develop
+> Cenários 1–12 testados | Última atualização: 2026-05-18
+
+## Cenários testados — Resumo
+
+| Cenário | Descrição | Status |
+|---------|-----------|--------|
+| 1–9 | Fluxos do aluno (cadastro, onboarding, DETRAN, médico, psicológico, teoria, LADV, cartão, agendamento) | ✅ OK |
+| 10 | Agendar aula com instrutor | ✅ OK |
+| 11 | Cancelar aula agendada | ✅ OK |
+| 12 | Check-in + biometria facial (3 tempos) + check-out com telemetria | ✅ OK |
+
+---
 
 ---
 

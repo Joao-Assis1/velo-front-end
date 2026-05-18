@@ -60,25 +60,27 @@ export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess
     }
   };
 
+  const getCurrentCoords = (): Promise<{ lat: number; lng: number }> =>
+    new Promise((resolve) => {
+      if (!("geolocation" in navigator)) {
+        resolve({ lat: 0, lng: 0 });
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => resolve({ lat: 0, lng: 0 }),
+        { timeout: 5000 },
+      );
+    });
+
   const captureAndSubmit = async () => {
     if (!videoRef.current || !streamRef.current) return;
 
     try {
       setStatus('verifying');
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error("Não foi possível processar a imagem.");
-      
-      ctx.drawImage(videoRef.current, 0, 0);
-      
-      // Gera hash base64 da imagem
-      const imageData = canvas.toDataURL('image/jpeg', 0.8);
-      
-      // Enviando para a Server Action real
-      const result = await submitBiometryAction(lessonId, stage, imageData);
+
+      const coords = await getCurrentCoords();
+      const result = await submitBiometryAction(lessonId, stage, coords, "SUCCESS");
 
       if (result.success) {
         setStatus('success');

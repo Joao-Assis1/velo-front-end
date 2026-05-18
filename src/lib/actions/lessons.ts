@@ -141,11 +141,17 @@ export async function submitInstructorFeedbackAction(
   }
 }
 
-export async function submitBiometryAction(id: string, stage: BiometryStage, imageHash: string) {
+export async function submitBiometryAction(
+  id: string,
+  stage: BiometryStage,
+  coords: { lat: number; lng: number },
+  status = "SUCCESS",
+) {
   try {
+    const step = stage.toLowerCase() as "start" | "mid" | "end";
     return await fetchWrapper<any>(`/lessons/${id}/biometry`, {
       method: "POST",
-      body: JSON.stringify({ stage, imageHash }),
+      body: JSON.stringify({ lat: coords.lat, lng: coords.lng, status, step }),
     });
   } catch (error: any) {
     return { success: false, error: error.message };

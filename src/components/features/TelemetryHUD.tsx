@@ -76,10 +76,10 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
 
         // Add to telemetry batch
         setTelemetryPoints(prev => [...prev, {
-          latitude,
-          longitude,
-          speed: currentSpeedKmh,
-          timestamp
+          lat: latitude,
+          lng: longitude,
+          velocity: currentSpeedKmh,
+          timestamp,
         }]);
 
         // Calculate Cumulative Distance

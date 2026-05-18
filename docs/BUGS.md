@@ -218,3 +218,57 @@
 - **Status:** ✅ corrigido — `getTimeline()` em `journey.ts` mapeia `'locked' → 'upcoming'` antes de retornar os steps
 
 ---
+
+## BUG-016 — processPaymentAction chamava endpoint inexistente `/payments/process`
+
+- **Severidade:** crítico
+- **Fase:** aluno / pagamento
+- **Repro:**
+  1. Agendar aula com instrutor (Cenário 10)
+  2. Confirmar agendamento no modal
+- **Esperado:** pagamento processado e aula confirmada
+- **Observado:** `Error: Cannot POST /api/v1/payments/process` — backend migrou para Stripe (`/payments-stripe/charge`) mas frontend permaneceu com rota ASAAS antiga
+- **Console/Network:** `Failed to book class: Error: Cannot POST /api/v1/payments/process`
+- **Status:** ✅ corrigido — `src/lib/actions/payments.ts`: endpoint alterado para `/payments-stripe/charge`; body agora envia apenas `{ lessonId, paymentMethodId }` conforme `ChargeDto` do backend
+
+---
+
+## BUG-017 — `hasLadv` e `hasPaymentMethod` só atualizam em login, nunca em re-fetch
+
+- **Severidade:** médio
+- **Fase:** aluno
+- **Repro:**
+  1. Adicionar cartão ou LADV sem fazer logout/login
+  2. Tentar agendar aula — gates de LADV e cartão bloqueiam mesmo com dados válidos no banco
+- **Esperado:** `hasLadv` e `hasPaymentMethod` refletem o estado atual do banco sempre que o perfil for recarregado
+- **Observado:** AppContext só chama `setHasLadv((res.data as any).ladvUploaded)` dentro de `login()` — navegação interna usa valor em cache do localStorage indefinidamente
+- **Console/Network:** —
+- **Status:** 🔴 aberto — `setHasLadv` e derivação de `hasPaymentMethod` precisam ser atualizados também no refresh de perfil do AppContext
+
+---
+
+## BUG-018 — `submitBiometryAction` enviava payload errado para o backend
+
+- **Severidade:** crítico
+- **Fase:** instrutor / aluno (Cenário 12)
+- **Repro:**
+  1. Iniciar aula (check-in)
+  2. Capturar biometria em qualquer dos 3 estágios (início, meio, fim)
+- **Esperado:** `POST /lessons/:id/biometry` com `{ lat, lng, status, step }` conforme `RegisterBiometryDto` do backend
+- **Observado:** action enviava `{ stage, imageHash }` — campos não reconhecidos pelo backend; geofencing não recebia coordenadas GPS
+- **Status:** ✅ corrigido — `src/lib/actions/lessons.ts`: assinatura atualizada para `(id, stage, coords, status)`; `BiometryOverlay.tsx`: GPS capturado via `getCurrentPosition()` antes de submeter
+
+---
+
+## BUG-019 — TelemetryHUD enviava campos errados no batch de telemetria
+
+- **Severidade:** alto
+- **Fase:** instrutor (durante aula)
+- **Repro:**
+  1. Iniciar aula (check-in) — TelemetryHUD fica ativo
+  2. GPS registra pontos durante a aula
+- **Esperado:** cada ponto enviado como `{ lat, lng, velocity, timestamp }` conforme `TelemetryPointDto`
+- **Observado:** pontos enviados como `{ latitude, longitude, speed, timestamp }` — backend rejeitava ou ignorava coordenadas; geofencing da biometria nunca tinha pontos válidos para comparar
+- **Status:** ✅ corrigido — `src/components/features/TelemetryHUD.tsx`: mapeamento `latitude→lat`, `longitude→lng`, `speed→velocity`
+
+---

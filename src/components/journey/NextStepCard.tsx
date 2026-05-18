@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ArrowRight, PartyPopper } from "lucide-react";
 import type { JourneyBlocker, JourneyStage } from "@/lib/api/journey";
 import { resolveBlockerMessage } from "@/i18n/journeyBlockerMessages";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function NextStepCard({
   blockers,
@@ -39,12 +40,10 @@ export function NextStepCard({
       <h3 className="font-semibold text-blue-900">{msg.title}</h3>
       <p className="mt-1 text-sm text-blue-800">{msg.description}</p>
       {msg.ctaHref && (
-        <Button asChild className="mt-3" size="sm">
-          <Link href={msg.ctaHref}>
-            {msg.ctaLabel ?? "Continuar"}{" "}
-            <ArrowRight className="ml-1 h-4 w-4" aria-hidden />
-          </Link>
-        </Button>
+        <Link href={msg.ctaHref} className={cn(buttonVariants({ size: "sm" }), "mt-3")}>
+          {msg.ctaLabel ?? "Continuar"}{" "}
+          <ArrowRight className="ml-1 h-4 w-4" aria-hidden />
+        </Link>
       )}
     </div>
   );

@@ -32,7 +32,7 @@ export const StudentProgress = ({
     .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   const upcomingClasses = normalizedClasses
-    .filter((c) => c.status === "upcoming" || c.status === "in-progress")
+    .filter((c) => c.status === "upcoming" || c.status === "in-progress" || c.status === "pending_acceptance")
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const hoursCompleted = completedClasses.length;
@@ -148,7 +148,7 @@ export const StudentProgress = ({
                 <div className="shrink-0 w-11 text-center">
                   <div className={cn(
                     "text-2xl font-black leading-none tabular-nums",
-                    cls.status === "in-progress" ? "text-orange-500" : "text-velo-blue"
+                    cls.status === "in-progress" ? "text-orange-500" : cls.status === "pending_acceptance" ? "text-amber-500" : "text-velo-blue"
                   )}>
                     {format(cls.date, "dd")}
                   </div>
@@ -167,9 +167,11 @@ export const StudentProgress = ({
                   "text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide shrink-0",
                   cls.status === "in-progress"
                     ? "bg-orange-100 text-orange-600"
-                    : "bg-blue-50 text-velo-blue"
+                    : cls.status === "pending_acceptance"
+                      ? "bg-amber-100 text-amber-600"
+                      : "bg-blue-50 text-velo-blue"
                 )}>
-                  {cls.status === "in-progress" ? "Em Andamento" : "Agendada"}
+                  {cls.status === "in-progress" ? "Em Andamento" : cls.status === "pending_acceptance" ? "Aguardando" : "Agendada"}
                 </span>
               </motion.div>
             ))}

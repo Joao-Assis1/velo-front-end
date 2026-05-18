@@ -1,17 +1,13 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import {
   BookOpen,
-  Search,
-  CheckCircle2,
   Clock,
   ArrowRight,
   TrendingUp,
-  MapPin
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Card, Button } from '@/components/ui-custom';
 import { BurocraticConcierge } from '@/components/features/BurocraticConcierge';
 import { DetranStepper } from '@/components/features/DetranStepper';
@@ -20,10 +16,24 @@ import Link from 'next/link';
 import { DetranStage } from '@/types';
 import { NextStepCard } from '@/components/journey/NextStepCard';
 import { useJourney } from '@/hooks/useJourney';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function StudentDashboard() {
   const { data: journey, isLoading: journeyLoading } = useJourney();
-  const { studentProfile } = useApp();
+  const { studentProfile, academyModules, scheduledClasses } = useApp();
+
+  const academyProgress = useMemo(() => {
+    if (!academyModules.length) return 0;
+    return Math.round((academyModules.filter(m => m.progress === 100).length / academyModules.length) * 100);
+  }, [academyModules]);
+
+  const nextLesson = useMemo(() => {
+    const now = new Date();
+    return scheduledClasses
+      .filter(c => (c.status === 'upcoming' || c.status === 'pending_acceptance') && new Date(c.date) >= now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] ?? null;
+  }, [scheduledClasses]);
 
   const detranStages = useMemo(() => {
     const checklist = studentProfile?.checklist;
@@ -146,41 +156,49 @@ export default function StudentDashboard() {
               <p className="text-slate-400 text-sm">Continue seu curso teórico</p>
             </div>
             <div className="text-right">
-              <span className="text-3xl font-black text-white">65%</span>
+              <span className="text-3xl font-black text-white">{academyProgress}%</span>
               <p className="text-slate-400 text-xs">concluído</p>
             </div>
           </div>
           <div className="mt-4 h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-velo-blue w-[65%] rounded-full" />
+            <div className="h-full bg-velo-blue rounded-full" style={{ width: `${academyProgress}%` }} />
           </div>
           <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-velo-blue/20 rounded-full blur-3xl" />
         </Card>
       </Link>
 
       {/* Next Lesson Preview */}
-      <section className="space-y-4">
-        <h3 className="text-lg font-bold text-slate-900">Próxima Aula</h3>
-        <Card className="flex items-center gap-4 p-4 border-l-4 border-l-velo-blue">
-          <div className="w-14 h-14 rounded-2xl bg-slate-100 flex flex-col items-center justify-center text-slate-600">
-            <span className="text-[10px] font-bold uppercase tracking-tighter">Maio</span>
-            <span className="text-xl font-black leading-none">12</span>
-          </div>
-          <div className="flex-1">
-            <h4 className="font-bold text-slate-900">Direção Defensiva</h4>
-            <div className="flex items-center gap-3 mt-0.5">
-              <p className="text-xs text-slate-500 flex items-center gap-1">
-                <Clock size={12} /> 14:00 - 15:40
-              </p>
-              <p className="text-xs text-slate-500 flex items-center gap-1">
-                <MapPin size={12} /> Unidade Centro
-              </p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" className="hidden sm:flex">
-            Detalhes
-          </Button>
-        </Card>
-      </section>
+      {nextLesson && (
+        <section className="space-y-4">
+          <h3 className="text-lg font-bold text-slate-900">Próxima Aula</h3>
+          <Link href="/app/student/schedule">
+            <Card className="flex items-center gap-4 p-4 border-l-4 border-l-velo-blue cursor-pointer hover:border-velo-blue/80 transition-colors">
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 flex flex-col items-center justify-center text-slate-600">
+                <span className="text-[10px] font-bold uppercase tracking-tighter">
+                  {format(new Date(nextLesson.date), 'MMM', { locale: ptBR })}
+                </span>
+                <span className="text-xl font-black leading-none">
+                  {format(new Date(nextLesson.date), 'd')}
+                </span>
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-slate-900">
+                  {nextLesson.instructorName ? `Aula com ${nextLesson.instructorName}` : 'Aula Prática'}
+                </h4>
+                <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                  <Clock size={12} /> {nextLesson.startTime}{nextLesson.endTime ? ` - ${nextLesson.endTime}` : ''}
+                </p>
+                {nextLesson.status === 'pending_acceptance' && (
+                  <p className="text-[10px] font-bold text-amber-600 mt-1">Aguardando confirmação do instrutor</p>
+                )}
+              </div>
+              <Button variant="outline" size="sm" className="hidden sm:flex">
+                Detalhes
+              </Button>
+            </Card>
+          </Link>
+        </section>
+      )}
     </div>
   );
 }

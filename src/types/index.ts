@@ -124,7 +124,7 @@ export interface ScheduledClass {
   date: Date;
   startTime: string;
   endTime: string;
-  status: 'upcoming' | 'in-progress' | 'completed' | 'cancelled';
+  status: 'pending_acceptance' | 'upcoming' | 'in-progress' | 'completed' | 'cancelled';
   price?: number;
   studentFeedbackRating?: number;
   studentFeedbackText?: string;

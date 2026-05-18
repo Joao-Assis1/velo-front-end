@@ -28,7 +28,7 @@ export const StudentSchedule = ({
   const [feedbackText, setFeedbackText] = useState('');
 
   const upcomingClasses = classes
-    .filter(c => c.status === 'upcoming' || c.status === 'in-progress')
+    .filter(c => c.status === 'pending_acceptance' || c.status === 'upcoming' || c.status === 'in-progress')
     .sort((a, b) => a.date.getTime() - b.date.getTime());
   const pastClasses = classes
     .filter(c => c.status === 'completed' || c.status === 'cancelled')
@@ -69,7 +69,11 @@ export const StudentSchedule = ({
                 <div className="shrink-0 w-11 text-center">
                   <div className={cn(
                     "text-2xl font-black leading-none tabular-nums",
-                    cls.status === 'in-progress' ? "text-orange-500" : "text-velo-blue"
+                    cls.status === 'in-progress'
+                      ? "text-orange-500"
+                      : cls.status === 'pending_acceptance'
+                        ? "text-amber-500"
+                        : "text-velo-blue"
                   )}>
                     {format(cls.date, "dd")}
                   </div>
@@ -98,13 +102,19 @@ export const StudentSchedule = ({
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <span className={cn(
                     "text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide",
-                    cls.status === 'in-progress'
-                      ? "bg-orange-100 text-orange-600"
-                      : "bg-blue-50 text-velo-blue"
+                    cls.status === 'pending_acceptance'
+                      ? "bg-amber-100 text-amber-600"
+                      : cls.status === 'in-progress'
+                        ? "bg-orange-100 text-orange-600"
+                        : "bg-blue-50 text-velo-blue"
                   )}>
-                    {cls.status === 'in-progress' ? 'Em andamento' : 'Agendada'}
+                    {cls.status === 'pending_acceptance'
+                      ? 'Aguardando'
+                      : cls.status === 'in-progress'
+                        ? 'Em andamento'
+                        : 'Agendada'}
                   </span>
-                  {cls.status === 'upcoming' && (
+                  {(cls.status === 'upcoming' || cls.status === 'pending_acceptance') && (
                     <button
                       onClick={() => setClassToCancel(cls.id)}
                       className="text-[10px] text-red-400 font-bold hover:text-red-600 transition-colors"

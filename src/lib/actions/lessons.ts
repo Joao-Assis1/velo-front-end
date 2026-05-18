@@ -158,6 +158,34 @@ export async function submitBiometryAction(
   }
 }
 
+export async function acceptLessonAction(id: string) {
+  try {
+    const apiResponse = await fetchWrapper<any>(`/lessons/${id}/accept`, {
+      method: "PATCH",
+    });
+
+    revalidateTag("lessons", "default");
+    return { success: true, data: mapLesson(apiResponse?.data) };
+  } catch (error: any) {
+    console.error("Error accepting lesson:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function rejectLessonAction(id: string) {
+  try {
+    const apiResponse = await fetchWrapper<any>(`/lessons/${id}/reject`, {
+      method: "PATCH",
+    });
+
+    revalidateTag("lessons", "default");
+    return { success: true, data: mapLesson(apiResponse?.data) };
+  } catch (error: any) {
+    console.error("Error rejecting lesson:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function cancelLessonAction(id: string) {
   try {
     const apiResponse = await fetchWrapper<any>(`/lessons/${id}/cancel`, {

@@ -2,14 +2,16 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
-import { 
+import {
   createLessonAction,
   cancelLessonAction,
   checkInAction,
   checkOutAction,
   submitStudentFeedbackAction,
   submitInstructorFeedbackAction,
-  getLessonsAction
+  getLessonsAction,
+  acceptLessonAction,
+  rejectLessonAction
 } from '@/lib/actions/lessons';
 import { 
   loginStudentAction, 
@@ -19,7 +21,6 @@ import {
 } from '@/lib/actions/auth';
 import { updateInstructorProfileAction } from '@/lib/actions/instructors';
 import { updateStudentProfileAction } from '@/lib/actions/profileActions';
-import { processPaymentAction } from '@/lib/actions/payments';
 import { getAcademyModulesAction, seedAcademyAction } from '@/lib/actions/academy';
 import { INITIAL_STUDENT_PROFILE } from '../constants/mockData';
 
@@ -62,6 +63,8 @@ interface AppContextType {
   checkIn: (id: string) => void;
   checkOut: (id: string) => void;
   startClass: (id: string) => void;
+  acceptLesson: (id: string) => Promise<void>;
+  rejectLesson: (id: string) => Promise<void>;
   finishClass: (id: string) => void;
 }
 
@@ -341,21 +344,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const lesson = result.data as ScheduledClass;
-
-      if (instructor.pricePerClass && defaultPM) {
-        const paymentResult = await processPaymentAction({
-          amount: instructor.pricePerClass,
-          studentId: studentProfile?.id || '',
-          paymentMethodId: defaultPM.id,
-          lessonId: lesson.id,
-        });
-
-        if (!paymentResult.success) {
-          await cancelLessonAction(lesson.id);
-          throw new Error(paymentResult.error || 'Pagamento falhou. Aula cancelada.');
-        }
-      }
-
       setScheduledClasses(prev => [...prev, lesson]);
     } catch (err) {
       console.error('Failed to book class:', err);
@@ -429,6 +417,38 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setActiveClassId(null);
   };
 
+  const acceptLesson = async (id: string) => {
+    try {
+      const result = await acceptLessonAction(id);
+      if (result.success) {
+        setScheduledClasses(prev => prev.map(c =>
+          c.id === id ? { ...c, status: 'upcoming' } : c
+        ));
+      } else {
+        throw new Error(result.error || 'Não foi possível aceitar a aula');
+      }
+    } catch (err) {
+      console.error('Failed to accept lesson:', err);
+      throw err;
+    }
+  };
+
+  const rejectLesson = async (id: string) => {
+    try {
+      const result = await rejectLessonAction(id);
+      if (result.success) {
+        setScheduledClasses(prev => prev.map(c =>
+          c.id === id ? { ...c, status: 'cancelled' } : c
+        ));
+      } else {
+        throw new Error(result.error || 'Não foi possível recusar a aula');
+      }
+    } catch (err) {
+      console.error('Failed to reject lesson:', err);
+      throw err;
+    }
+  };
+
   const hasPaymentMethod = (studentProfile?.paymentMethods?.length ?? 0) > 0;
 
   return (
@@ -467,7 +487,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         checkIn,
         checkOut,
         startClass,
-        finishClass
+        finishClass,
+        acceptLesson,
+        rejectLesson
       }}
     >
       {children}

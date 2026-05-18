@@ -9,6 +9,8 @@ import {
   PlayCircle,
   User,
   ShieldCheck,
+  Check,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui-custom";
 import { cn } from "@/lib/utils";
@@ -23,7 +25,7 @@ export type LessonData = {
   id: string;
   date: Date | string;
   startTime: string;
-  status: "UPCOMING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  status: "PENDING_ACCEPTANCE" | "UPCOMING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
   studentName: string;
   studentImage?: string;
   location?: string;
@@ -38,7 +40,7 @@ export const LessonCard = ({
   lesson: LessonData;
   onUpdate?: () => void;
 }) => {
-  const { checkIn, checkOut } = useApp();
+  const { checkIn, checkOut, acceptLesson, rejectLesson } = useApp();
   const [currentStatus, setCurrentStatus] = useState(lesson.status);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -93,6 +95,32 @@ export const LessonCard = ({
     }
   };
 
+  const handleAccept = async () => {
+    try {
+      setIsLoading(true);
+      await acceptLesson(lesson.id);
+      setCurrentStatus("UPCOMING");
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      console.error("Erro ao aceitar aula:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      setIsLoading(true);
+      await rejectLesson(lesson.id);
+      setCurrentStatus("CANCELLED");
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      console.error("Erro ao recusar aula:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmitFeedback = async () => {
     try {
       setIsLoading(true);
@@ -126,13 +154,15 @@ export const LessonCard = ({
       <div
         className={cn(
           "absolute top-0 left-0 w-1 h-full",
-          currentStatus === "UPCOMING"
-            ? "bg-velo-blue"
-            : currentStatus === "IN_PROGRESS"
-              ? "bg-velo-green"
-              : currentStatus === "COMPLETED"
-                ? "bg-slate-300"
-                : "bg-red-400",
+          currentStatus === "PENDING_ACCEPTANCE"
+            ? "bg-amber-400"
+            : currentStatus === "UPCOMING"
+              ? "bg-velo-blue"
+              : currentStatus === "IN_PROGRESS"
+                ? "bg-velo-green"
+                : currentStatus === "COMPLETED"
+                  ? "bg-slate-300"
+                  : "bg-red-400",
         )}
       />
 
@@ -163,22 +193,26 @@ export const LessonCard = ({
           <span
             className={cn(
               "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide",
-              currentStatus === "UPCOMING"
-                ? "bg-blue-50 text-velo-blue"
-                : currentStatus === "IN_PROGRESS"
-                  ? "bg-green-50 text-velo-green"
-                  : currentStatus === "COMPLETED"
-                    ? "bg-slate-100 text-slate-500"
-                    : "bg-red-50 text-red-500",
+              currentStatus === "PENDING_ACCEPTANCE"
+                ? "bg-amber-50 text-amber-600"
+                : currentStatus === "UPCOMING"
+                  ? "bg-blue-50 text-velo-blue"
+                  : currentStatus === "IN_PROGRESS"
+                    ? "bg-green-50 text-velo-green"
+                    : currentStatus === "COMPLETED"
+                      ? "bg-slate-100 text-slate-500"
+                      : "bg-red-50 text-red-500",
             )}
           >
-            {currentStatus === "IN_PROGRESS"
-              ? "Em Andamento"
-              : currentStatus === "COMPLETED"
-                ? "Concluída"
-                : currentStatus === "CANCELLED"
-                  ? "Cancelada"
-                  : "Agendada"}
+            {currentStatus === "PENDING_ACCEPTANCE"
+              ? "Aguardando"
+              : currentStatus === "IN_PROGRESS"
+                ? "Em Andamento"
+                : currentStatus === "COMPLETED"
+                  ? "Concluída"
+                  : currentStatus === "CANCELLED"
+                    ? "Cancelada"
+                    : "Agendada"}
           </span>
           {currentStatus === "COMPLETED" && (
             <button 
@@ -193,6 +227,28 @@ export const LessonCard = ({
 
       {/* Action Buttons */}
       <div className="pl-2 pt-2 border-t border-slate-50 mt-1">
+        {currentStatus === "PENDING_ACCEPTANCE" && (
+          <div className="flex gap-2">
+            <Button
+              className="flex-1 py-3 bg-velo-green hover:bg-green-600 text-white flex items-center gap-2 justify-center"
+              onClick={handleAccept}
+              disabled={isLoading}
+            >
+              <Check size={16} />
+              {isLoading ? "Processando..." : "Aceitar"}
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 py-3 border-red-200 text-red-500 hover:bg-red-50 flex items-center gap-2 justify-center"
+              onClick={handleReject}
+              disabled={isLoading}
+            >
+              <X size={16} />
+              Recusar
+            </Button>
+          </div>
+        )}
+
         {currentStatus === "UPCOMING" && (
           <Button
             className="w-full py-3 bg-velo-blue hover:bg-blue-600 flex items-center gap-2 justify-center"

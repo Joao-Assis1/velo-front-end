@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calendar, History, Plus, X } from "lucide-react";
+import { Bell, Calendar, History, Plus, X } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ScheduledClass } from "@/types";
@@ -33,6 +33,9 @@ export const InstructorSchedule = ({
     return a.startTime.localeCompare(b.startTime);
   });
 
+  const pendingClasses = sortedClasses.filter(
+    (c) => c.status === "pending_acceptance",
+  );
   const upcomingClasses = sortedClasses.filter(
     (c) => c.status === "upcoming" || c.status === "in-progress",
   );
@@ -54,14 +57,17 @@ export const InstructorSchedule = ({
     id: cls.id,
     date: cls.date,
     startTime: cls.startTime,
+    price: cls.price,
     status:
-      cls.status === "upcoming"
-        ? "UPCOMING"
-        : cls.status === "in-progress"
-          ? "IN_PROGRESS"
-          : cls.status === "completed"
-            ? "COMPLETED"
-            : "CANCELLED",
+      cls.status === "pending_acceptance"
+        ? "PENDING_ACCEPTANCE"
+        : cls.status === "upcoming"
+          ? "UPCOMING"
+          : cls.status === "in-progress"
+            ? "IN_PROGRESS"
+            : cls.status === "completed"
+              ? "COMPLETED"
+              : "CANCELLED",
     studentName: cls.studentName || "Aluno",
     studentImage: cls.studentImage,
     instructorFeedback: cls.instructorFeedback,
@@ -109,6 +115,27 @@ export const InstructorSchedule = ({
           </div>
         )}
       </AnimatePresence>
+
+      {pendingClasses.length > 0 && (
+        <section>
+          <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <Bell size={20} className="text-amber-500" />
+            Solicitações Pendentes
+            <span className="ml-1 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+              {pendingClasses.length}
+            </span>
+          </h2>
+          <div className="space-y-3">
+            {pendingClasses.map((cls) => (
+              <LessonCard
+                key={cls.id}
+                lesson={mapToLessonData(cls)}
+                onUpdate={() => window.location.reload()}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">

@@ -17,13 +17,24 @@ function resolveBaseUrl(): string {
   );
 }
 
+const PUBLIC_ENDPOINTS = [
+  '/auth/login/',
+  '/auth/register/',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+];
+
+function isPublicEndpoint(endpoint: string): boolean {
+  return PUBLIC_ENDPOINTS.some((pub) => endpoint.startsWith(pub));
+}
+
 export async function fetchWrapper<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
   const url = `${resolveBaseUrl()}${endpoint}`;
   const isFormData = options.body instanceof FormData;
-  const auth = await resolveAuthHeader();
+  const auth = isPublicEndpoint(endpoint) ? {} : await resolveAuthHeader();
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -35,9 +46,14 @@ export async function fetchWrapper<T>(
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
+    const message =
+      typeof errorData?.message === "string"
+        ? errorData.message
+        : Array.isArray(errorData?.message)
+          ? errorData.message[0]
+          : null;
     throw new Error(
-      errorData?.message ||
-        `Erro na requisição: ${response.status} ${response.statusText}`,
+      message || `Erro na requisição: ${response.status} ${response.statusText}`,
     );
   }
   return response.json();

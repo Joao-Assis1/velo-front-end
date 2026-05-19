@@ -12,7 +12,7 @@ import {
 import { useInvalidateJourney } from "@/hooks/useJourney";
 import { DocumentUploader } from "@/components/journey/DocumentUploader";
 import { Button } from "@/components/ui/button";
-import { IdCard } from "lucide-react";
+import { IdCard, PenLine, ChevronUp, ChevronDown } from "lucide-react";
 
 type ManualShape = {
   ladvNumber: string;
@@ -125,20 +125,24 @@ export default function LadvPage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-4">
+      <section className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
         <button
           type="button"
-          className="text-sm font-medium text-blue-700 underline"
           onClick={() => setManualOpen((v) => !v)}
+          className="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-zinc-50 transition-colors"
         >
+          <span className="flex items-center gap-2 text-sm font-semibold text-zinc-700">
+            <PenLine size={16} className="text-blue-600 shrink-0" />
+            {manualOpen ? "Ocultar entrada manual" : "Não tenho o arquivo — preencher manualmente"}
+          </span>
           {manualOpen
-            ? "Ocultar"
-            : "Não tenho o arquivo — preencher manualmente"}
+            ? <ChevronUp size={16} className="text-zinc-400 shrink-0" />
+            : <ChevronDown size={16} className="text-zinc-400 shrink-0" />}
         </button>
 
         {manualOpen && (
           <form
-            className="mt-3 flex flex-col gap-3"
+            className="flex flex-col gap-3 px-4 pb-4 border-t border-zinc-100 pt-4"
             onSubmit={handleSubmit(onManual)}
           >
             <label className="flex flex-col gap-1 text-sm">

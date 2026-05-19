@@ -1,8 +1,9 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { ConfirmDialog } from '@/components/ui-custom/ConfirmDialog';
 import {
   Home,
   Calendar,
@@ -52,6 +53,7 @@ export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { instructorProfile, studentProfile, logout } = useApp();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const isInstructor = pathname.startsWith('/app/instructor');
   const navItems = isInstructor ? instructorNav : studentNav;
   const profile = isInstructor ? instructorProfile : studentProfile;
@@ -110,12 +112,22 @@ export const Sidebar = () => {
           </div>
         </div>
         <button
-          onClick={() => { if (window.confirm('Deseja realmente sair da conta?')) { logout(); router.push('/auth/login'); } }}
+          onClick={() => setConfirmOpen(true)}
           className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors group"
         >
           <LogOut size={22} className="text-slate-400 group-hover:text-red-500" />
           <span className="font-semibold">Sair da Conta</span>
         </button>
+        <ConfirmDialog
+          open={confirmOpen}
+          title="Sair da conta"
+          description="Tem certeza que deseja sair? Você precisará fazer login novamente."
+          confirmLabel="Sair"
+          cancelLabel="Cancelar"
+          destructive
+          onConfirm={() => { setConfirmOpen(false); logout(); router.push('/auth/login'); }}
+          onCancel={() => setConfirmOpen(false)}
+        />
       </div>
     </div>
   );

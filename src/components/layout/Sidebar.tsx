@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Home,
   Calendar,
@@ -50,6 +50,7 @@ const instructorNav = [
 
 export const Sidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const { instructorProfile, studentProfile, logout } = useApp();
   const isInstructor = pathname.startsWith('/app/instructor');
   const navItems = isInstructor ? instructorNav : studentNav;
@@ -108,8 +109,8 @@ export const Sidebar = () => {
             </div>
           </div>
         </div>
-        <button 
-          onClick={logout}
+        <button
+          onClick={() => { logout(); router.push('/auth/login'); }}
           className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors group"
         >
           <LogOut size={22} className="text-slate-400 group-hover:text-red-500" />

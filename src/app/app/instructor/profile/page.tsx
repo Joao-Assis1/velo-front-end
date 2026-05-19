@@ -24,7 +24,7 @@ export default function InstructorProfilePage() {
           const path = SCREEN_TO_PATH[screen];
           if (path) router.push(path);
         }}
-        onLogout={logout}
+        onLogout={() => { logout(); router.push('/auth/login'); }}
       />
     </div>
   );

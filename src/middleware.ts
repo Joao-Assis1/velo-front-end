@@ -19,7 +19,18 @@ export default function authMiddleware(request: NextRequest) {
   }
 
   if (token && isAuthRoute) {
-    return NextResponse.redirect(new URL("/app/student/dashboard", request.url));
+    try {
+      const payload = JSON.parse(
+        atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
+      );
+      const dest =
+        payload.role === "instructor"
+          ? "/app/instructor/dashboard"
+          : "/app/student/dashboard";
+      return NextResponse.redirect(new URL(dest, request.url));
+    } catch {
+      return NextResponse.redirect(new URL("/app/student/dashboard", request.url));
+    }
   }
 
   return NextResponse.next();

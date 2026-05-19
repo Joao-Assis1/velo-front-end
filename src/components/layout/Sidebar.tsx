@@ -110,7 +110,7 @@ export const Sidebar = () => {
           </div>
         </div>
         <button
-          onClick={() => { logout(); router.push('/auth/login'); }}
+          onClick={() => { if (window.confirm('Deseja realmente sair da conta?')) { logout(); router.push('/auth/login'); } }}
           className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors group"
         >
           <LogOut size={22} className="text-slate-400 group-hover:text-red-500" />

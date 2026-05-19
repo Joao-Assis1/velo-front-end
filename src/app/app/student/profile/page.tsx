@@ -23,7 +23,7 @@ export default function StudentProfilePage() {
           const path = SCREEN_TO_PATH[screen];
           if (path) router.push(path);
         }}
-        onLogout={() => { logout(); router.push('/auth/login'); }}
+        onLogout={() => { if (window.confirm('Deseja realmente sair da conta?')) { logout(); router.push('/auth/login'); } }}
       />
     </div>
   );

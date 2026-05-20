@@ -13,14 +13,40 @@ interface InstructorFilterProps {
   isModal?: boolean;
 }
 
+const TRANSMISSIONS: { label: string; value: "Manual" | "Automatic" }[] = [
+  { label: "Manual", value: "Manual" },
+  { label: "Automático", value: "Automatic" },
+];
+
+const RATINGS = [4, 4.5, 4.8];
+
 export const InstructorFilter = ({
   filters,
   onFilterChange,
   onClose,
   isModal,
 }: InstructorFilterProps) => {
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({ ...filters, maxPrice: Number(e.target.value) });
+  const handleApply = () => {
+    onClose?.();
+  };
+
+  const handleClear = () => {
+    onFilterChange({});
+    onClose?.();
+  };
+
+  const toggleTransmission = (value: "Manual" | "Automatic") => {
+    onFilterChange({
+      ...filters,
+      transmission: filters.transmission === value ? undefined : value,
+    });
+  };
+
+  const toggleRating = (rating: number) => {
+    onFilterChange({
+      ...filters,
+      minRating: filters.minRating === rating ? undefined : rating,
+    });
   };
 
   return (
@@ -70,7 +96,9 @@ export const InstructorFilter = ({
           max="250"
           step="5"
           value={filters.maxPrice || 150}
-          onChange={handlePriceChange}
+          onChange={(e) =>
+            onFilterChange({ ...filters, maxPrice: Number(e.target.value) })
+          }
           className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-velo-blue"
         />
         <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase">
@@ -85,18 +113,18 @@ export const InstructorFilter = ({
           Transmissão
         </label>
         <div className="grid grid-cols-2 gap-2">
-          {["Manual", "Automático"].map((type) => (
+          {TRANSMISSIONS.map(({ label, value }) => (
             <button
-              key={type}
-              onClick={() => {
-                const days = filters.days || [];
-                // Reusing 'days' as a proxy for multi-select if needed,
-                // but for transmission let's just use a single value in types
-                // Actually let's just stick to the type definition.
-              }}
-              className="py-3 px-4 rounded-xl border-2 border-slate-100 text-sm font-bold text-slate-600 hover:border-velo-blue/20 transition-all"
+              key={value}
+              onClick={() => toggleTransmission(value)}
+              className={cn(
+                "py-3 px-4 rounded-xl border-2 text-sm font-bold transition-all",
+                filters.transmission === value
+                  ? "border-velo-blue bg-velo-blue/5 text-velo-blue"
+                  : "border-slate-100 text-slate-600 hover:border-velo-blue/20"
+              )}
             >
-              {type}
+              {label}
             </button>
           ))}
         </div>
@@ -108,12 +136,26 @@ export const InstructorFilter = ({
           Avaliação Mínima
         </label>
         <div className="flex gap-2">
-          {[4, 4.5, 4.8].map((rating) => (
+          {RATINGS.map((rating) => (
             <button
               key={rating}
-              className="flex-1 py-2 rounded-xl border border-slate-100 flex items-center justify-center gap-1 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+              onClick={() => toggleRating(rating)}
+              className={cn(
+                "flex-1 py-2 rounded-xl border flex items-center justify-center gap-1 text-sm font-bold transition-all",
+                filters.minRating === rating
+                  ? "border-velo-blue bg-velo-blue/5 text-velo-blue"
+                  : "border-slate-100 text-slate-600 hover:bg-slate-50"
+              )}
             >
-              <Star size={12} className="fill-yellow-400 text-yellow-400" />{" "}
+              <Star
+                size={12}
+                className={cn(
+                  "fill-yellow-400",
+                  filters.minRating === rating
+                    ? "text-yellow-400"
+                    : "text-yellow-400"
+                )}
+              />
               {rating}+
             </button>
           ))}
@@ -121,14 +163,13 @@ export const InstructorFilter = ({
       </div>
 
       <div className="pt-4 flex gap-3">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={() => onFilterChange({})}
-        >
+        <Button variant="outline" className="flex-1" onClick={handleClear}>
           Limpar
         </Button>
-        <Button className="flex-[2] bg-slate-900 text-white hover:bg-slate-800">
+        <Button
+          className="flex-[2] bg-slate-900 text-white hover:bg-slate-800"
+          onClick={handleApply}
+        >
           Aplicar Filtros
         </Button>
       </div>

@@ -152,6 +152,8 @@ export interface InstructorFilter {
   minPrice?: number;
   maxPrice?: number;
   days?: string[];
+  transmission?: 'Manual' | 'Automatic';
+  minRating?: number;
 }
 
 export interface QuizQuestion {

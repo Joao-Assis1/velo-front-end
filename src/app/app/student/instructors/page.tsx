@@ -30,10 +30,23 @@ export default function InstructorMarketplace() {
 
   const filteredInstructors = instructors.filter(instructor => {
     if (instructor.isActive === false) return false;
-    const matchesSearch = instructor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (instructor.location?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q ||
+      instructor.name.toLowerCase().includes(q) ||
+      (instructor.location?.toLowerCase() || '').includes(q);
+
+    const matchesRegion = !filters.region ||
+      (instructor.location?.toLowerCase() || '').includes(filters.region.toLowerCase());
+
     const matchesPrice = !filters.maxPrice || (instructor.pricePerClass || 0) <= filters.maxPrice;
-    return matchesSearch && matchesPrice;
+
+    const matchesTransmission = !filters.transmission ||
+      instructor.transmission === filters.transmission;
+
+    const matchesRating = !filters.minRating || (instructor.rating ?? 0) >= filters.minRating;
+
+    return matchesSearch && matchesRegion && matchesPrice && matchesTransmission && matchesRating;
   });
 
   return (

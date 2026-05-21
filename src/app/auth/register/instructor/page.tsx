@@ -175,8 +175,10 @@ export default function InstructorRegisterPage() {
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl shadow mb-3">
-            <span className="text-2xl font-black italic text-white">V</span>
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl shadow-lg shadow-blue-600/20 mb-3">
+            <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+              <polygon points="3,7 13,7 20,24 27,7 37,7 24,35 16,35" fill="white" />
+            </svg>
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Cadastro de Instrutor</h1>
           <p className="text-sm text-slate-500 mt-1">Conforme Resolução CONTRAN 1.020/25 — Arts. 4º e 5º</p>
@@ -464,7 +466,7 @@ export default function InstructorRegisterPage() {
             <button type="button"
               onClick={step < 4 ? handleNext : handleSubmit}
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition disabled:opacity-50">
+              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 rounded-xl transition shadow-sm shadow-blue-600/20 disabled:opacity-50">
               {loading ? "Criando conta..." : step < 4 ? "Próximo →" : "✓ Criar Conta"}
             </button>
           </div>
@@ -482,7 +484,7 @@ export default function InstructorRegisterPage() {
 }
 
 const inputCls =
-  "w-full border border-slate-200 bg-slate-50 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition";
+  "w-full border border-slate-200 bg-white px-3 py-2.5 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (

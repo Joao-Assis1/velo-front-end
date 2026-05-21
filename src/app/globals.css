@@ -7,9 +7,9 @@
 @theme {
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
 
-  --color-velo-blue: #1E40AF;
-  --color-velo-blue-dark: #1E3A8A;
-  --color-velo-blue-light: #DBEAFE;
+  --color-velo-blue: #2563eb;
+  --color-velo-blue-dark: #1d4ed8;
+  --color-velo-blue-light: #eff6ff;
   --color-velo-green: #059669;
   --color-velo-green-dark: #047857;
   --color-velo-green-light: #D1FAE5;

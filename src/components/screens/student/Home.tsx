@@ -51,130 +51,209 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
     (filters.type !== 'Todos' ? 1 : 0);
 
   return (
-    <div className="pb-28 md:pb-10 space-y-6">
-
-      {/* Header */}
-      <header className="flex justify-between items-start">
-        <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-slate-400">
-            Encontre seu instrutor
-          </p>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight mt-1">
-            Vamos dirigir hoje?
-          </h1>
-        </div>
-        <div className="w-12 h-12 bg-slate-100 rounded-2xl overflow-hidden ring-2 ring-white shadow-sm shrink-0 flex items-center justify-center">
-          {studentProfile?.profilePicture ? (
-            <img src={studentProfile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-slate-500 font-bold text-sm">
-              {studentProfile?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </span>
-          )}
-        </div>
-      </header>
-
-      {/* LADV Alert */}
-      {!hasLadv && (
-        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex gap-3 items-center justify-between">
-          <div className="flex gap-3 items-center min-w-0">
-            <AlertCircle className="text-orange-500 shrink-0" size={18} />
-            <p className="text-sm text-orange-800 font-medium truncate">
-              Faça o upload da LADV para agendar suas aulas
-            </p>
+    <div className="min-h-screen bg-slate-50">
+      {/* Dark header com search integrado */}
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 px-5 pt-6 pb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-blue-600/10 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        
+        <div className="max-w-6xl mx-auto w-full relative z-10">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-xs font-bold tracking-widest uppercase text-blue-400">Encontre seu instrutor</p>
+              <h1 className="text-xl font-extrabold text-slate-50 mt-0.5">Vamos dirigir hoje?</h1>
+            </div>
+            <div className="w-9 h-9 bg-white/10 rounded-xl overflow-hidden border border-white/10 shrink-0 flex items-center justify-center">
+              {studentProfile?.profilePicture ? (
+                <img src={studentProfile.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-bold text-sm">
+                  {studentProfile?.name?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              )}
+            </div>
           </div>
-          <Link
-            href="/app/student/ladv"
-            className="text-orange-600 font-bold text-sm underline underline-offset-2 shrink-0 hover:text-orange-700 transition-colors"
-          >
-            Enviar agora
-          </Link>
-        </div>
-      )}
 
-      {/* Search & Filter */}
-      <div className="space-y-3">
-        <div className="flex gap-3">
-          <div className="relative flex-1 group">
-            <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-velo-blue transition-colors"
-            />
-            <input
-              type="text"
-              placeholder="Buscar por nome ou localização..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-velo-blue/15 focus:border-velo-blue/50 transition-colors text-sm"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                aria-label="Limpar busca"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X size={16} />
-              </button>
-            )}
+          {/* Search + filter button no header */}
+          <div className="flex gap-2">
+            <div className="relative flex-1 group">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
+              <input
+                type="text"
+                placeholder="Buscar por nome ou região..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/10 border border-white/10 rounded-xl py-2.5 pl-10 pr-9 text-slate-100 text-sm placeholder:text-slate-400 focus:outline-none focus:bg-white/15 focus:border-white/20 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Limpar busca"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => setIsFilterModalOpen(true)}
+              aria-label="Abrir filtros"
+              className={cn(
+                'w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 relative cursor-pointer',
+                activeFilterCount > 0
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'bg-white/10 border border-white/10 text-white hover:bg-white/15'
+              )}
+            >
+              <Filter size={16} />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-white text-blue-600 text-[9px] font-black rounded-full flex items-center justify-center border-2 border-slate-900">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
           </div>
-          <button
-            onClick={() => setIsFilterModalOpen(true)}
-            aria-label="Abrir filtros"
-            className={cn(
-              'w-12 h-12 rounded-xl flex items-center justify-center transition-colors relative shrink-0',
-              activeFilterCount > 0
-                ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
-                : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100'
-            )}
-          >
-            <Filter size={18} />
-            {activeFilterCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-velo-blue text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
         </div>
+      </div>
 
-        {/* Active Filter Chips */}
+      {/* Contêiner Geral Alinhado para o Conteúdo da Página */}
+      <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pb-28 md:pb-12 pt-4">
+        {/* LADV alert */}
+        {!hasLadv && (
+          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-3 flex gap-3 items-center justify-between shadow-sm">
+            <div className="flex gap-2.5 items-center min-w-0">
+              <AlertCircle className="text-amber-500 shrink-0" size={16} />
+              <p className="text-xs text-amber-800 font-semibold truncate">LADV pendente — envie para agendar aulas</p>
+            </div>
+            <Link href="/app/student/ladv" className="text-amber-600 font-bold text-xs shrink-0 underline underline-offset-2 hover:text-amber-700 transition-colors">
+              Enviar ›
+            </Link>
+          </div>
+        )}
+
+        {/* Active filter chips */}
         {activeFilterCount > 0 && (
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap mb-4">
             {filters.maxPrice < 150 && (
-              <span className="px-3 py-1 bg-blue-50 text-velo-blue text-xs font-bold rounded-full border border-blue-100">
+              <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full border border-blue-100">
                 Até R$ {filters.maxPrice}
               </span>
             )}
             {filters.minRating > 0 && (
-              <span className="px-3 py-1 bg-yellow-50 text-yellow-700 text-xs font-bold rounded-full border border-yellow-100 flex items-center gap-1">
-                <Star size={11} className="fill-yellow-400" /> {filters.minRating}+
+              <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-100 flex items-center gap-1">
+                <Star size={11} className="fill-amber-400 text-amber-400" /> {filters.minRating}+
               </span>
             )}
             {filters.transmission !== 'Todos' && (
               <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full border border-slate-200">
-                {filters.transmission === 'Manual' ? 'Manual' : 'Automático'}
+                {filters.transmission}
               </span>
             )}
             {filters.type !== 'Todos' && (
-              <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-100">
+              <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full border border-slate-200">
                 {filters.type}
               </span>
             )}
             <button
               onClick={() => setFilters({ maxPrice: 150, minRating: 0, transmission: 'Todos', type: 'Todos' })}
-              className="px-3 py-1 text-xs font-bold text-red-500 hover:bg-red-50 rounded-full transition-colors"
+              className="px-3 py-1 text-xs font-bold text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
             >
-              Limpar tudo
+              Limpar
             </button>
           </div>
         )}
-      </div>
 
-      {/* Results count */}
-      {!isLoading && !error && (
-        <p className="text-xs text-slate-400 font-medium -mt-2">
-          {filteredInstructors.length} instrutor{filteredInstructors.length !== 1 ? 'es' : ''} encontrado{filteredInstructors.length !== 1 ? 's' : ''}
-        </p>
-      )}
+        {/* Results count */}
+        {!isLoading && !error && (
+          <div className="mb-3">
+            <p className="text-xs text-slate-400 font-bold">
+              {filteredInstructors.length} instrutor{filteredInstructors.length !== 1 ? 'es' : ''} encontrado{filteredInstructors.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
+
+        {/* Instructor list / grids responsivos */}
+        <div className="pt-1">
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 animate-pulse">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-12 h-12 bg-slate-100 rounded-xl shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-slate-100 rounded w-1/2" />
+                      <div className="h-2.5 bg-slate-100 rounded w-1/3" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <EmptyState
+              icon={AlertCircle}
+              title="Ops! Algo deu errado"
+              description={(error as Error).message}
+              action={
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md shadow-blue-600/20 hover:bg-blue-700 transition-colors cursor-pointer"
+                >
+                  Tentar novamente
+                </button>
+              }
+            />
+          ) : filteredInstructors.length === 0 ? (
+            <EmptyState
+              icon={Search}
+              title="Nenhum instrutor encontrado"
+              description="Tente ajustar os filtros ou a busca por nome/região."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
+              {filteredInstructors.map((instructor) => (
+                <motion.button
+                  key={instructor.id}
+                  type="button"
+                  onClick={() => onSelectInstructor(instructor.id)}
+                  className="w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex gap-3.5 items-center hover:border-blue-100 hover:shadow-md transition-all active:scale-[0.99] text-left cursor-pointer"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="w-13 h-13 rounded-xl bg-slate-50 overflow-hidden shrink-0 flex items-center justify-center border border-slate-100">
+                    {instructor.profilePicture && (
+                      instructor.profilePicture.trim().toLowerCase().startsWith('http://') ||
+                      instructor.profilePicture.trim().toLowerCase().startsWith('https://') ||
+                      instructor.profilePicture.trim().toLowerCase().startsWith('data:image/') ||
+                      instructor.profilePicture.trim().toLowerCase().startsWith('/')
+                    ) ? (
+                      <img src={instructor.profilePicture} alt={instructor.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-slate-400 font-extrabold text-lg">{instructor.name?.charAt(0)}</span>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <p className="font-extrabold text-slate-900 text-sm leading-tight truncate">{instructor.name}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">
+                      {instructor.location || 'Local não informado'} · {instructor.transmission === 'Automatic' ? 'Automático' : 'Manual'}
+                    </p>
+                    <p className="text-xs font-extrabold text-blue-600 mt-1">R$ {instructor.pricePerClass}/hora</p>
+                  </div>
+
+                  <div className="text-right shrink-0 flex flex-col items-end gap-1">
+                    <span className="bg-blue-50 text-blue-600 text-xs font-black px-2 py-0.5 rounded-lg flex items-center gap-0.5">
+                      ★ {instructor.rating?.toFixed(1) || '—'}
+                    </span>
+                    {instructor.reviewsCount !== undefined && instructor.reviewsCount > 0 && (
+                      <p className="text-[10px] font-semibold text-slate-400">{instructor.reviewsCount} avaliaçõ{instructor.reviewsCount === 1 ? 'e' : 'es'}</p>
+                    )}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Modals */}
       <AnimatePresence>
@@ -187,89 +266,6 @@ export const StudentHome = ({ onSelectInstructor }: { onSelectInstructor: (id: s
           />
         )}
       </AnimatePresence>
-
-      {/* Instructor Grid */}
-      <section>
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-            <Loader2 className="w-8 h-8 animate-spin mb-3 text-velo-blue" />
-            <p className="text-sm font-medium">Buscando instrutores...</p>
-          </div>
-        ) : error ? (
-          <EmptyState
-            icon={AlertCircle}
-            title="Ops! Algo deu errado"
-            description={(error as Error).message}
-            action={
-              <button
-                onClick={() => window.location.reload()}
-                className="px-5 py-2.5 bg-velo-blue text-white text-sm font-bold rounded-xl shadow-md shadow-velo-blue/20 hover:bg-velo-blue-dark transition-colors"
-              >
-                Tentar novamente
-              </button>
-            }
-          />
-        ) : filteredInstructors.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filteredInstructors.map((instructor) => (
-              <button
-                key={instructor.id}
-                type="button"
-                onClick={() => onSelectInstructor(instructor.id)}
-                className="group text-left flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 hover:border-slate-200 hover:shadow-lg hover:shadow-slate-200/60 transition-colors duration-200 active:scale-[0.99]"
-              >
-                {/* Avatar */}
-                <div className="relative shrink-0">
-                  <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-md bg-slate-100 flex items-center justify-center">
-                    {instructor.profilePicture ? (
-                      <img
-                        src={instructor.profilePicture}
-                        alt={instructor.name}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-slate-500 font-bold text-lg">
-                        {instructor.name?.charAt(0)?.toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 bg-slate-900 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
-                    <Star size={8} fill="currentColor" />
-                    {instructor.rating}
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-slate-900 text-base leading-tight truncate">
-                    {instructor.name}
-                  </h3>
-                  <p className="text-slate-400 text-xs truncate mt-0.5">{instructor.vehicleModel}</p>
-                  <span className="inline-block text-[11px] font-semibold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md mt-1.5">
-                    {instructor.transmission}
-                  </span>
-                </div>
-
-                {/* Price */}
-                <div className="text-right shrink-0">
-                  <p className="text-lg font-bold text-slate-900 tabular-nums">
-                    R$ {instructor.pricePerClass}
-                  </p>
-                  <p className="text-[11px] text-slate-400 font-medium">/hora</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={Search}
-            title="Nenhum instrutor encontrado"
-            description="Tente mudar os filtros ou buscar por outra localização."
-          />
-        )}
-      </section>
     </div>
   );
 };

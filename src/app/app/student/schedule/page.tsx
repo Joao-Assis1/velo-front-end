@@ -12,9 +12,11 @@ export default function StudentSchedulePage() {
   const blocked = journey && !journey.canScheduleLessons;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 md:px-8 space-y-4">
+    <div className="w-full space-y-4">
       {blocked && journey && (
-        <JourneyBlockerBanner blockers={journey.blockers} />
+        <div className="max-w-5xl mx-auto px-4 md:px-6 pt-4">
+          <JourneyBlockerBanner blockers={journey.blockers} />
+        </div>
       )}
       <StudentSchedule
         classes={scheduledClasses}

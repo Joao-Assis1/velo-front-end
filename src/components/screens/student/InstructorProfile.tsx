@@ -67,7 +67,7 @@ export const InstructorProfileView = ({
 
     const title = `Aula de Direção com ${instructor.name}`;
     const details = `Aula prática de direção veicular. Veículo: ${instructor.vehicleModel}`;
-    const location = instructor.location;
+    const location = instructor.location || "Autoescola Velo";
 
     const formatGCalDate = (date: Date) =>
       date.toISOString().replace(/-|:|\.\d\d\d/g, "");
@@ -77,7 +77,6 @@ export const InstructorProfileView = ({
     window.open(googleUrl, "_blank");
   };
 
-  // Mock available times based on selected date
   const getAvailableTimes = (date: Date) => {
     if (!instructor) {
       return [];
@@ -151,7 +150,7 @@ export const InstructorProfileView = ({
     setShowWhatsAppAnim(true);
     setTimeout(() => {
       setShowWhatsAppAnim(false);
-      window.open(`https://wa.me/${instructor.phone!.replace(/\D/g, '')}`, '_blank');
+      window.open(`https://wa.me/55${instructor.phone!.replace(/\D/g, '')}`, '_blank');
     }, 1500);
   };
 
@@ -211,499 +210,519 @@ export const InstructorProfileView = ({
   };
 
   return (
-    <div className="pb-28 md:pb-10">
-      {/* Hero Header */}
-      <div className="relative -mx-4 md:-mx-0 mb-0">
-        {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white rounded-b-[2rem]" />
+    <div className="min-h-screen bg-slate-50 pb-12">
+      {/* Hero Header no padrão Structured & Bold */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+        <div className="absolute bottom-0 right-0 w-44 h-44 bg-blue-600/10 rounded-full translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        
+        <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pt-6 pb-6 relative z-10">
+          {/* Top Back e Título */}
+          <div className="flex items-center gap-3 mb-5">
+            <button
+              onClick={onBack}
+              className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center text-white hover:bg-white/15 border border-white/10 transition-colors cursor-pointer"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <p className="text-xs font-bold tracking-widest uppercase text-blue-400">Perfil do Instrutor</p>
+          </div>
 
-        <div className="relative px-4 pt-5 pb-8">
-          {/* Back button */}
-          <button
-            onClick={onBack}
-            aria-label="Voltar"
-            className="w-9 h-9 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center text-slate-600 hover:bg-white transition-colors shadow-sm border border-white/60 mb-6"
-          >
-            <ChevronLeft size={20} />
-          </button>
-
-          <div className="flex flex-col items-center text-center">
-            {/* Photo */}
-            <div className="relative mb-4">
+          {/* Info do Instrutor no Header */}
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0">
               <div className={cn(
-                "w-32 h-32 rounded-[2rem] overflow-hidden border-4 bg-slate-100 shadow-xl",
-                instructor.instructorType === "Credenciado"
-                  ? "border-blue-100"
-                  : "border-orange-100"
+                "w-16 h-16 rounded-2xl overflow-hidden border-2 bg-slate-800 shadow-xl flex items-center justify-center",
+                instructor.instructorType === "Credenciado" ? "border-blue-500" : "border-emerald-500"
               )}>
                 {instructor.profilePicture ? (
-                  <img
-                    src={instructor.profilePicture}
-                    alt={instructor.name}
-                    width={128}
-                    height={128}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={instructor.profilePicture} alt={instructor.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-400 font-black text-4xl">
-                    {instructor.name?.charAt(0)?.toUpperCase()}
+                  <span className="text-white font-extrabold text-2xl">{instructor.name?.charAt(0)}</span>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-black text-slate-50 leading-tight truncate">{instructor.name}</h1>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                <span className="bg-blue-600/20 text-blue-300 text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                  ★ {instructor.rating?.toFixed(1) || '—'} ({instructor.reviewsCount})
+                </span>
+                {instructor.transmission && (
+                  <span className="bg-white/10 text-slate-300 text-[9px] font-bold px-2 py-0.5 rounded-full">
+                    {instructor.transmission === 'Automatic' ? 'Automático' : 'Manual'}
+                  </span>
+                )}
+                {instructor.location && (
+                  <span className="bg-white/10 text-slate-300 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 truncate max-w-[120px]">
+                    <MapPin size={9} /> {instructor.location}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="text-right shrink-0">
+              <p className="text-lg font-black text-white leading-none">R$ {instructor.pricePerClass}</p>
+              <p className="text-[10px] text-slate-400 mt-1">por aula</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pt-6 pb-28 md:pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          
+          {/* Coluna Esquerda: Alertas, Bio e Veículo */}
+          <div className="md:col-span-7 space-y-4">
+            {/* Alertas de dependências LADV ou Cartão */}
+            {!hasLadv && (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex gap-3 items-center justify-between shadow-sm">
+                <div className="flex gap-2 items-center min-w-0">
+                  <AlertCircle size={16} className="text-amber-500 shrink-0" />
+                  <p className="text-xs text-amber-800 font-semibold truncate">É obrigatório enviar a LADV para agendar</p>
+                </div>
+                <button
+                  onClick={() => setShowLadvAlert(true)}
+                  className="text-xs font-black text-amber-700 underline underline-offset-2 hover:text-amber-800 shrink-0 cursor-pointer"
+                >
+                  Enviar ›
+                </button>
+              </div>
+            )}
+
+            {!hasPaymentMethod && (
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3.5 flex gap-3 items-center justify-between shadow-sm">
+                <div className="flex gap-2 items-center min-w-0">
+                  <CreditCard size={16} className="text-blue-600 shrink-0" />
+                  <p className="text-xs text-blue-800 font-semibold truncate">Cadastre um cartão para realizar o agendamento</p>
+                </div>
+                <button
+                  onClick={onAddPaymentMethod}
+                  className="text-xs font-black text-blue-700 underline underline-offset-2 hover:text-blue-800 shrink-0 cursor-pointer"
+                >
+                  Adicionar ›
+                </button>
+              </div>
+            )}
+
+            {/* Biografia do Instrutor */}
+            {instructor.bio && (
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Sobre</p>
+                <p className="text-sm text-slate-600 leading-relaxed font-medium">{instructor.bio}</p>
+              </div>
+            )}
+
+            {/* Informações Complementares do Veículo */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex justify-between items-center">
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Veículo de instrução</p>
+                <p className="text-sm font-extrabold text-slate-900">{instructor.vehicleModel || "Modelo não informado"}</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
+                <Car size={20} />
+              </div>
+            </div>
+          </div>
+
+          {/* Coluna Direita: Agendamento, Horários e Botões (Sticky no Desktop) */}
+          <div className="md:col-span-5 md:sticky md:top-6 space-y-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-5">
+              {/* Widget de Agendamento */}
+              <div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Escolha uma data</p>
+                <CalendarWidget
+                  selectedDate={selectedDate}
+                  onSelectDate={(date) => {
+                    setSelectedDate(date);
+                    setSelectedTime(null);
+                    setBookingError("");
+                  }}
+                />
+              </div>
+
+              {/* Horários */}
+              <div className="border-t border-slate-100 pt-4">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+                  Disponíveis em {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
+                </p>
+
+                {availableTimes.length > 0 ? (
+                  <div className="grid grid-cols-4 md:grid-cols-3 gap-2">
+                    {availableTimes.map((time) => (
+                      <button
+                        key={time}
+                        onClick={() => { setSelectedTime(time); setBookingError(""); }}
+                        className={cn(
+                          "py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border",
+                          selectedTime === time
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/10"
+                            : "bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100"
+                        )}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 rounded-2xl p-6 text-center border border-slate-100">
+                    <CalendarIcon className="mx-auto text-slate-300 mb-2" size={28} />
+                    <p className="text-slate-500 text-xs font-semibold">
+                      Nenhum horário disponível para esta data.
+                    </p>
+                  </div>
+                )}
+
+                {bookingError && (
+                  <div className="mt-3.5 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-xs font-semibold text-red-600">
+                    <AlertCircle size={16} className="shrink-0 text-red-500" />
+                    <span>{bookingError}</span>
                   </div>
                 )}
               </div>
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-black px-3 py-1 rounded-full flex items-center gap-1 shadow-md border-2 border-white whitespace-nowrap">
-                <Star size={10} className="fill-yellow-400 text-yellow-400" />
-                {instructor.rating}
-                <span className="text-slate-400 font-medium">({instructor.reviewsCount})</span>
+
+              {/* Ações de Agendamento Inline no Desktop */}
+              <div className="hidden md:flex md:flex-col md:gap-2.5 border-t border-slate-100 pt-4">
+                <button
+                  onClick={handleBookClick}
+                  disabled={!selectedTime || !hasLadv || !hasPaymentMethod}
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-blue-600/15 cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Clock size={16} />
+                  {selectedTime ? `Agendar para as ${selectedTime} — R$ ${instructor.pricePerClass}` : "Selecione data e horário"}
+                </button>
+
+                <AnimatePresence mode="wait">
+                  {showWhatsAppAnim ? (
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.95, opacity: 0 }}
+                      className="bg-emerald-500 text-white py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2.5 w-full"
+                    >
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span className="font-extrabold text-sm">Redirecionando para o WhatsApp...</span>
+                    </motion.div>
+                  ) : (
+                    instructor.phone && (
+                      <button
+                        onClick={handleWhatsAppClick}
+                        disabled={!instructor.phone}
+                        className="w-full py-3.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle size={16} className="text-emerald-500" />
+                        Conversar via WhatsApp
+                      </button>
+                    )
+                  )}
+                </AnimatePresence>
               </div>
-            </div>
 
-            <h1 className="text-2xl font-black text-slate-900 mt-3 mb-1 tracking-tight">
-              {instructor.name}
-            </h1>
-            {instructor.location && (
-              <p className="text-slate-400 text-sm flex items-center justify-center gap-1 mb-4">
-                <MapPin size={13} /> {instructor.location}
-              </p>
-            )}
-
-            <div className="flex flex-wrap justify-center gap-2">
-              <span className={cn(
-                "text-xs px-3 py-1.5 rounded-full font-bold border",
-                instructor.instructorType === "Credenciado"
-                  ? "bg-blue-50 text-velo-blue border-blue-100"
-                  : "bg-orange-50 text-orange-600 border-orange-100",
-              )}>
-                {instructor.instructorType}
-              </span>
-              {instructor.vehicleModel && (
-                <span className="text-xs px-3 py-1.5 rounded-full font-medium border border-slate-200 bg-white text-slate-600 flex items-center gap-1">
-                  <Car size={11} />
-                  {instructor.vehicleModel}
-                </span>
-              )}
-              {instructor.transmission && (
-                <span className="text-xs px-3 py-1.5 rounded-full font-medium border border-slate-200 bg-white text-slate-600">
-                  {instructor.transmission}
-                </span>
-              )}
             </div>
           </div>
+
         </div>
       </div>
 
-      <div className="px-4 md:px-6">
-        {/* Stats Row */}
-        <div className="flex gap-3 mb-8 mt-2">
-          <div className="flex-1 bg-velo-blue rounded-2xl p-4 text-center">
-            <span className="text-blue-200 text-[10px] font-bold uppercase tracking-wider block mb-0.5">
-              Por aula
-            </span>
-            <span className="text-2xl font-black text-white">
-              R${instructor.pricePerClass ?? 0}
-            </span>
-          </div>
-          <div className="flex-1 bg-slate-50 rounded-2xl p-4 border border-slate-100 text-center">
-            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider block mb-0.5">
-              Experiência
-            </span>
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-2xl font-black text-slate-900">
-                {instructor.reviewsCount}
-              </span>
-              <span className="text-xs text-slate-400 font-medium">aulas</span>
-            </div>
-          </div>
-        </div>
-
-        {instructor.bio && (
-          <div className="mb-8">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Sobre</h3>
-            <p className="text-slate-600 leading-relaxed text-sm">
-              {instructor.bio}
-            </p>
-          </div>
-        )}
-
-        <div className="mt-6">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">Disponibilidade</h3>
-
-          <CalendarWidget
-            selectedDate={selectedDate}
-            onSelectDate={(date) => {
-              setSelectedDate(date);
-              setSelectedTime(null);
-              setBookingError("");
-            }}
-          />
-
-          <div className="mt-6">
-            <h4 className="text-sm font-medium text-slate-700 mb-3">
-              Horários disponíveis para{" "}
-              {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
-            </h4>
-
-            {availableTimes.length > 0 ? (
-              <div className="grid grid-cols-4 gap-2">
-                {availableTimes.map((time) => (
-                  <button
-                    key={time}
-                    onClick={() => { setSelectedTime(time); setBookingError(""); }}
-                    aria-pressed={selectedTime === time}
-                    className={cn(
-                      "py-2 px-1 rounded-lg border text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-velo-blue/30",
-                      selectedTime === time
-                        ? "bg-velo-blue text-white border-velo-blue shadow-sm"
-                        : "border-slate-200 hover:border-velo-blue hover:text-velo-blue bg-white",
-                    )}
-                  >
-                    {time}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-slate-50 rounded-xl p-8 text-center border border-slate-100">
-                <CalendarIcon
-                  className="mx-auto text-slate-300 mb-2"
-                  size={32}
-                />
-                <p className="text-slate-500 text-sm">
-                  Não há horários disponíveis para esta data.
-                </p>
-              </div>
-            )}
-
-            {bookingError && (
-              <div className={cn(
-                "mt-3 flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-red-600"
-              )}>
-                <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                <span>{bookingError}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-white/95 backdrop-blur-sm border-t border-slate-100 z-50 flex flex-col md:flex-row md:left-72 gap-3">
-        <Button
-          className="w-full text-lg py-4 md:flex-1"
+      {/* Ações Fixas no Rodapé (Somente no Mobile) */}
+      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-white/95 backdrop-blur-sm border-t border-slate-100 z-40 flex flex-col gap-2 md:hidden">
+        <button
           onClick={handleBookClick}
+          disabled={!selectedTime || !hasLadv || !hasPaymentMethod}
+          className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-2xl text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-blue-600/15 cursor-pointer flex items-center justify-center gap-1.5"
         >
-          Agendar agora {selectedTime ? `(${selectedTime})` : ""}
-        </Button>
+          <Clock size={16} />
+          {selectedTime ? `Agendar para as ${selectedTime} — R$ ${instructor.pricePerClass}` : "Selecione data e horário"}
+        </button>
 
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {showWhatsAppAnim ? (
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-velo-green text-white p-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 w-full md:flex-1"
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-emerald-500 text-white py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2.5 w-full"
             >
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span className="font-bold">Abrindo WhatsApp...</span>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span className="font-extrabold text-sm">Redirecionando para o WhatsApp...</span>
             </motion.div>
           ) : (
-            <Button
-              variant="secondary"
-              className="w-full md:flex-1 shadow-none bg-transparent border-2 border-velo-green text-velo-green hover:bg-velo-green/10 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleWhatsAppClick}
-              disabled={!instructor.phone}
-            >
-              <MessageCircle size={24} />
-              Falar no WhatsApp
-            </Button>
+            instructor.phone && (
+              <button
+                onClick={handleWhatsAppClick}
+                disabled={!instructor.phone}
+                className="w-full py-3.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold rounded-2xl text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+              >
+                <MessageCircle size={16} className="text-emerald-500" />
+                Conversar via WhatsApp
+              </button>
+            )
           )}
         </AnimatePresence>
       </div>
 
+      {/* Modais Customizados como Bottom Sheets */}
       <AnimatePresence>
+        {/* Modal de Confirmação de Reserva */}
         {showBookingModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-end justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
               onClick={() => setShowBookingModal(false)}
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="bg-white rounded-t-3xl p-6 w-full max-w-md relative z-10 shadow-2xl border-t border-slate-100 pb-8 text-center"
             >
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
-                Confirmar Agendamento
-              </h3>
-              <p className="text-slate-600 mb-6">
-                Você deseja agendar uma aula com{" "}
-                <span className="font-bold">{instructor.name}</span> às{" "}
-                <span className="font-bold">{selectedTime}</span>?
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />
+              
+              <h3 className="text-lg font-extrabold text-slate-900 mb-1">Confirmar Agendamento</h3>
+              <p className="text-slate-500 text-xs px-4 mb-5 leading-relaxed">
+                Você agendará uma aula prática com o instrutor <span className="font-bold text-slate-800">{instructor.name}</span> no dia <span className="font-bold text-slate-800">{format(selectedDate, "dd/MM/yyyy")}</span> às <span className="font-bold text-slate-800">{selectedTime}</span>.
               </p>
 
-              <div className="bg-slate-50 p-4 rounded-xl mb-6 flex justify-between items-center">
-                <span className="text-slate-600">Preço Total</span>
-                <span className="text-xl font-bold text-velo-blue">
-                  R$ {instructor.pricePerClass ?? 0}
-                </span>
+              <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl mb-6 flex justify-between items-center text-sm font-semibold">
+                <span className="text-slate-500">Valor da aula</span>
+                <span className="text-lg font-black text-blue-600">R$ {instructor.pricePerClass}</span>
               </div>
 
               {bookingError && (
-                <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 text-center">
+                <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 text-xs font-semibold rounded-xl">
                   {bookingError}
                 </div>
               )}
 
               <div className="flex gap-3">
-                <Button
-                  variant="ghost"
-                  className="flex-1"
+                <button
                   onClick={() => setShowBookingModal(false)}
+                  className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all cursor-pointer"
                 >
-                  Cancelar
-                </Button>
-                <Button
-                  className="flex-1"
+                  Voltar
+                </button>
+                <button
                   onClick={confirmBooking}
                   disabled={isBooking}
+                  className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer disabled:opacity-40"
                 >
-                  {isBooking ? "Processando..." : "Confirmar"}
-                </Button>
+                  {isBooking ? "Agendando..." : "Confirmar"}
+                </button>
               </div>
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
 
-      <AnimatePresence>
+        {/* Alerta de LADV Necessária */}
         {showLadvAlert && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-end justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
               onClick={() => setShowLadvAlert(false)}
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl text-center"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="bg-white rounded-t-3xl p-6 w-full max-w-md relative z-10 shadow-2xl border-t border-slate-100 pb-8 text-center"
             >
-              <div className="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 size={32} />
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />
+              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3">
+                <AlertCircle size={24} />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
-                LADV Necessária
-              </h3>
-              <p className="text-slate-600 mb-6">
-                Para agendar aulas práticas, é obrigatório enviar sua Licença
-                para Aprendizagem de Direção Veicular (LADV).
+              <h3 className="text-lg font-extrabold text-slate-900 mb-1">LADV Obrigatória</h3>
+              <p className="text-slate-500 text-xs px-4 mb-6 leading-relaxed">
+                Segundo as regras do DETRAN, é obrigatório portar a Licença de Aprendizagem de Direção Veicular (LADV) antes de realizar aulas práticas nas ruas.
               </p>
 
               <div className="flex gap-3">
-                <Button
-                  variant="ghost"
-                  className="flex-1"
+                <button
                   onClick={() => setShowLadvAlert(false)}
+                  className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all cursor-pointer"
                 >
                   Depois
-                </Button>
-                <Button
-                  className="flex-1"
+                </button>
+                <button
                   onClick={() => {
                     setShowLadvAlert(false);
                     setShowUploadModal(true);
                   }}
+                  className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer"
                 >
-                  Enviar Agora
-                </Button>
+                  Enviar LADV agora
+                </button>
               </div>
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
 
-      <AnimatePresence>
+        {/* Modal de Upload de LADV */}
         {showUploadModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-end justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
               onClick={() => setShowUploadModal(false)}
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl text-center"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="bg-white rounded-t-3xl p-6 w-full max-w-md relative z-10 shadow-2xl border-t border-slate-100 pb-8 text-center"
             >
-              <div className="w-16 h-16 bg-blue-50 text-velo-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                <Upload size={32} />
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />
+              <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+                <Upload size={20} />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
-                Enviar LADV
-              </h3>
-              <p className="text-slate-600 mb-6 text-sm">
-                Tire uma foto ou envie o PDF da sua Licença de Aprendizagem.
+              <h3 className="text-lg font-extrabold text-slate-900 mb-1">Enviar LADV</h3>
+              <p className="text-slate-500 text-xs px-4 mb-5 leading-relaxed">
+                Tire uma foto nítida do documento físico ou faça o upload do PDF oficial gerado pelo DETRAN.
               </p>
 
-              <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 mb-6 flex flex-col items-center justify-center text-slate-400 gap-2 hover:bg-slate-50 transition-colors cursor-pointer">
-                <Upload size={32} />
-                <span className="text-sm font-medium">
-                  Clique para selecionar arquivo
-                </span>
+              <div
+                onClick={() => {
+                  setShowUploadModal(false);
+                  onUploadLadv();
+                }}
+                className="border-2 border-dashed border-slate-200 rounded-2xl p-8 mb-6 flex flex-col items-center justify-center text-slate-400 gap-2 hover:bg-slate-50 transition-all cursor-pointer active:scale-[0.98]"
+              >
+                <Upload size={28} />
+                <span className="text-xs font-bold">Selecionar arquivo de LADV</span>
               </div>
 
               <div className="flex gap-3">
-                <Button
-                  variant="ghost"
-                  className="flex-1"
+                <button
                   onClick={() => setShowUploadModal(false)}
+                  className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all cursor-pointer"
                 >
                   Cancelar
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => {
-                    setShowUploadModal(false);
-                    onUploadLadv();
-                    setShowBookingModal(true);
-                  }}
-                >
-                  Enviar
-                </Button>
+                </button>
               </div>
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
 
-      <AnimatePresence>
-        {showSuccessModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl text-center"
-            >
-              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 size={40} />
-              </div>
-
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                Agendamento Confirmado!
-              </h3>
-              <p className="text-slate-500 mb-6">
-                Sua aula foi agendada com sucesso.
-              </p>
-
-              <div className="bg-slate-50 rounded-xl p-4 mb-6 text-left space-y-3">
-                <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                  <span className="text-slate-500 text-sm">Instrutor</span>
-                  <span className="font-bold text-slate-900">
-                    {instructor.name}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                  <span className="text-slate-500 text-sm">Data</span>
-                  <span className="font-bold text-slate-900">
-                    {format(selectedDate, "dd 'de' MMM", { locale: ptBR })}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                  <span className="text-slate-500 text-sm">Horário</span>
-                  <span className="font-bold text-slate-900">
-                    {selectedTime}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 text-sm">Valor</span>
-                  <span className="font-bold text-velo-blue">
-                    R$ {instructor.pricePerClass ?? 0}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full border-slate-200 text-slate-700 hover:bg-slate-50"
-                  onClick={handleAddToCalendar}
-                >
-                  <CalendarIcon size={18} />
-                  Adicionar ao Calendário
-                </Button>
-
-                <Button
-                  className="w-full py-4 text-lg"
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    onBack();
-                  }}
-                >
-                  Voltar ao Início
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
+        {/* Alerta de Cartão de Crédito Necessário */}
         {showPaymentAlert && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 text-center">
+          <div className="fixed inset-0 z-50 flex items-end justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
               onClick={() => setShowPaymentAlert(false)}
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-sm relative z-10 shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="bg-white rounded-t-3xl p-6 w-full max-w-md relative z-10 shadow-2xl border-t border-slate-100 pb-8 text-center"
             >
-              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CreditCard size={32} />
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />
+              <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-3">
+                <CreditCard size={22} />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
-                Cartão Necessário
-              </h3>
-              <p className="text-slate-600 mb-6">
-                Para confirmar o agendamento, você precisa cadastrar um cartão de crédito para processar o pagamento da aula.
+              <h3 className="text-lg font-extrabold text-slate-900 mb-1">Cadastrar Cartão</h3>
+              <p className="text-slate-500 text-xs px-4 mb-6 leading-relaxed">
+                Para efetuar a reserva e confirmar seu horário na agenda do instrutor, você precisa registrar um cartão de crédito principal.
               </p>
 
               <div className="flex gap-3">
-                <Button
-                  variant="ghost"
-                  className="flex-1"
+                <button
                   onClick={() => setShowPaymentAlert(false)}
+                  className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all cursor-pointer"
                 >
                   Depois
-                </Button>
-                <Button
-                  className="flex-1"
+                </button>
+                <button
                   onClick={() => {
                     setShowPaymentAlert(false);
                     onAddPaymentMethod();
                   }}
+                  className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-extrabold rounded-xl transition-all cursor-pointer"
                 >
-                  Cadastrar
-                </Button>
+                  Cadastrar agora
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Modal de Agendamento com Sucesso */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="bg-white rounded-t-3xl p-6 w-full max-w-md relative z-10 shadow-2xl border-t border-slate-100 pb-8 text-center"
+            >
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />
+              <div className="w-14 h-14 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={32} className="fill-green-50 text-green-500" />
+              </div>
+
+              <h3 className="text-xl font-black text-slate-900 mb-1">Agendamento Confirmado!</h3>
+              <p className="text-slate-400 text-xs px-4 mb-5">Sua aula foi agendada e salva com sucesso.</p>
+
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6 text-left text-xs font-semibold space-y-3.5">
+                <div className="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Instrutor</span>
+                  <span className="font-extrabold text-slate-900">{instructor.name}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Data</span>
+                  <span className="font-extrabold text-slate-900">
+                    {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Horário</span>
+                  <span className="font-extrabold text-slate-900">{selectedTime}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 font-bold uppercase tracking-wider">Valor total</span>
+                  <span className="font-extrabold text-blue-600 text-sm">R$ {instructor.pricePerClass}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <button
+                  onClick={handleAddToCalendar}
+                  className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
+                >
+                  <CalendarIcon size={16} />
+                  Adicionar ao Google Agenda
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    onBack();
+                  }}
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-sm transition-all cursor-pointer active:scale-[0.98]"
+                >
+                  Voltar ao início
+                </button>
               </div>
             </motion.div>
           </div>

@@ -67,19 +67,17 @@ export default function InstructorProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-5xl mx-auto px-4 md:px-8 pt-6">
-        <InstructorProfileView
-          instructor={instructor}
-          onBack={() => router.back()}
-          hasLadv={hasLadv}
-          hasPaymentMethod={hasPaymentMethod}
-          onUploadLadv={() => router.push("/app/student/payments")}
-          onAddPaymentMethod={() => router.push("/app/student/payments")}
-          onBookClass={handleBookClass}
-          busySlots={busySlots}
-        />
-      </div>
+    <div className="w-full">
+      <InstructorProfileView
+        instructor={instructor}
+        onBack={() => router.back()}
+        hasLadv={hasLadv}
+        hasPaymentMethod={hasPaymentMethod}
+        onUploadLadv={() => router.push("/app/student/payments")}
+        onAddPaymentMethod={() => router.push("/app/student/payments")}
+        onBookClass={handleBookClass}
+        busySlots={busySlots}
+      />
     </div>
   );
 }

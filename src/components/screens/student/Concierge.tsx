@@ -2,12 +2,10 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Circle, Loader2, MapPin, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Loader2, MapPin, ExternalLink, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '@/context/AppContext';
-import { DetranStepper } from '@/components/features/DetranStepper';
 import { BurocraticConcierge, AlertType } from '@/components/features/BurocraticConcierge';
-import { Card } from '@/components/ui-custom';
 import { DetranStage } from '@/types';
 import { getStudentChecklistAction, updateChecklistStepAction } from '@/lib/actions/students';
 import { cn } from '@/lib/utils';
@@ -24,22 +22,22 @@ interface Checklist {
 function deriveStages(c: Checklist | null): DetranStage[] {
   if (!c) {
     return [
-      { id: '1', label: 'Cadastro / RENACH', status: 'completed' },
-      { id: '2', label: 'Exame Médico', status: 'current' },
-      { id: '3', label: 'Curso Teórico', status: 'locked' },
-      { id: '4', label: 'LADV & Aulas', status: 'locked' },
-      { id: '5', label: 'Exame Final', status: 'locked' },
+      { id: '1', label: 'RENACH', status: 'completed' },
+      { id: '2', label: 'Médico', status: 'current' },
+      { id: '3', label: 'Teórico', status: 'locked' },
+      { id: '4', label: 'Aulas', status: 'locked' },
+      { id: '5', label: 'Exame', status: 'locked' },
     ];
   }
   const stage2done = c.medico && c.psicotecnico;
   const stage3done = c.teorico;
   const stage4done = c.pratico;
   return [
-    { id: '1', label: 'Cadastro / RENACH', status: 'completed' },
-    { id: '2', label: 'Exame Médico', status: stage2done ? 'completed' : 'current' },
-    { id: '3', label: 'Curso Teórico', status: stage3done ? 'completed' : stage2done ? 'current' : 'locked' },
-    { id: '4', label: 'LADV & Aulas', status: stage4done ? 'completed' : stage3done ? 'current' : 'locked' },
-    { id: '5', label: 'Exame Final', status: stage4done ? 'current' : 'locked' },
+    { id: '1', label: 'RENACH', status: 'completed' },
+    { id: '2', label: 'Médico', status: stage2done ? 'completed' : 'current' },
+    { id: '3', label: 'Teórico', status: stage3done ? 'completed' : stage2done ? 'current' : 'locked' },
+    { id: '4', label: 'Aulas', status: stage4done ? 'completed' : stage3done ? 'current' : 'locked' },
+    { id: '5', label: 'Exame', status: stage4done ? 'current' : 'locked' },
   ];
 }
 
@@ -76,8 +74,8 @@ function deriveAlerts(c: Checklist | null): Array<{ id: string; type: AlertType;
 const STEPS: { key: ChecklistStep; label: string; description: string }[] = [
   { key: 'medico', label: 'Exame Médico', description: 'Apto ao exame de acuidade visual e saúde geral' },
   { key: 'psicotecnico', label: 'Exame Psicotécnico', description: 'Avaliação psicológica aprovada pelo DETRAN' },
-  { key: 'teorico', label: 'Curso Teórico', description: 'Módulos da Velo Academy concluídos' },
-  { key: 'pratico', label: 'Aulas Práticas', description: 'LADV enviada e aulas práticas realizadas' },
+  { key: 'teorico', label: 'Curso Teórico', description: 'Módulos concluídos na autoescola / Velo Academy' },
+  { key: 'pratico', label: 'Aulas Práticas', description: 'LADV emitida e 20 horas de aulas práticas concluídas' },
 ];
 
 export const StudentConcierge = () => {
@@ -105,93 +103,186 @@ export const StudentConcierge = () => {
 
   const stages = deriveStages(checklist ?? null);
   const alerts = deriveAlerts(checklist ?? null).filter(a => !dismissedAlerts.includes(a.id));
+  const currentStage = stages.find(s => s.status === 'current');
 
   return (
-    <div className="pb-28 md:pb-10 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-slate-900">O Navegador</h1>
-        <p className="text-slate-500 text-sm">Sua jornada rumo à carteira de motorista</p>
-      </header>
-
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="animate-spin text-velo-blue" size={32} />
-        </div>
-      ) : (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-          <Card className="p-6">
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6">
-              Progresso DETRAN
-            </h2>
-            <DetranStepper stages={stages} />
-          </Card>
-
-          {alerts.length > 0 && (
-            <BurocraticConcierge
-              alerts={alerts}
-              onDismiss={(id) => setDismissedAlerts(prev => [...prev, id])}
-            />
-          )}
-
-          <Card>
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
-              Checklist de Etapas
-            </h2>
-            <div className="space-y-3">
-              {STEPS.map((step) => {
-                const done = checklist?.[step.key] ?? false;
-                return (
-                  <button
-                    key={step.key}
-                    onClick={() => mutation.mutate({ step: step.key, completed: !done })}
-                    disabled={mutation.isPending}
-                    className={cn(
-                      "w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-200 text-left",
-                      done
-                        ? "border-green-200 bg-green-50"
-                        : "border-slate-100 hover:border-velo-blue hover:bg-blue-50"
-                    )}
-                  >
-                    {done
-                      ? <CheckCircle2 size={24} className="text-green-500 shrink-0" />
-                      : <Circle size={24} className="text-slate-300 shrink-0" />
-                    }
-                    <div className="flex-1">
-                      <p className={cn(
-                        "text-sm font-bold",
-                        done ? "text-green-700 line-through" : "text-slate-900"
-                      )}>
-                        {step.label}
-                      </p>
-                      <p className="text-xs text-slate-500">{step.description}</p>
-                    </div>
-                  </button>
-                );
-              })}
+    <div className="min-h-screen bg-slate-50">
+      {/* Dark Header com Stepper DETRAN Horizontal */}
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 px-5 pt-7 pb-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full translate-y-[-20%] translate-x-[20%] pointer-events-none blur-2xl" />
+        
+        <div className="max-w-6xl mx-auto w-full relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-[10px] font-bold tracking-widest uppercase text-blue-400">Progresso Habilitação</p>
+              <h1 className="text-xl font-extrabold text-slate-50 mt-0.5">Jornada do Condutor</h1>
             </div>
-          </Card>
+            <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700/50 rounded-full px-2.5 py-1">
+              <ShieldCheck size={12} className="text-emerald-400" />
+              <span className="text-[10px] font-bold text-slate-300">DETRAN SP</span>
+            </div>
+          </div>
 
-          <Card className="bg-slate-900 text-white border-none">
-            <div className="flex items-start gap-3">
-              <MapPin size={20} className="text-velo-blue shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="font-bold text-sm mb-1">Encontre o DETRAN mais próximo</p>
-                <p className="text-xs text-white/60 mb-3">
-                  Consulte os endereços e horários de atendimento dos postos do DETRAN na sua região.
-                </p>
+          {/* Stepper Horizontal Inline Premium */}
+          <div className="flex items-center justify-between mt-6 px-1 max-w-2xl mx-auto">
+            {stages.map((stage, i) => (
+              <React.Fragment key={stage.id}>
+                <div className="flex flex-col items-center gap-1.5 shrink-0">
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 shadow-md",
+                    stage.status === 'completed' 
+                      ? "bg-emerald-500 text-white shadow-emerald-500/20" 
+                      : stage.status === 'current' 
+                        ? "bg-blue-600 text-white shadow-blue-600/30 ring-4 ring-blue-600/20" 
+                        : "bg-slate-800 border border-slate-700 text-slate-500"
+                  )}>
+                    {stage.status === 'completed' ? '✓' : i + 1}
+                  </div>
+                  <span className={cn(
+                    "text-[9px] font-bold text-center leading-tight tracking-wide",
+                    stage.status === 'completed' ? "text-emerald-400" :
+                    stage.status === 'current' ? "text-blue-400" :
+                    "text-slate-500"
+                  )}>
+                    {stage.label}
+                  </span>
+                </div>
+                {i < stages.length - 1 && (
+                  <div className={cn(
+                    "flex-1 h-[2px] mx-2 -mt-5 transition-all duration-500",
+                    stage.status === 'completed' ? "bg-emerald-500" : "bg-slate-800 border-t border-dashed border-slate-700"
+                  )} />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Conteúdo Principal Responsivo (Grid 2/3 + 1/3 no Desktop) */}
+      <div className="px-4 pb-28 md:pb-10 pt-6 max-w-6xl mx-auto">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Loader2 className="animate-spin text-blue-600" size={28} />
+            <p className="text-xs font-semibold text-slate-400">Carregando jornada...</p>
+          </div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, y: 8 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start"
+          >
+            {/* Coluna da Esquerda: Checklist de Etapas */}
+            <div className="md:col-span-2 space-y-3.5">
+              <div className="flex items-center justify-between px-1 mb-1">
+                <p className="text-[10px] font-black tracking-widest uppercase text-slate-400">Checklist Obrigatório</p>
+                {checklist && (
+                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                    {Object.values(checklist).filter(Boolean).length} de 4 concluídos
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-2.5">
+                {STEPS.map((step) => {
+                  const done = checklist?.[step.key] ?? false;
+                  return (
+                    <button
+                      key={step.key}
+                      onClick={() => mutation.mutate({ step: step.key, completed: !done })}
+                      disabled={mutation.isPending}
+                      className={cn(
+                        "w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-4.5 flex items-center gap-4 text-left transition-all duration-200 active:scale-[0.98] cursor-pointer group",
+                        done 
+                          ? "border-emerald-100/80 bg-emerald-50/20" 
+                          : "hover:bg-slate-50/50 hover:border-slate-200"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
+                        done 
+                          ? "bg-emerald-500 border-emerald-500 text-white" 
+                          : "border-slate-300 text-transparent group-hover:border-slate-400"
+                      )}>
+                        {done && <CheckCircle2 size={12} className="text-white fill-white" />}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <p className={cn(
+                          "text-sm font-extrabold transition-all",
+                          done ? "text-slate-400 line-through" : "text-slate-800"
+                        )}>
+                          {step.label}
+                        </p>
+                        <p className={cn(
+                          "text-xs mt-0.5 truncate",
+                          done ? "text-slate-350" : "text-slate-450"
+                        )}>
+                          {step.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Coluna da Direita: Status e Links Complementares */}
+            <div className="space-y-5">
+              <div className="px-1 mb-1 hidden md:block">
+                <p className="text-[10px] font-black tracking-widest uppercase text-slate-400">Informações e Links</p>
+              </div>
+
+              {/* Alerta de Etapa Atual */}
+              {currentStage && (
+                <div className="bg-blue-50/80 border border-blue-100 border-l-4 border-l-blue-600 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+                  <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 text-blue-600 mt-0.5">
+                    <MapPin size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-blue-600/90">Estágio Atual</p>
+                    <p className="text-sm font-extrabold text-slate-800 mt-0.5 truncate">
+                      {currentStage.label}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      Conclua os exames e as aulas teóricas/práticas marcadas no painel lateral para avançar.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Burocratic Alerts */}
+              {alerts.length > 0 && (
+                <BurocraticConcierge
+                  alerts={alerts}
+                  onDismiss={(id) => setDismissedAlerts(prev => [...prev, id])}
+                />
+              )}
+
+              {/* Link DETRAN Oficial */}
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4.5 flex flex-col gap-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-50 text-slate-700 rounded-xl flex items-center justify-center border border-slate-100/50 shrink-0">
+                    <ExternalLink size={18} />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-800 text-sm">Portal DETRAN SP</p>
+                    <p className="text-xs text-slate-400">Taxas e serviços online</p>
+                  </div>
+                </div>
                 <a
                   href="https://www.detran.sp.gov.br"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-velo-blue bg-velo-blue/10 hover:bg-velo-blue/20 px-3 py-1.5 rounded-full transition-colors"
+                  className="text-xs font-extrabold text-center block text-white bg-blue-600 hover:bg-blue-700 w-full py-2.5 rounded-xl shadow-md shadow-blue-600/10 transition-all active:scale-[0.98]"
                 >
-                  Acessar DETRAN <ExternalLink size={12} />
+                  Acessar DETRAN SP
                 </a>
               </div>
             </div>
-          </Card>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };

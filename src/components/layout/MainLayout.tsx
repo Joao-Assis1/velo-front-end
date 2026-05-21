@@ -18,7 +18,7 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 z-40 px-2 pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-900 border-t border-slate-800 z-40 px-2 pb-safe">
         <BottomNav />
       </nav>
     </div>

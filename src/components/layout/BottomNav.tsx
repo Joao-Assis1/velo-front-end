@@ -61,29 +61,24 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
     <Link
       href={item.href}
       className={cn(
-        "flex flex-col items-center justify-center flex-1 gap-1 py-1 rounded-xl transition-all duration-300 relative",
-        isActive ? "text-velo-blue scale-110" : "text-slate-400"
+        "flex flex-col items-center justify-center flex-1 gap-0.5 py-1 rounded-xl transition-all duration-200 relative",
+        isActive ? "text-blue-400" : "text-slate-500"
       )}
     >
-      <div
-        className={cn(
-          "p-1.5 rounded-lg transition-colors",
-          isActive && "bg-blue-50"
-        )}
-      >
+      {isActive && (
+        <div className="absolute -top-1 w-6 h-0.5 bg-blue-400 rounded-full" />
+      )}
+      <div className={cn("p-1.5 rounded-lg transition-colors", isActive && "bg-blue-400/10")}>
         <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
       </div>
       <span
         className={cn(
           "text-[10px] font-bold tracking-tight uppercase transition-all",
-          isActive ? "opacity-100 mt-0" : "opacity-0 -mt-2"
+          isActive ? "opacity-100" : "opacity-60"
         )}
       >
         {item.label}
       </span>
-      {isActive && (
-        <div className="absolute -top-1 w-8 h-1 bg-velo-blue rounded-full" />
-      )}
     </Link>
   );
 }
@@ -137,16 +132,19 @@ export const BottomNav = () => {
         <button
           onClick={() => setIsDrawerOpen(true)}
           className={cn(
-            "flex flex-col items-center justify-center flex-1 gap-1 py-1 rounded-xl transition-all duration-300 relative",
-            isMoreActive ? "text-velo-blue scale-110" : "text-slate-400"
+            "flex flex-col items-center justify-center flex-1 gap-0.5 py-1 rounded-xl transition-all duration-200 relative",
+            isMoreActive ? "text-blue-400" : "text-slate-500"
           )}
           aria-label="Mais páginas"
           aria-expanded={isDrawerOpen}
         >
+          {isMoreActive && (
+            <div className="absolute -top-1 w-6 h-0.5 bg-blue-400 rounded-full" />
+          )}
           <div
             className={cn(
               "p-1.5 rounded-lg transition-colors",
-              isMoreActive && "bg-blue-50"
+              isMoreActive && "bg-blue-400/10"
             )}
           >
             <Grid3X3 size={20} strokeWidth={isMoreActive ? 2.5 : 2} />
@@ -154,14 +152,11 @@ export const BottomNav = () => {
           <span
             className={cn(
               "text-[10px] font-bold tracking-tight uppercase transition-all",
-              isMoreActive ? "opacity-100 mt-0" : "opacity-0 -mt-2"
+              isMoreActive ? "opacity-100" : "opacity-60"
             )}
           >
             Mais
           </span>
-          {isMoreActive && (
-            <div className="absolute -top-1 w-8 h-1 bg-velo-blue rounded-full" />
-          )}
         </button>
 
         {/* 2 últimos itens fixos */}

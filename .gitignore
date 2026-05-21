@@ -16,8 +16,8 @@ API_DATA_FLOW.md
 prisma
 prisma.config.ts
 .agent
-doc
-!docs/journey-smoke-test.md
+doc/
+docs/
 .agents/workflows
 FLUXO-INSTRUTOR.MD
 FLUXO-ALUNO.md

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <!-- Icon -->
+  <rect width="40" height="40" rx="10" fill="url(#iconBg)"/>
+  <polygon points="5,8 13,8 20,24 27,8 35,8 26,34 14,34" fill="white"/>
+  <polygon points="5,8 11,8 18,24 20,24 13,8" fill="white" opacity="0.3"/>
+  <rect x="3" y="28" width="8" height="2" rx="1" fill="white" opacity="0.35"/>
+  <!-- Wordmark -->
+  <text x="50" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="900" letter-spacing="-0.8" fill="#0f172a">VELO</text>
+  <defs>
+    <linearGradient id="iconBg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+</svg>

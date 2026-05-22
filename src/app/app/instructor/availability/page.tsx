@@ -18,7 +18,7 @@ export default function InstructorAvailabilityPage() {
   }
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-4xl mx-auto">
+    <div className="px-4 md:px-8 py-6">
       <InstructorAvailability
         profile={instructorProfile}
         onSave={(updated) => {

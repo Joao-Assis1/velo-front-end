@@ -56,7 +56,7 @@ export const InstructorProfileMenu = ({
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto md:mx-0 space-y-6">
+      <div className="max-w-lg mx-auto space-y-6">
         {/* Menu items */}
         <div className="space-y-2">
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-1 mb-2">Minha conta</p>

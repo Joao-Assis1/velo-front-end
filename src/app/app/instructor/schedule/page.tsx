@@ -19,7 +19,7 @@ export default function InstructorSchedulePage() {
   }, []);
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
+    <div className="px-4 md:px-8 py-6">
       <InstructorSchedule
         classes={scheduledClasses}
         onGiveFeedback={giveFeedback}

@@ -10,7 +10,7 @@ export default function InstructorDashboardPage() {
   const { instructorProfile, scheduledClasses, giveFeedback } = useApp();
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-6xl mx-auto">
+    <div className="px-4 md:px-8 py-6">
       <InstructorDashboard
         profile={instructorProfile}
         classes={scheduledClasses}

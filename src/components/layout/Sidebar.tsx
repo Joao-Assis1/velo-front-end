@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ConfirmDialog } from '@/components/ui-custom/ConfirmDialog';
+import Image from 'next/image';
 import {
   Home,
   Calendar,
@@ -61,11 +62,15 @@ export const Sidebar = () => {
   return (
     <div className="flex flex-col h-full bg-white border-r border-slate-200">
       <div className="p-6">
-        <Link href={isInstructor ? '/app/instructor/dashboard' : '/app/student/dashboard'} className="flex items-center gap-2 group">
-          <div className="w-10 h-10 bg-velo-blue rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
-            <span className="text-xl font-bold italic">V</span>
-          </div>
-          <span className="text-2xl font-black text-slate-900 tracking-tighter italic">VELO</span>
+        <Link href={isInstructor ? '/app/instructor/dashboard' : '/app/student/dashboard'} className="group">
+          <Image
+            src="/logo.svg"
+            alt="Velo"
+            width={100}
+            height={33}
+            className="group-hover:opacity-80 transition-opacity"
+            priority
+          />
         </Link>
       </div>
 

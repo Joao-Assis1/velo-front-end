@@ -65,13 +65,17 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
     }
   };
 
-  const handleRestart = () => {
+  const resetQuizState = () => {
     setCurrentQuestionIndex(0);
     setSelectedOptionId(null);
     setIsAnswered(false);
     setScore(0);
     setShowResult(false);
     setUserAnswers([]);
+  };
+
+  const handleRestart = () => {
+    resetQuizState();
     onRestart();
   };
 
@@ -110,14 +114,23 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
         </div>
 
         <div className="flex flex-col gap-3">
-          <Button
-            className={cn("w-full py-4", passed ? "bg-velo-blue" : "bg-slate-900")}
-            onClick={passed ? (onNextModule ?? (() => onFinish(percentage, userAnswers))) : handleRestart}
-          >
-            {passed ? "Próximo Módulo" : "Tentar Novamente"}
-          </Button>
+          {passed ? (
+            <Button
+              className="w-full py-4 bg-velo-blue"
+              onClick={onNextModule ?? handleRestart}
+            >
+              {onNextModule ? "Próximo Módulo" : "Voltar à lista"}
+            </Button>
+          ) : (
+            <Button
+              className="w-full py-4 bg-slate-900"
+              onClick={resetQuizState}
+            >
+              Tentar Novamente
+            </Button>
+          )}
           <Button variant="ghost" onClick={handleRestart} className="text-slate-500">
-            Revisar Questões
+            Voltar à lista
           </Button>
         </div>
       </motion.div>

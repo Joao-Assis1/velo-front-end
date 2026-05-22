@@ -135,7 +135,7 @@ export default function StudentDashboard() {
                 <BookOpen className="text-white" size={20} />
               </div>
               <h3 className="text-lg font-bold mb-0.5">Velo Academy</h3>
-              <p className="text-slate-400 text-sm">Continue seu curso teórico</p>
+              <p className="text-slate-400 text-sm">Teste seus conhecimentos com simulados do DETRAN</p>
             </div>
             <div className="text-right">
               <span className="text-3xl font-black text-white">{academyProgress}%</span>

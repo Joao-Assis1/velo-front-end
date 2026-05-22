@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   BookOpen,
@@ -21,7 +21,12 @@ import { ptBR } from 'date-fns/locale';
 
 export default function StudentDashboard() {
   const { data: journey, isLoading: journeyLoading } = useJourney();
-  const { studentProfile, academyModules, scheduledClasses } = useApp();
+  const { studentProfile, academyModules, scheduledClasses, refreshLessons } = useApp();
+
+  useEffect(() => {
+    refreshLessons();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const academyProgress = useMemo(() => {
     if (!academyModules.length) return 0;

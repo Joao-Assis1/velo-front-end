@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { InstructorSchedule } from "@/components/screens/instructor/Schedule";
 import { useApp } from "@/context/AppContext";
@@ -11,7 +11,12 @@ const SCREEN_TO_PATH: Record<string, string> = {
 
 export default function InstructorSchedulePage() {
   const router = useRouter();
-  const { scheduledClasses, giveFeedback, checkIn, checkOut } = useApp();
+  const { scheduledClasses, giveFeedback, checkIn, checkOut, refreshLessons } = useApp();
+
+  useEffect(() => {
+    refreshLessons();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="px-4 md:px-8 py-6 max-w-5xl mx-auto">

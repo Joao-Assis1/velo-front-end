@@ -47,7 +47,7 @@ export const StudentSchedule = ({
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Dark header com tabs integradas */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 px-5 pt-6 pb-4 relative overflow-hidden">
+      <div className="sticky top-0 z-20 bg-gradient-to-br from-slate-900 to-slate-800 px-5 pt-6 pb-4 overflow-hidden shadow-md">
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         
         <div className="max-w-5xl mx-auto w-full relative z-10">

@@ -29,6 +29,13 @@ button, a, [role="button"] {
   touch-action: manipulation;
 }
 
+/* Previne zoom automático do iOS ao focar em inputs com font-size < 16px */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: max(16px, 1em);
+  }
+}
+
 /* Custom Utilities */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

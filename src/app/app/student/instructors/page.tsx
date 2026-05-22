@@ -224,7 +224,7 @@ export default function InstructorMarketplace() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg bg-white rounded-t-[32px] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-white rounded-t-[32px] shadow-2xl overflow-y-auto max-h-[85dvh]"
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-4 mb-2" />
               <InstructorFilter

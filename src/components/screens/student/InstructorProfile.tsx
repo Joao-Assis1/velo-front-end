@@ -212,7 +212,7 @@ export const InstructorProfileView = ({
   return (
     <div className="min-h-screen bg-slate-50 pb-12">
       {/* Hero Header no padrão Structured & Bold */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      <div className="sticky top-0 z-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden shadow-md">
         <div className="absolute bottom-0 right-0 w-44 h-44 bg-blue-600/10 rounded-full translate-y-1/2 translate-x-1/2 pointer-events-none" />
         
         <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pt-6 pb-6 relative z-10">
@@ -326,7 +326,7 @@ export const InstructorProfileView = ({
           </div>
 
           {/* Coluna Direita: Agendamento, Horários e Botões (Sticky no Desktop) */}
-          <div className="md:col-span-5 md:sticky md:top-6 space-y-4">
+          <div className="md:col-span-5 md:sticky md:top-36 space-y-4">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-5">
               {/* Widget de Agendamento */}
               <div>

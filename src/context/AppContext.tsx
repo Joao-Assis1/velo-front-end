@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
 import {
   createLessonAction,
@@ -55,6 +55,8 @@ interface AppContextType {
   updateInstructorProfile: (data: any) => Promise<void>;
   logout: () => void;
   
+  refreshLessons: () => void;
+
   // Business logic
   cancelClass: (id: string) => Promise<void>;
   rateClass: (id: string, rating: number, text: string) => void;
@@ -83,6 +85,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [pendingBalance, setPendingBalance] = useState(0);
   const [activeClassId, setActiveClassId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [lessonsRefreshKey, setLessonsRefreshKey] = useState(0);
+  const refreshLessons = useCallback(() => setLessonsRefreshKey(k => k + 1), []);
 
   useEffect(() => {
     try {
@@ -154,7 +158,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (isHydrated) {
       loadInitialData();
     }
-  }, [userRole, studentProfile?.id, instructorProfile?.id, isHydrated]);
+  }, [userRole, studentProfile?.id, instructorProfile?.id, isHydrated, lessonsRefreshKey]);
 
   const login = async (credentials?: any, forcedRole?: UserRole) => {
     const roleToUse = forcedRole || userRole;
@@ -480,6 +484,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         updateStudentProfile,
         updateInstructorProfile,
         logout,
+        refreshLessons,
         cancelClass,
         rateClass,
         bookClass,

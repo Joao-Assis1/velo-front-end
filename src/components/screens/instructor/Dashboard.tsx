@@ -78,19 +78,10 @@ export const InstructorDashboard = ({
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 capitalize">
             {todayLabel}
           </p>
-          <div className="flex items-center justify-between mt-1">
+          <div className="mt-1">
             <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
               Olá, {firstName}
             </h1>
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 ring-2 ring-white/20 flex items-center justify-center shrink-0">
-              {profile?.profilePicture ? (
-                <img src={profile.profilePicture} alt="Foto de perfil" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-white font-bold text-sm">
-                  {profile?.name?.charAt(0)?.toUpperCase() ?? '?'}
-                </span>
-              )}
-            </div>
           </div>
 
           {/* KPI tiles */}

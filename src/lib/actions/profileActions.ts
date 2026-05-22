@@ -165,3 +165,18 @@ export async function updateInstructorVehicleAction(
     return { success: false, error: error.message };
   }
 }
+
+export async function uploadVehiclePhotoAction(vehicleId: string, file: File) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const apiResponse = await fetchWrapper<any>(`/vehicles/${vehicleId}/photo`, {
+      method: "PATCH",
+      body: formData,
+    });
+    return { success: true, data: apiResponse?.data };
+  } catch (error: any) {
+    console.error("Erro no uploadVehiclePhotoAction:", error);
+    return { success: false, error: error.message };
+  }
+}

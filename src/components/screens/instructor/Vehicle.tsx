@@ -5,7 +5,10 @@ import { Car, Camera, Check, ArrowLeft, Upload } from "lucide-react";
 import { Button, Input } from "@/components/ui-custom";
 import { Instructor } from "@/types";
 import { cn } from "@/lib/utils";
-import { updateInstructorVehicleAction } from "@/lib/actions/profileActions";
+import {
+  updateInstructorVehicleAction,
+  uploadVehiclePhotoAction,
+} from "@/lib/actions/profileActions";
 import { maskPlate, isValidPlate } from "@/lib/utils/masks";
 
 export const InstructorVehicle = ({
@@ -69,15 +72,15 @@ export const InstructorVehicle = ({
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLocalProfile({ ...localProfile, vehicleImage: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file || !localProfile.vehicleId) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLocalProfile({ ...localProfile, vehicleImage: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+    await uploadVehiclePhotoAction(localProfile.vehicleId, file);
   };
 
   return (

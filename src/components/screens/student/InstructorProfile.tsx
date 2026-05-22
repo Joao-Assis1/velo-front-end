@@ -269,7 +269,8 @@ export const InstructorProfileView = ({
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pt-6 pb-28 md:pb-12">
+      {/* pb-52 mobile: reserva espaço para BottomNav (64px) + footer de ações (~140px) */}
+      <div className="max-w-6xl mx-auto w-full px-4 md:px-6 pt-6 pb-52 md:pb-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           
           {/* Coluna Esquerda: Alertas, Bio e Veículo */}
@@ -424,8 +425,8 @@ export const InstructorProfileView = ({
         </div>
       </div>
 
-      {/* Ações Fixas no Rodapé (Somente no Mobile) */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-white/95 backdrop-blur-sm border-t border-slate-100 z-40 flex flex-col gap-2 md:hidden">
+      {/* Ações Fixas no Rodapé (Somente no Mobile) — posicionado acima do BottomNav (bottom-16 = h-16) */}
+      <div className="fixed bottom-16 left-0 right-0 px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-slate-100 z-30 flex flex-col gap-2 md:hidden">
         <button
           onClick={handleBookClick}
           disabled={!selectedTime || !hasLadv || !hasPaymentMethod}

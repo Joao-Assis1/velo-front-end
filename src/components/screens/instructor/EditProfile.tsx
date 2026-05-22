@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MapPin,
   User,
@@ -52,6 +52,10 @@ export const InstructorEditProfile = ({
     },
   );
 
+  useEffect(() => {
+    if (profile) setLocalProfile(profile);
+  }, [profile]);
+
   const formatDateForInput = (date?: Date | string) => {
     if (!date) return "";
     const d = typeof date === "string" ? new Date(date) : date;
@@ -60,6 +64,7 @@ export const InstructorEditProfile = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,12 +77,13 @@ export const InstructorEditProfile = ({
         }
       }
       setIsLoading(true);
+      setSaveError(null);
       try {
         await onSave(localProfile);
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 2000);
-      } catch (error) {
-        console.error("Erro ao salvar perfil:", error);
+      } catch (error: any) {
+        setSaveError(error?.message || "Erro ao salvar perfil. Tente novamente.");
       } finally {
         setIsLoading(false);
       }
@@ -133,7 +139,6 @@ export const InstructorEditProfile = ({
                 value={formatDateForInput(localProfile.birthDate)}
                 onChange={(e) => setLocalProfile({ ...localProfile, birthDate: new Date(e.target.value) })}
                 icon={<Calendar size={16} />}
-                required
               />
             </div>
 
@@ -227,7 +232,6 @@ export const InstructorEditProfile = ({
                 onChange={(e) => setLocalProfile({ ...localProfile, renachNumber: maskRENACH(e.target.value) })}
                 icon={<Hash size={16} />}
                 maxLength={11}
-                required
               />
             </div>
 
@@ -281,12 +285,17 @@ export const InstructorEditProfile = ({
                   className="mt-0.5 w-4 h-4 rounded border-slate-300 accent-blue-600"
                   checked={typeof localProfile[field] === 'string' ? !!localProfile[field] : localProfile[field] as boolean || false}
                   onChange={(e) => setLocalProfile({ ...localProfile, [field]: e.target.checked })}
-                  required
                 />
                 <span className="text-xs text-slate-600 leading-tight">{text}</span>
               </label>
             ))}
           </div>
+
+          {saveError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+              {saveError}
+            </div>
+          )}
 
           <button
             type="submit"

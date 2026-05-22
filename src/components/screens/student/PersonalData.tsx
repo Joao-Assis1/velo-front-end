@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import {
   User,
@@ -40,6 +40,10 @@ export const StudentPersonalData = ({
     },
   );
 
+  useEffect(() => {
+    if (profile) setLocalProfile(profile);
+  }, [profile]);
+
   // Helper to format date for input type="date"
   const formatDateForInput = (date?: Date | string) => {
     if (!date) return "";
@@ -49,29 +53,26 @@ export const StudentPersonalData = ({
 
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (localProfile) {
-      try {
-        setIsLoading(true);
-        const result = await updateStudentProfileAction(
-          localProfile.id || "",
-          localProfile,
-        );
-
-        if (result.success) {
-          onSave(localProfile); // Sincroniza o estado com o componente pai
-          setIsSaved(true);
-          setTimeout(() => setIsSaved(false), 2000);
-        } else {
-          console.error("Erro ao salvar no banco Neon:", result.error);
-        }
-      } catch (error) {
-        console.error("Falha na requisição:", error);
-      } finally {
-        setIsLoading(false);
+    if (!localProfile) return;
+    setSaveError(null);
+    setIsLoading(true);
+    try {
+      const result = await updateStudentProfileAction(localProfile.id || "", localProfile);
+      if (result.success) {
+        onSave(localProfile);
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2000);
+      } else {
+        setSaveError(result.error || "Erro ao salvar. Tente novamente.");
       }
+    } catch (error: any) {
+      setSaveError(error?.message || "Erro inesperado. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -241,6 +242,12 @@ export const StudentPersonalData = ({
             ))}
           </select>
         </div>
+
+        {saveError && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-700">
+            {saveError}
+          </div>
+        )}
 
         {/* Botão salvar */}
         <button

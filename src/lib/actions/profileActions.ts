@@ -13,19 +13,20 @@ export async function getStudentProfileAction(id: string) {
 
 export async function updateStudentProfileAction(id: string, data: any) {
   try {
+    const payload: Record<string, any> = {};
+    const allowed = ['name', 'phone', 'profilePicture', 'motherName', 'intendedCategory', 'ufDomicile'];
+    for (const field of allowed) {
+      if (data[field] !== undefined) payload[field] = data[field];
+    }
+    if (data.birthDate instanceof Date) {
+      payload.birthDate = data.birthDate.toISOString();
+    } else if (data.birthDate) {
+      payload.birthDate = data.birthDate;
+    }
+
     const apiResponse = await fetchWrapper<any>(`/students/${id}`, {
       method: "PATCH",
-      body: JSON.stringify({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        ladvUploaded: data.ladvUploaded,
-        profilePicture: data.profilePicture,
-        birthDate: data.birthDate,
-        motherName: data.motherName,
-        intendedCategory: data.intendedCategory,
-        ufDomicile: data.ufDomicile,
-      }),
+      body: JSON.stringify(payload),
     });
 
     return { success: true, data: apiResponse?.data };

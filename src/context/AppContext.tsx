@@ -222,33 +222,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const updateStudentProfile = async (data: any) => {
     if (!studentProfile?.id) return;
     try {
-      // Filtrar campos que o backend pode não aceitar ainda (whitelist)
-      const { 
-        id, email, cpf, termsAcceptedAt, birthDate, motherName, 
-        intendedCategory, ufDomicile, ...updateData 
-      } = data;
-
-      const res = await updateStudentProfileAction(studentProfile.id, {
-        ...updateData,
-        // Incluir novos campos se o backend permitir, senão eles serão ignorados pelo interceptor
-        birthDate,
-        motherName,
-        intendedCategory,
-        ufDomicile
-      });
-
-      if (res.success) {
-        setStudentProfile((prev) => (prev ? { ...prev, ...data } : null));
-      } else {
-        // Se falhar por campos extras, tentamos enviar sem eles para não quebrar o app
-        console.warn("Retrying profile update without CONTRAN fields due to backend restriction");
-        const retryRes = await updateStudentProfileAction(studentProfile.id, updateData);
-        if (retryRes.success) {
-          setStudentProfile((prev) => (prev ? { ...prev, ...data } : null));
-        } else {
-          throw new Error(retryRes.error || res.error);
-        }
+      const allowedFields = ['name', 'phone', 'profilePicture', 'motherName', 'intendedCategory', 'ufDomicile'];
+      const payload: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (data[field] !== undefined) payload[field] = data[field];
       }
+      if (data.birthDate instanceof Date) {
+        payload.birthDate = data.birthDate.toISOString();
+      } else if (data.birthDate) {
+        payload.birthDate = data.birthDate;
+      }
+
+      const res = await updateStudentProfileAction(studentProfile.id, payload);
+      if (!res.success) throw new Error(res.error);
+
+      setStudentProfile((prev) => (prev ? { ...prev, ...data } : null));
     } catch (err: any) {
       console.error("Failed to update student profile:", err);
       throw err;
@@ -258,34 +246,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const updateInstructorProfile = async (data: any) => {
     if (!instructorProfile?.id) return;
     try {
-      const {
-        id, email, rating, reviewsCount, availability, busySlots,
-        vehicleId, vehicleModel, vehiclePlate, vehicleYear, transmission,
-        instructorType, birthDate, renachNumber, educationLevel, ...updateData
-      } = data;
+      const allowedFields = [
+        'name', 'phone', 'cpf', 'profilePicture', 'bio', 'location',
+        'pricePerClass', 'cnhNumber', 'cnhCategory', 'cnhExpiry', 'cnhEar',
+        'certidaoNegativa', 'termsAcceptedAt',
+      ];
 
-      if (updateData.certidaoNegativa !== undefined) {
-        updateData.certidaoNegativa = String(updateData.certidaoNegativa);
-      }
-
-      const res = await updateInstructorProfileAction(instructorProfile.id, {
-        ...updateData,
-        birthDate,
-        renachNumber,
-        educationLevel,
-      });
-
-      if (res.success) {
-        setInstructorProfile((prev) => (prev ? { ...prev, ...data } : null));
-      } else {
-        console.warn("Retrying instructor profile update without CONTRAN fields");
-        const retryRes = await updateInstructorProfileAction(instructorProfile.id, updateData);
-        if (retryRes.success) {
-          setInstructorProfile((prev) => (prev ? { ...prev, ...data } : null));
-        } else {
-          throw new Error(retryRes.error || res.error);
+      const payload: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (data[field] !== undefined) {
+          payload[field] = data[field];
         }
       }
+      if (payload.certidaoNegativa !== undefined) {
+        payload.certidaoNegativa = String(payload.certidaoNegativa);
+      }
+
+      const res = await updateInstructorProfileAction(instructorProfile.id, payload);
+      if (!res.success) throw new Error(res.error);
+
+      setInstructorProfile((prev) => (prev ? { ...prev, ...data } : null));
     } catch (err: any) {
       console.error("Failed to update instructor profile:", err);
       throw err;

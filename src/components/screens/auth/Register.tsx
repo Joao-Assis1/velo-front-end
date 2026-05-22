@@ -29,7 +29,7 @@ export const Register = ({
 
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", cpf: "", birthDate: "",
-    motherName: "", intendedCategory: "B", ufDomicile: "SP",
+    motherName: "", intendedCategory: "B", ufDomicile: "MS",
     password: "", confirmPassword: "", vehicleModel: "",
     credencial: "", cnhNumber: "", cnhCategory: "B", cnhExpiry: "",
     cnhEar: false, certidaoNegativa: "", educationLevel: "Ensino Médio",
@@ -210,16 +210,9 @@ export const Register = ({
                       <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                         <Award size={18} />
                       </div>
-                      <select
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-velo-blue/20 transition-colors appearance-none text-slate-700 text-sm"
-                        value={formData.intendedCategory}
-                        onChange={(e) => set("intendedCategory", e.target.value)}
-                      >
-                        <option value="A">Cat. A (Moto)</option>
-                        <option value="B">Cat. B (Carro)</option>
-                        <option value="ACC">ACC</option>
-                        <option value="AB">Cat. AB (Ambos)</option>
-                      </select>
+                      <div className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-slate-500 text-sm cursor-not-allowed">
+                        Cat. B (Carro)
+                      </div>
                     </div>
                     <div className="relative">
                       <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">

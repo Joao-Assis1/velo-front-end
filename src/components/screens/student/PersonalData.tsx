@@ -215,23 +215,12 @@ export const StudentPersonalData = ({
         </div>
 
         {/* Categoria Select Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 py-3">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 py-3 opacity-75">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-1.5">
             <Award size={11} />
             Categoria pretendida
           </label>
-          <select
-            value={localProfile.intendedCategory || "B"}
-            onChange={(e) =>
-              setLocalProfile({ ...localProfile, intendedCategory: e.target.value as any })
-            }
-            className="w-full text-sm font-semibold text-slate-900 bg-transparent outline-none appearance-none cursor-pointer"
-          >
-            <option value="A">Categoria A</option>
-            <option value="B">Categoria B</option>
-            <option value="ACC">ACC</option>
-            <option value="AB">Categoria AB</option>
-          </select>
+          <p className="text-sm font-semibold text-slate-500 cursor-not-allowed">Categoria B</p>
         </div>
 
         {/* UF Domicílio Select Card */}
@@ -241,7 +230,7 @@ export const StudentPersonalData = ({
             UF de Domicílio
           </label>
           <select
-            value={localProfile.ufDomicile || "SP"}
+            value={localProfile.ufDomicile || "MS"}
             onChange={(e) =>
               setLocalProfile({ ...localProfile, ufDomicile: e.target.value })
             }

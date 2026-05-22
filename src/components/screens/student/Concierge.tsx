@@ -110,7 +110,7 @@ export const StudentConcierge = () => {
       {/* Dark Header com Stepper DETRAN Horizontal */}
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 px-5 pt-7 pb-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full translate-y-[-20%] translate-x-[20%] pointer-events-none blur-2xl" />
-        
+
         <div className="max-w-6xl mx-auto w-full relative z-10">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -119,7 +119,7 @@ export const StudentConcierge = () => {
             </div>
             <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700/50 rounded-full px-2.5 py-1">
               <ShieldCheck size={12} className="text-emerald-400" />
-              <span className="text-[10px] font-bold text-slate-300">DETRAN SP</span>
+              <span className="text-[10px] font-bold text-slate-300">DETRAN MS</span>
             </div>
           </div>
 
@@ -130,10 +130,10 @@ export const StudentConcierge = () => {
                 <div className="flex flex-col items-center gap-1.5 shrink-0">
                   <div className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 shadow-md",
-                    stage.status === 'completed' 
-                      ? "bg-emerald-500 text-white shadow-emerald-500/20" 
-                      : stage.status === 'current' 
-                        ? "bg-blue-600 text-white shadow-blue-600/30 ring-4 ring-blue-600/20" 
+                    stage.status === 'completed'
+                      ? "bg-emerald-500 text-white shadow-emerald-500/20"
+                      : stage.status === 'current'
+                        ? "bg-blue-600 text-white shadow-blue-600/30 ring-4 ring-blue-600/20"
                         : "bg-slate-800 border border-slate-700 text-slate-500"
                   )}>
                     {stage.status === 'completed' ? '✓' : i + 1}
@@ -141,8 +141,8 @@ export const StudentConcierge = () => {
                   <span className={cn(
                     "text-[9px] font-bold text-center leading-tight tracking-wide",
                     stage.status === 'completed' ? "text-emerald-400" :
-                    stage.status === 'current' ? "text-blue-400" :
-                    "text-slate-500"
+                      stage.status === 'current' ? "text-blue-400" :
+                        "text-slate-500"
                   )}>
                     {stage.label}
                   </span>
@@ -167,9 +167,9 @@ export const StudentConcierge = () => {
             <p className="text-xs font-semibold text-slate-400">Carregando jornada...</p>
           </div>
         ) : (
-          <motion.div 
-            initial={{ opacity: 0, y: 8 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start"
           >
             {/* Coluna da Esquerda: Checklist de Etapas */}
@@ -193,20 +193,20 @@ export const StudentConcierge = () => {
                       disabled={mutation.isPending}
                       className={cn(
                         "w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-4.5 flex items-center gap-4 text-left transition-all duration-200 active:scale-[0.98] cursor-pointer group",
-                        done 
-                          ? "border-emerald-100/80 bg-emerald-50/20" 
+                        done
+                          ? "border-emerald-100/80 bg-emerald-50/20"
                           : "hover:bg-slate-50/50 hover:border-slate-200"
                       )}
                     >
                       <div className={cn(
                         "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200",
-                        done 
-                          ? "bg-emerald-500 border-emerald-500 text-white" 
+                        done
+                          ? "bg-emerald-500 border-emerald-500 text-white"
                           : "border-slate-300 text-transparent group-hover:border-slate-400"
                       )}>
                         {done && <CheckCircle2 size={12} className="text-white fill-white" />}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <p className={cn(
                           "text-sm font-extrabold transition-all",
@@ -266,17 +266,17 @@ export const StudentConcierge = () => {
                     <ExternalLink size={18} />
                   </div>
                   <div>
-                    <p className="font-extrabold text-slate-800 text-sm">Portal DETRAN SP</p>
+                    <p className="font-extrabold text-slate-800 text-sm">Portal DETRAN MS</p>
                     <p className="text-xs text-slate-400">Taxas e serviços online</p>
                   </div>
                 </div>
                 <a
-                  href="https://www.detran.sp.gov.br"
+                  href="https://www.meudetran.ms.gov.br"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs font-extrabold text-center block text-white bg-blue-600 hover:bg-blue-700 w-full py-2.5 rounded-xl shadow-md shadow-blue-600/10 transition-all active:scale-[0.98]"
                 >
-                  Acessar DETRAN SP
+                  Acessar DETRAN MS
                 </a>
               </div>
             </div>

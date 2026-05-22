@@ -21,7 +21,7 @@ function mapApiToStudent(data: any): Student {
     birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
     motherName: data.motherName ?? "",
     intendedCategory: data.intendedCategory ?? "B",
-    ufDomicile: data.ufDomicile ?? "SP",
+    ufDomicile: data.ufDomicile ?? "MS",
     paymentMethods: data.paymentMethods ?? [],
   };
 }

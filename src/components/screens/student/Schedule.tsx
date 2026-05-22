@@ -14,11 +14,13 @@ import { EmptyState } from '@/components/ui-custom/EmptyState';
 export const StudentSchedule = ({
   classes,
   onCancelClass,
-  onRateClass
+  onRateClass,
+  topBanner,
 }: {
   classes: ScheduledClass[],
   onCancelClass: (id: string) => Promise<void>,
-  onRateClass: (id: string, rating: number, text: string) => void
+  onRateClass: (id: string, rating: number, text: string) => void,
+  topBanner?: React.ReactNode,
 }) => {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
   const [classToCancel, setClassToCancel] = useState<string | null>(null);
@@ -83,6 +85,12 @@ export const StudentSchedule = ({
           </div>
         </div>
       </div>
+
+      {topBanner && (
+        <div className="max-w-5xl mx-auto w-full px-4 md:px-6 pt-4">
+          {topBanner}
+        </div>
+      )}
 
       {/* Contêiner Geral Alinhado para o Conteúdo */}
       <div className="max-w-5xl mx-auto w-full px-4 md:px-6 pb-28 md:pb-12 pt-4">

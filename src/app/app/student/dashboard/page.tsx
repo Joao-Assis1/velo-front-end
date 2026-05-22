@@ -8,6 +8,7 @@ import {
   ArrowRight,
   TrendingUp,
 } from 'lucide-react';
+
 import { Card, Button } from '@/components/ui-custom';
 import { BurocraticConcierge } from '@/components/features/BurocraticConcierge';
 import { DetranStepper } from '@/components/features/DetranStepper';
@@ -30,17 +31,12 @@ const STAGE_ALERTS: Partial<Record<JourneyStage, { id: string; type: 'urgent' | 
 export default function StudentDashboard() {
   const { data: journey, isLoading: journeyLoading } = useJourney();
   const { data: timeline = [] } = useJourneyTimeline();
-  const { studentProfile, academyModules, scheduledClasses, refreshLessons } = useApp();
+  const { studentProfile, scheduledClasses, refreshLessons } = useApp();
 
   useEffect(() => {
     refreshLessons();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const academyProgress = useMemo(() => {
-    if (!academyModules.length) return 0;
-    return Math.round((academyModules.filter(m => m.progress === 100).length / academyModules.length) * 100);
-  }, [academyModules]);
 
   const nextLesson = useMemo(() => {
     const now = new Date();
@@ -137,13 +133,6 @@ export default function StudentDashboard() {
               <h3 className="text-lg font-bold mb-0.5">Velo Academy</h3>
               <p className="text-slate-400 text-sm">Teste seus conhecimentos com simulados do DETRAN</p>
             </div>
-            <div className="text-right">
-              <span className="text-3xl font-black text-white">{academyProgress}%</span>
-              <p className="text-slate-400 text-xs">concluído</p>
-            </div>
-          </div>
-          <div className="mt-4 h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-velo-blue rounded-full" style={{ width: `${academyProgress}%` }} />
           </div>
           <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-velo-blue/20 rounded-full blur-3xl" />
         </Card>

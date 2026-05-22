@@ -157,9 +157,9 @@ export const LessonCard = ({
           currentStatus === "PENDING_ACCEPTANCE"
             ? "bg-amber-400"
             : currentStatus === "UPCOMING"
-              ? "bg-velo-blue"
+              ? "bg-blue-600"
               : currentStatus === "IN_PROGRESS"
-                ? "bg-velo-green"
+                ? "bg-green-500"
                 : currentStatus === "COMPLETED"
                   ? "bg-slate-300"
                   : "bg-red-400",
@@ -196,9 +196,9 @@ export const LessonCard = ({
               currentStatus === "PENDING_ACCEPTANCE"
                 ? "bg-amber-50 text-amber-600"
                 : currentStatus === "UPCOMING"
-                  ? "bg-blue-50 text-velo-blue"
+                  ? "bg-blue-50 text-blue-600"
                   : currentStatus === "IN_PROGRESS"
-                    ? "bg-green-50 text-velo-green"
+                    ? "bg-green-50 text-green-600"
                     : currentStatus === "COMPLETED"
                       ? "bg-slate-100 text-slate-500"
                       : "bg-red-50 text-red-500",
@@ -217,7 +217,7 @@ export const LessonCard = ({
           {currentStatus === "COMPLETED" && (
             <button 
               onClick={() => setShowEscrowModal(true)}
-              className="text-[9px] font-black text-velo-blue uppercase tracking-widest flex items-center gap-1 hover:underline"
+              className="text-[9px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-1 hover:underline"
             >
               <ShieldCheck size={10} aria-hidden="true" /> Ver Repasse
             </button>
@@ -230,7 +230,7 @@ export const LessonCard = ({
         {currentStatus === "PENDING_ACCEPTANCE" && (
           <div className="flex gap-2">
             <Button
-              className="flex-1 py-3 bg-velo-green hover:bg-green-600 text-white flex items-center gap-2 justify-center"
+              className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 justify-center"
               onClick={handleAccept}
               disabled={isLoading}
             >
@@ -251,7 +251,7 @@ export const LessonCard = ({
 
         {currentStatus === "UPCOMING" && (
           <Button
-            className="w-full py-3 bg-velo-blue hover:bg-blue-600 flex items-center gap-2 justify-center"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 flex items-center gap-2 justify-center"
             onClick={handleStartLesson}
             disabled={isLoading}
           >
@@ -262,7 +262,7 @@ export const LessonCard = ({
 
         {currentStatus === "IN_PROGRESS" && (
           <Button
-            className="w-full py-3 bg-velo-green hover:bg-green-600 border-none text-white flex items-center gap-2 justify-center"
+            className="w-full py-3 bg-green-600 hover:bg-green-700 border-none text-white flex items-center gap-2 justify-center"
             onClick={() => setShowTelemetry(true)}
             disabled={isLoading}
           >
@@ -284,7 +284,7 @@ export const LessonCard = ({
 
         {currentStatus === "COMPLETED" && hasFeedback && (
           <p className="text-xs text-slate-400 flex items-center gap-1.5 justify-center py-2 bg-slate-50 rounded-lg">
-            <CheckCircle2 size={14} className="text-velo-green" />
+            <CheckCircle2 size={14} className="text-green-600" />
             Feedback enviado
           </p>
         )}
@@ -319,7 +319,7 @@ export const LessonCard = ({
               </p>
 
               <textarea
-                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus-visible:ring-2 focus-visible:ring-velo-blue outline-none resize-none min-h-[120px] mb-4 bg-slate-50"
+                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus-visible:ring-2 focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 outline-none resize-none min-h-[120px] mb-4 bg-slate-50"
                 placeholder="Pontos fortes, o que precisa melhorar na próxima aula..."
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}

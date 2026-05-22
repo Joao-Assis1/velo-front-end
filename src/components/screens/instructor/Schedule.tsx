@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Bell, Calendar, History, Plus, X } from "lucide-react";
+import { Bell, Calendar, History, Plus } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ScheduledClass } from "@/types";
@@ -25,19 +25,15 @@ export const InstructorSchedule = ({
 }) => {
   const [isBlockModalOpen, setIsBlockModalOpen] = React.useState(false);
 
-  // Sort classes by date and time
-// ... (rest of sorting logic)
   const sortedClasses = [...classes].sort((a, b) => {
     const dateDiff = a.date.getTime() - b.date.getTime();
     if (dateDiff !== 0) return dateDiff;
     return a.startTime.localeCompare(b.startTime);
   });
 
-  const pendingClasses = sortedClasses.filter(
-    (c) => c.status === "pending_acceptance",
-  );
+  const pendingClasses = sortedClasses.filter((c) => c.status === "pending_acceptance");
   const upcomingClasses = sortedClasses.filter(
-    (c) => c.status === "upcoming" || c.status === "in-progress",
+    (c) => c.status === "upcoming" || c.status === "in-progress"
   );
   const pastClasses = sortedClasses
     .filter((c) => c.status === "completed" || c.status === "cancelled")
@@ -50,7 +46,7 @@ export const InstructorSchedule = ({
       acc[dateKey].push(cls);
       return acc;
     },
-    {} as Record<string, ScheduledClass[]>,
+    {} as Record<string, ScheduledClass[]>
   );
 
   const mapToLessonData = (cls: ScheduledClass): LessonData => ({
@@ -74,37 +70,56 @@ export const InstructorSchedule = ({
   });
 
   return (
-    <div className="pb-28 md:pb-10 space-y-6">
-      <header className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Agenda Completa</h1>
-          <p className="text-slate-500 text-sm">
-            Gerencie suas aulas e horários
-          </p>
+    <div className="pb-28 md:pb-10">
+
+      {/* Hero strip */}
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 -mx-4 md:-mx-8 -mt-6 px-4 md:px-8 pt-6 pb-5 relative overflow-hidden mb-6">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-600/10 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Agenda de aulas</p>
+          <div className="flex items-center justify-between mt-1 gap-3">
+            <h1 className="text-2xl font-black text-white tracking-tight">Próximas Aulas</h1>
+            <div className="flex gap-2 shrink-0">
+              <button
+                onClick={() => onNavigate("instructor-availability")}
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5"
+              >
+                <Calendar size={14} />
+                <span className="hidden sm:inline">Disponibilidade</span>
+              </button>
+              <button
+                onClick={() => setIsBlockModalOpen(true)}
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5"
+              >
+                <Plus size={14} />
+                <span>Bloquear</span>
+              </button>
+            </div>
+          </div>
+
+          {/* KPI tiles */}
+          <div className="flex gap-2 mt-4">
+            <div className="bg-white/7 border border-white/10 rounded-xl px-3 py-2">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Esta semana</p>
+              <p className="text-lg font-black text-white mt-0.5">{upcomingClasses.length}</p>
+              <p className="text-[9px] text-slate-600">aulas</p>
+            </div>
+            {pendingClasses.length > 0 && (
+              <div className="bg-amber-500/20 border border-amber-500/30 rounded-xl px-3 py-2">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400">Pendentes</p>
+                <p className="text-lg font-black text-white mt-0.5">{pendingClasses.length}</p>
+                <p className="text-[9px] text-amber-400/70">solicitações</p>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onNavigate("instructor-availability")}
-            className="p-2 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 transition-colors flex items-center gap-2 text-xs font-bold"
-          >
-            <Calendar size={18} />
-            <span className="hidden sm:inline">Disponibilidade</span>
-          </button>
-          <button
-            onClick={() => setIsBlockModalOpen(true)}
-            className="p-2 bg-orange-50 text-orange-600 rounded-xl hover:bg-orange-100 transition-colors flex items-center gap-2 text-xs font-bold"
-          >
-            <Plus size={18} />
-            <span>Bloquear</span>
-          </button>
-        </div>
-      </header>
+      </div>
 
       <AnimatePresence>
         {isBlockModalOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
-              <BlockTimeForm 
+              <BlockTimeForm
                 onClose={() => setIsBlockModalOpen(false)}
                 onSuccess={() => {
                   setIsBlockModalOpen(false);
@@ -116,93 +131,100 @@ export const InstructorSchedule = ({
         )}
       </AnimatePresence>
 
-      {pendingClasses.length > 0 && (
-        <section>
-          <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Bell size={20} className="text-amber-500" />
-            Solicitações Pendentes
-            <span className="ml-1 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-              {pendingClasses.length}
-            </span>
-          </h2>
-          <div className="space-y-3">
-            {pendingClasses.map((cls) => (
-              <LessonCard
-                key={cls.id}
-                lesson={mapToLessonData(cls)}
-                onUpdate={() => window.location.reload()}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section>
-        <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <Calendar size={20} className="text-velo-blue" />
-          Próximas Aulas
-        </h2>
-        {upcomingClasses.length > 0 ? (
-          <div className="space-y-6">
-            {Object.entries(groupedUpcoming).map(([dateKey, dayClasses]) => {
-              const date = new Date(dateKey + "T00:00:00");
-              const dateLabel = isToday(date)
-                ? "Hoje"
-                : isTomorrow(date)
-                  ? "Amanhã"
-                  : format(date, "EEEE, dd 'de' MMMM", { locale: ptBR });
-
-              return (
-                <div key={dateKey}>
-                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 ml-1">
-                    {dateLabel}
-                  </h3>
-                  <div className="space-y-3">
-                    {dayClasses.map((cls) => (
-                      <LessonCard
-                        key={cls.id}
-                        lesson={mapToLessonData(cls)}
-                        onUpdate={() => window.location.reload()}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <EmptyState
-            icon={Calendar}
-            title="Sem agendamentos"
-            description="Você não tem nenhuma aula agendada para os próximos dias."
-            className="py-12 bg-slate-50 rounded-2xl border border-slate-100 border-dashed"
-          />
+      <div className="space-y-8 max-w-5xl mx-auto">
+        {/* Pending requests */}
+        {pendingClasses.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-3">
+              <Bell size={16} className="text-amber-500" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Solicitações Pendentes</p>
+              <span className="bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                {pendingClasses.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {pendingClasses.map((cls) => (
+                <LessonCard
+                  key={cls.id}
+                  lesson={mapToLessonData(cls)}
+                  onUpdate={() => window.location.reload()}
+                />
+              ))}
+            </div>
+          </section>
         )}
-      </section>
 
-      <section className="mt-8">
-        <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <History size={20} className="text-slate-400" />
-          Histórico Recente
-        </h2>
-        <div className="space-y-3">
-          {pastClasses.length > 0 ? (
-            pastClasses
-              .slice(0, 10)
-              .map((cls) => (
+        {/* Upcoming grouped by date */}
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar size={16} className="text-blue-600" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Próximas Aulas</p>
+          </div>
+          {upcomingClasses.length > 0 ? (
+            <div className="space-y-6">
+              {Object.entries(groupedUpcoming).map(([dateKey, dayClasses]) => {
+                const date = new Date(dateKey + "T00:00:00");
+                const dateLabel = isToday(date)
+                  ? "Hoje"
+                  : isTomorrow(date)
+                    ? "Amanhã"
+                    : format(date, "EEEE, dd 'de' MMMM", { locale: ptBR });
+
+                return (
+                  <div key={dateKey}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="h-px flex-1 bg-slate-200" />
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap px-1">
+                        {dateLabel}
+                      </span>
+                      <div className="h-px flex-1 bg-slate-200" />
+                    </div>
+                    <div className="space-y-3">
+                      {dayClasses.map((cls) => (
+                        <LessonCard
+                          key={cls.id}
+                          lesson={mapToLessonData(cls)}
+                          onUpdate={() => window.location.reload()}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyState
+              icon={Calendar}
+              title="Sem agendamentos"
+              description="Você não tem nenhuma aula agendada para os próximos dias."
+              className="py-12 bg-slate-50 rounded-2xl border border-slate-100 border-dashed"
+            />
+          )}
+        </section>
+
+        {/* History */}
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <History size={16} className="text-slate-400" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Histórico Recente</p>
+          </div>
+          <div className="space-y-3">
+            {pastClasses.length > 0 ? (
+              pastClasses.slice(0, 10).map((cls) => (
                 <LessonCard
                   key={cls.id}
                   lesson={mapToLessonData(cls)}
                   onUpdate={() => window.location.reload()}
                 />
               ))
-          ) : (
-            <p className="text-center text-slate-400 text-sm py-4">
-              Nenhum histórico disponível.
-            </p>
-          )}
-        </div>
-      </section>
+            ) : (
+              <p className="text-center text-slate-400 text-sm py-4">
+                Nenhum histórico disponível.
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 };

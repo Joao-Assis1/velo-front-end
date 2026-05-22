@@ -13,14 +13,23 @@ import { BurocraticConcierge } from '@/components/features/BurocraticConcierge';
 import { DetranStepper } from '@/components/features/DetranStepper';
 import { useApp } from '@/context/AppContext';
 import Link from 'next/link';
-import { DetranStage } from '@/types';
 import { NextStepCard } from '@/components/journey/NextStepCard';
-import { useJourney } from '@/hooks/useJourney';
+import { useJourney, useJourneyTimeline } from '@/hooks/useJourney';
+import { JourneyStage } from '@/lib/api/journey';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+const STAGE_ALERTS: Partial<Record<JourneyStage, { id: string; type: 'urgent' | 'warning' | 'info'; title: string; message: string }>> = {
+  RENACH_PENDING:       { id: 'renach', type: 'urgent',  title: 'Cadastro Incompleto',           message: 'Preencha seus dados pessoais para iniciar o processo do RENACH.' },
+  MEDICAL_PENDING:      { id: 'medico', type: 'warning', title: 'Exame Médico Pendente',          message: 'Agende seu exame médico em uma clínica credenciada pelo DETRAN para avançar.' },
+  PSYCH_PENDING:        { id: 'psico',  type: 'warning', title: 'Exame Psicotécnico Pendente',    message: 'Agende seu exame psicotécnico em uma clínica credenciada pelo DETRAN.' },
+  THEORY_EXAM_PENDING:  { id: 'teoria', type: 'warning', title: 'Exame Teórico Pendente',         message: 'Você precisa realizar o exame teórico no DETRAN para prosseguir.' },
+  AWAITING_LADV_UPLOAD: { id: 'ladv',   type: 'info',    title: 'LADV Pendente',                  message: 'Sua LADV ainda não foi validada. Você precisa dela para agendar as aulas práticas.' },
+};
+
 export default function StudentDashboard() {
   const { data: journey, isLoading: journeyLoading } = useJourney();
+  const { data: timeline = [] } = useJourneyTimeline();
   const { studentProfile, academyModules, scheduledClasses, refreshLessons } = useApp();
 
   useEffect(() => {
@@ -40,57 +49,25 @@ export default function StudentDashboard() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] ?? null;
   }, [scheduledClasses]);
 
-  const detranStages = useMemo(() => {
-    const checklist = studentProfile?.checklist;
-    const hasCpf = !!studentProfile?.cpf;
-    const hasMedico = !!checklist?.medico;
-    const hasPsicotecnico = !!checklist?.psicotecnico;
-    const hasTeorico = !!checklist?.teorico;
-    const hasLadv = !!studentProfile?.ladvUploaded;
-
-    const stages: DetranStage[] = [
-      { id: '1', label: 'Cadastro/RENACH', status: hasCpf ? 'completed' : 'current' },
-      { id: '2', label: 'Exame Médico', status: hasMedico ? 'completed' : (hasCpf ? 'current' : 'locked') },
-      { id: '3', label: 'Psicotécnico', status: hasPsicotecnico ? 'completed' : (hasMedico ? 'current' : 'locked') },
-      { id: '4', label: 'Curso Teórico', status: hasTeorico ? 'completed' : (hasPsicotecnico ? 'current' : 'locked') },
-      { id: '5', label: 'LADV & Aulas', status: hasLadv ? 'completed' : (hasTeorico ? 'current' : 'locked') },
-    ];
-    return stages;
-  }, [studentProfile]);
+  const detranStages = useMemo(() =>
+    timeline.map((step, i) => ({
+      id: step.key,
+      label: step.label,
+      status: step.status === 'completed' ? 'completed' as const
+            : step.status === 'in_progress' ? 'current' as const
+            : 'locked' as const,
+    })),
+  [timeline]);
 
   const alerts = useMemo(() => {
-    const newAlerts = [];
-    if (!studentProfile?.cpf) {
-      newAlerts.push({
-        id: 'renach',
-        type: 'urgent' as const,
-        title: 'Cadastro Incompleto',
-        message: 'Você precisa preencher seus dados pessoais para iniciar o processo do RENACH.'
-      });
-    } else if (!studentProfile?.checklist?.medico) {
-      newAlerts.push({
-        id: 'medico',
-        type: 'warning' as const,
-        title: 'Exame Médico Pendente',
-        message: 'Agende seu exame médico em uma clínica credenciada pelo DETRAN para avançar.'
-      });
-    } else if (!studentProfile?.checklist?.psicotecnico) {
-       newAlerts.push({
-        id: 'psico',
-        type: 'warning' as const,
-        title: 'Exame Psicotécnico Pendente',
-        message: 'Agende seu exame psicotécnico em uma clínica credenciada pelo DETRAN.'
-      });
-    } else if (!studentProfile?.ladvUploaded) {
-      newAlerts.push({
-        id: 'ladv',
-        type: 'info' as const,
-        title: 'LADV Pendente',
-        message: 'Sua LADV ainda não foi validada. Você precisa dela para agendar as aulas práticas.'
-      });
+    if (!journey) return [];
+    const stageAlert = STAGE_ALERTS[journey.stage];
+    if (stageAlert) return [stageAlert];
+    if (journey.blockers.length > 0) {
+      return [{ id: journey.blockers[0].code, type: 'info' as const, title: 'Ação necessária', message: journey.blockers[0].message }];
     }
-    return newAlerts;
-  }, [studentProfile]);
+    return [];
+  }, [journey]);
 
   return (
     <div className="pb-24 pt-6 px-4 md:px-8 space-y-8 max-w-5xl mx-auto">

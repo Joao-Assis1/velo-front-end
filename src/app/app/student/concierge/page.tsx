@@ -1,12 +1,26 @@
 "use client";
 
 import { useJourney, useJourneyTimeline } from "@/hooks/useJourney";
+import { JourneyStage } from "@/lib/api/journey";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { JourneyStepper } from "@/components/journey/JourneyStepper";
 import { NextStepCard } from "@/components/journey/NextStepCard";
 import { JourneyBlockerBanner } from "@/components/journey/JourneyBlockerBanner";
 import { Button } from "@/components/ui/button";
 import { Bell, BellOff } from "lucide-react";
+
+const STAGE_LABELS: Record<JourneyStage, string> = {
+  REGISTERED:                "Registrado",
+  RENACH_PENDING:            "RENACH Pendente",
+  MEDICAL_PENDING:           "Exame Médico Pendente",
+  PSYCH_PENDING:             "Psicotécnico Pendente",
+  THEORY_COURSE_IN_PROGRESS: "Curso Teórico em Andamento",
+  THEORY_EXAM_PENDING:       "Exame Teórico Pendente",
+  AWAITING_LADV_UPLOAD:      "Aguardando Envio da LADV",
+  LADV_UPLOADED_VALID:       "LADV Validada",
+  PRACTICAL_IN_PROGRESS:     "Aulas Práticas em Andamento",
+  READY_FOR_PRACTICAL_EXAM:  "Pronto para o Exame Prático",
+};
 
 export default function ConciergePage() {
   const state = useJourney();
@@ -31,7 +45,7 @@ export default function ConciergePage() {
       <header>
         <h1 className="text-2xl font-bold">Minha Jornada</h1>
         <p className="text-sm text-zinc-600">
-          Etapa atual: <strong>{journey.stage}</strong> · Progresso:{" "}
+          Etapa atual: <strong>{STAGE_LABELS[journey.stage] ?? journey.stage}</strong> · Progresso:{" "}
           {journey.progressPct}%
         </p>
       </header>

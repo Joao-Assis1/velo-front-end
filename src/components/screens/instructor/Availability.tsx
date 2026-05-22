@@ -84,7 +84,7 @@ export const InstructorAvailability = ({
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="space-y-6">
 
         <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-3 items-start">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" className="shrink-0 mt-0.5">

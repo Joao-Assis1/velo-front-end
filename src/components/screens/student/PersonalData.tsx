@@ -111,7 +111,7 @@ export const StudentPersonalData = ({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto w-full px-4 pb-28 md:pb-12 pt-6 space-y-3">
+      <form onSubmit={handleSubmit} className="w-full px-4 pb-28 md:pb-12 pt-6 space-y-3">
         {/* Nome Completo */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 py-3">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-1.5">

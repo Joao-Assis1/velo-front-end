@@ -87,16 +87,16 @@ export const StudentSchedule = ({
       </div>
 
       {topBanner && (
-        <div className="max-w-5xl mx-auto w-full px-4 md:px-6 pt-4">
+        <div className="w-full px-4 md:px-6 pt-4">
           {topBanner}
         </div>
       )}
 
       {/* Contêiner Geral Alinhado para o Conteúdo */}
-      <div className="max-w-5xl mx-auto w-full px-4 md:px-6 pb-28 md:pb-12 pt-4">
+      <div className="w-full px-4 md:px-6 pb-28 md:pb-12 pt-4">
         {activeTab === 'upcoming' ? (
           upcomingClasses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {upcomingClasses.map((cls, i) => (
                 <motion.div
                   key={cls.id}
@@ -166,7 +166,7 @@ export const StudentSchedule = ({
           )
         ) : (
           pastClasses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {pastClasses.map((cls, i) => (
                 <motion.div
                   key={cls.id}

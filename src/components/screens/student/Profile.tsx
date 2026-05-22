@@ -52,7 +52,7 @@ export const StudentProfile = ({
       </div>
 
       {/* Menu items */}
-      <div className="max-w-2xl mx-auto w-full px-4 pt-6 pb-28 md:pb-12 space-y-2">
+      <div className="w-full px-4 pt-6 pb-28 md:pb-12 space-y-2">
         {menuItems.map((item) => (
           <button
             key={item.id}

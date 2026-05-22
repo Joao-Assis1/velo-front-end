@@ -34,7 +34,7 @@ export default function ProgressPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-4">
+    <main className="flex w-full flex-col gap-6 p-4">
       <header>
         <h1 className="text-2xl font-bold">Progresso da 1ª CNH</h1>
         <p className="text-sm text-zinc-600">

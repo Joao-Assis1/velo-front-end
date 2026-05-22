@@ -41,7 +41,7 @@ export default function ConciergePage() {
   const steps = timeline.data!;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4">
+    <main className="flex w-full flex-col gap-6 p-4">
       <header>
         <h1 className="text-2xl font-bold">Minha Jornada</h1>
         <p className="text-sm text-zinc-600">

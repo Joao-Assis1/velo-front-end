@@ -65,7 +65,7 @@ export const StudentDispute = () => {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto w-full px-4 pb-28 md:pb-12 pt-6 space-y-4">
+      <div className="w-full px-4 pb-28 md:pb-12 pt-6 space-y-4">
         {submitError && (
           <div className="bg-red-50 border border-red-100 text-red-600 text-sm font-semibold p-3 rounded-xl">
             {submitError}

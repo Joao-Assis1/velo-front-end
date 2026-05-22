@@ -216,7 +216,7 @@ export const InstructorSettings = ({ onBack }: { onBack: () => void }) => {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="space-y-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-1 mb-3">Recebimentos</p>
           <ConnectSection />

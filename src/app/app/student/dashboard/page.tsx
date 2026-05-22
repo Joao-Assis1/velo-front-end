@@ -66,7 +66,7 @@ export default function StudentDashboard() {
   }, [journey]);
 
   return (
-    <div className="pb-24 pt-6 px-4 md:px-8 space-y-8 max-w-5xl mx-auto">
+    <div className="pb-24 pt-6 px-4 md:px-8 space-y-8">
       {/* Journey next step */}
       {!journeyLoading && journey && (
         <NextStepCard blockers={journey.blockers} stage={journey.stage} />

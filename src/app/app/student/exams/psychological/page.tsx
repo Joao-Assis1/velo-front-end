@@ -62,7 +62,7 @@ export default function PsychologicalExamPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4">
+    <main className="flex w-full flex-col gap-6 p-4">
       <header className="flex items-start gap-3">
         <Brain className="mt-1 h-7 w-7 text-blue-600" aria-hidden />
         <div>

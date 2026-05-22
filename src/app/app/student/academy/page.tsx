@@ -49,7 +49,7 @@ export default function VeloAcademy() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="p-6 md:p-12 max-w-4xl mx-auto space-y-8"
+            className="p-6 md:p-12 space-y-8"
           >
             <div className="flex justify-between items-center">
               <div>
@@ -138,7 +138,7 @@ export default function VeloAcademy() {
             </header>
 
             <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
-              <div className="max-w-2xl mx-auto w-full">
+              <div className="w-full">
                 <QuizModule
                   questions={selectedModule?.questions || []}
                   onFinish={handleFinishQuiz}

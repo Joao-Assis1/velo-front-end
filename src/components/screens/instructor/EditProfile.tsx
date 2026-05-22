@@ -109,7 +109,7 @@ export const InstructorEditProfile = ({
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto">
+      <div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <AvatarUploader
             currentImage={localProfile.profilePicture}

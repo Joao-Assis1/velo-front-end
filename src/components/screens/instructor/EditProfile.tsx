@@ -127,6 +127,7 @@ export const InstructorEditProfile = ({
               <Input
                 value={localProfile.name}
                 onChange={(e) => setLocalProfile({ ...localProfile, name: e.target.value })}
+                placeholder="Ex: João da Silva"
                 icon={<User size={16} />}
                 required
               />
@@ -147,6 +148,7 @@ export const InstructorEditProfile = ({
               <Input
                 value={localProfile.location}
                 onChange={(e) => setLocalProfile({ ...localProfile, location: e.target.value })}
+                placeholder="Ex: Campo Grande - MS, Centro"
                 icon={<MapPin size={16} />}
                 required
               />
@@ -161,7 +163,8 @@ export const InstructorEditProfile = ({
                 <textarea
                   value={localProfile.bio}
                   onChange={(e) => setLocalProfile({ ...localProfile, bio: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition min-h-[100px] text-sm text-slate-900 resize-none"
+                  placeholder="Conte sua experiência, estilo de aula e diferenciais..."
+                  className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition min-h-[100px] text-sm text-slate-900 resize-none placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -176,6 +179,7 @@ export const InstructorEditProfile = ({
                 <Input
                   value={maskCNH(localProfile.cnhNumber || "")}
                   onChange={(e) => setLocalProfile({ ...localProfile, cnhNumber: maskCNH(e.target.value) })}
+                  placeholder="00000000000"
                   icon={<Hash size={16} />}
                   maxLength={11}
                   required
@@ -230,6 +234,7 @@ export const InstructorEditProfile = ({
               <Input
                 value={maskRENACH(localProfile.renachNumber || "")}
                 onChange={(e) => setLocalProfile({ ...localProfile, renachNumber: maskRENACH(e.target.value) })}
+                placeholder="MS000000000"
                 icon={<Hash size={16} />}
                 maxLength={11}
               />
@@ -265,6 +270,7 @@ export const InstructorEditProfile = ({
                     pricePerClass: e.target.value === "" ? 0 : parseInt(e.target.value),
                   })
                 }
+                placeholder="80"
                 icon={<span className="text-xs font-bold">R$</span>}
                 required
               />

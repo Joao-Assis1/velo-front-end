@@ -197,7 +197,7 @@ export const InstructorFinance = ({
                       <div>
                         <p className="text-sm font-bold text-slate-800">{item.studentName}</p>
                         <p className="text-xs text-slate-500">
-                          {new Date(item.date).toLocaleDateString('pt-BR')} · Aula prática
+                          {item.date?.split(' ')[0]} · Aula prática
                         </p>
                       </div>
                     </div>

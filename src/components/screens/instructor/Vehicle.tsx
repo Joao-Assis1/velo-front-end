@@ -143,6 +143,7 @@ export const InstructorVehicle = ({
               <Input
                 value={localProfile.vehicleModel}
                 onChange={(e) => setLocalProfile({ ...localProfile, vehicleModel: e.target.value })}
+                placeholder="Ex: Volkswagen Polo 1.0"
                 icon={<Car size={16} />}
               />
             </div>

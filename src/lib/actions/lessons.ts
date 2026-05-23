@@ -4,6 +4,7 @@ import { revalidateTag } from "next/cache";
 import { fetchWrapper } from "../api-client";
 import { CreateLessonDto, LessonType } from "../validations";
 import { BiometryStage } from "../../types";
+import { parseBRDate } from "../utils/dates";
 
 function mapLesson(lesson: any): LessonType {
   return {
@@ -11,7 +12,7 @@ function mapLesson(lesson: any): LessonType {
     studentId: lesson.studentId,
     instructorId: lesson.instructorId,
     instructorName: lesson.instructor?.name,
-    date: new Date(lesson.date),
+    date: parseBRDate(lesson.date) ?? new Date(),
     startTime: lesson.startTime,
     endTime: lesson.endTime,
     status: lesson.status as any,
@@ -21,10 +22,8 @@ function mapLesson(lesson: any): LessonType {
     instructorFeedback: lesson.instructorFeedback || undefined,
     studentName: lesson.student?.name,
     studentImage: lesson.student?.profilePicture || undefined,
-    checkInTime: lesson.checkInTime ? new Date(lesson.checkInTime) : undefined,
-    checkOutTime: lesson.checkOutTime
-      ? new Date(lesson.checkOutTime)
-      : undefined,
+    checkInTime: lesson.checkInTime ? parseBRDate(lesson.checkInTime) ?? undefined : undefined,
+    checkOutTime: lesson.checkOutTime ? parseBRDate(lesson.checkOutTime) ?? undefined : undefined,
     durationMinutes: lesson.durationMinutes || undefined,
     disputeOpened: lesson.disputeOpened ?? false,
     disputeReason: lesson.disputeReason || undefined,

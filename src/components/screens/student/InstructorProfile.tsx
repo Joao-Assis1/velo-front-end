@@ -18,6 +18,7 @@ import {
 import { format, isBefore, startOfDay, isSameDay, addHours } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { parseBRDate } from "@/lib/utils/dates";
 import { Button, CalendarWidget } from "@/components/ui-custom";
 import { Instructor } from "@/types";
 
@@ -125,7 +126,7 @@ export const InstructorProfileView = ({
 
     const instructorBusySlots =
       instructor?.busySlots?.filter((slot) =>
-        isSameDay(new Date(slot.date), date),
+        isSameDay(parseBRDate(slot.date) ?? new Date(), date),
       ) || [];
 
     const busyTimesFromSlots = instructorBusySlots.flatMap((slot) => {

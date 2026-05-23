@@ -255,7 +255,7 @@ export const StudentPayments = ({
                             </p>
                             <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                               <Calendar size={11} />
-                              {new Date(payment.createdAt).toLocaleDateString('pt-BR')}
+                              {payment.createdAt?.split(' ')[0]}
                             </p>
                           </div>
                           

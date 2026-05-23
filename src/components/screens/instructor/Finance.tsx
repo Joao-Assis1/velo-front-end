@@ -171,12 +171,12 @@ export const InstructorFinance = ({
           {/* Automatic transfers info */}
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400 shrink-0 mt-0.5">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             <div>
               <p className="text-sm font-bold text-blue-900 mb-1">Transferências automáticas</p>
               <p className="text-sm text-blue-700">
-                Seu saldo é transferido para sua chave PIX em até 5 minutos após cada aula concluída (taxa da plataforma: 20%).
+                Seu saldo é transferido para sua conta de recebimento após cada aula concluída (taxa da plataforma: 20%).
               </p>
             </div>
           </div>

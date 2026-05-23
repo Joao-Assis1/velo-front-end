@@ -12,7 +12,7 @@ export interface EarningsData {
     id: string;
     studentName: string;
     studentImage?: string;
-    date: string | Date;
+    date: string;
     price: number;
   }>;
 }

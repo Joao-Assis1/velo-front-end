@@ -19,7 +19,7 @@ function isEligible(lesson: ScheduledClass): boolean {
   if (lesson.status !== 'completed') return false;
   if (lesson.disputeOpened) return false;
   if (!lesson.checkOutTime) return false;
-  return Date.now() - new Date(lesson.checkOutTime).getTime() <= DISPUTE_WINDOW_MS;
+  return Date.now() - lesson.checkOutTime.getTime() <= DISPUTE_WINDOW_MS;
 }
 
 export const StudentDispute = () => {
@@ -30,7 +30,7 @@ export const StudentDispute = () => {
 
   const completedLessons = scheduledClasses
     .filter(c => c.status === 'completed')
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   const mutation = useMutation({
     mutationFn: ({ lessonId, reason }: { lessonId: string; reason: string }) =>
@@ -58,7 +58,7 @@ export const StudentDispute = () => {
       {/* Dark header com accent vermelho */}
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        <div className="max-w-2xl mx-auto w-full px-4 md:px-6 pt-6 pb-6 relative z-10">
+        <div className="w-full px-4 md:px-6 pt-6 pb-6 relative z-10">
           <p className="text-xs font-bold tracking-widest uppercase text-red-400">Central de disputas</p>
           <h1 className="text-xl font-extrabold text-slate-50 mt-0.5">Contestar Aula</h1>
           <p className="text-xs text-slate-400 mt-0.5">Prazo: até 48h após a conclusão</p>
@@ -104,7 +104,7 @@ export const StudentDispute = () => {
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
                       <Clock size={12} className="text-slate-400" />
-                      {format(new Date(lesson.date), "dd 'de' MMMM · HH:mm", { locale: ptBR })}
+                      {format(lesson.date, "dd 'de' MMMM · HH:mm", { locale: ptBR })}
                     </p>
                     {lesson.price != null && (
                       <p className="text-xs font-bold text-slate-600 mt-1">

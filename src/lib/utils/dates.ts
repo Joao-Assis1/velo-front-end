@@ -1,3 +1,10 @@
+import { format } from 'date-fns';
+
+export function formatBRDate(str: string | null | undefined): string {
+  const d = parseBRDate(str);
+  return d ? format(d, 'dd/MM/yyyy') : (str ?? '');
+}
+
 /**
  * Parses a date string in DD/MM/YYYY or DD/MM/YYYY HH:mm format
  * returned by the API and converts it to a JS Date object.

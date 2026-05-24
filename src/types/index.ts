@@ -34,7 +34,7 @@ export interface Availability {
 
 export interface BusySlot {
   id: string;
-  date: Date;
+  date: string;
   startTime: string;
   endTime: string;
   reason?: string;

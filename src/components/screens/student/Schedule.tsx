@@ -228,7 +228,7 @@ export const StudentSchedule = ({
                       )}
 
                       {!cls.disputeOpened && cls.checkOutTime &&
-                        (Date.now() - new Date(cls.checkOutTime).getTime() <= 48 * 60 * 60 * 1000) && (
+                        (Date.now() - cls.checkOutTime.getTime() <= 48 * 60 * 60 * 1000) && (
                         <Link
                           href="/app/student/dispute"
                           className="text-xs text-red-500 font-extrabold hover:text-red-700 flex items-center gap-1 transition-colors w-fit underline decoration-red-200 underline-offset-2"

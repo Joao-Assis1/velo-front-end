@@ -12,7 +12,7 @@ function mapLesson(lesson: any): LessonType {
     studentId: lesson.studentId,
     instructorId: lesson.instructorId,
     instructorName: lesson.instructor?.name,
-    date: parseBRDate(lesson.date) ?? new Date(),
+    date: parseBRDate(lesson.date) ?? new Date(lesson.date),
     startTime: lesson.startTime,
     endTime: lesson.endTime,
     status: lesson.status as any,

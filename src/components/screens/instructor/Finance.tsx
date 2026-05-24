@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ArrowUpRight, ArrowDownLeft, AlertTriangle, Loader2, ShieldCheck } from 'lucide-react';
+import { formatBRDate } from '@/lib/utils/dates';
 
 export interface EarningsData {
   availableBalance: number;
@@ -197,7 +198,7 @@ export const InstructorFinance = ({
                       <div>
                         <p className="text-sm font-bold text-slate-800">{item.studentName}</p>
                         <p className="text-xs text-slate-500">
-                          {item.date?.split(' ')[0]} · Aula prática
+                          {formatBRDate(item.date)} · Aula prática
                         </p>
                       </div>
                     </div>

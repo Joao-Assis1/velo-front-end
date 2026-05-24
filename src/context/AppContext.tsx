@@ -21,7 +21,7 @@ import {
 } from '@/lib/actions/auth';
 import { updateInstructorProfileAction } from '@/lib/actions/instructors';
 import { updateStudentProfileAction } from '@/lib/actions/profileActions';
-import { getAcademyModulesAction, seedAcademyAction } from '@/lib/actions/academy';
+import { getAcademyModulesAction } from '@/lib/actions/academy';
 import { INITIAL_STUDENT_PROFILE } from '../constants/mockData';
 
 interface AppContextType {
@@ -137,16 +137,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
 
         // Fetch Academy Modules
-        let academyRes = await getAcademyModulesAction();
-        if (academyRes.success) {
-          if (!academyRes.data || academyRes.data.length === 0) {
-            // Auto-seed if empty
-            await seedAcademyAction();
-            academyRes = await getAcademyModulesAction();
-          }
-          if (academyRes.data) {
-            setAcademyModules(academyRes.data as AcademyModule[]);
-          }
+        const academyRes = await getAcademyModulesAction();
+        if (academyRes.success && academyRes.data) {
+          setAcademyModules(academyRes.data as AcademyModule[]);
         }
       } else if (userRole === 'instructor' && instructorProfile?.id) {
         const lessonsRes = await getLessonsAction({ instructorId: instructorProfile.id });

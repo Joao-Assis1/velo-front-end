@@ -8,11 +8,13 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
-  HelpCircle
+  HelpCircle,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui-custom';
 import { QuizModule } from '@/components/features/QuizModule';
+import { EmptyState } from '@/components/ui-custom/EmptyState';
 import { useApp } from '@/context/AppContext';
 import { submitAcademyScoreAction } from '@/lib/actions/academy';
 
@@ -74,6 +76,13 @@ export default function VeloAcademy() {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
+              {academyModules.length === 0 && (
+                <EmptyState
+                  icon={BookOpen}
+                  title="Nenhum módulo disponível"
+                  description="Os simulados ainda não foram publicados. Volte em breve!"
+                />
+              )}
               {academyModules.map((module, i) => {
                 const isCompleted = module.progress === 100;
                 return (

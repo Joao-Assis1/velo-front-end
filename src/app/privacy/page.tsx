@@ -67,7 +67,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-5 space-y-2">
               <li><strong>Entre aluno e instrutor:</strong> nome, foto de perfil e histórico de aulas são compartilhados para viabilizar a prestação do serviço.</li>
               <li><strong>Stripe:</strong> dados financeiros para processar transações. A Stripe possui certificação PCI-DSS.</li>
-              <li><strong>Supabase:</strong> armazenamento seguro com Row Level Security (RLS) ativo.</li>
+              <li><strong>Neon.tech:</strong> armazenamento seguro com Row Level Security (RLS) ativo.</li>
               <li><strong>Autoridades competentes:</strong> quando exigido por lei, ordem judicial ou requisição do DETRAN.</li>
             </ul>
           </Article>
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
 
           <Article title="3.7 Segurança dos dados">
             <ul className="list-disc pl-5 space-y-1">
-              <li>Armazenamento PostgreSQL (Supabase) com <strong>criptografia em repouso</strong>.</li>
+              <li>Armazenamento PostgreSQL (Neon.tech) com <strong>criptografia em repouso</strong>.</li>
               <li><strong>Row Level Security (RLS):</strong> cada usuário acessa apenas seus próprios dados.</li>
               <li>Comunicações protegidas por <strong>HTTPS/TLS</strong>.</li>
               <li>Autenticação com sessão persistente e tokens seguros.</li>
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
           </Article>
 
           <Article title="3.9 Transferência internacional de dados">
-            <p>Os dados são armazenados em servidores da <strong>Supabase</strong> e <strong>Vercel</strong>, que podem estar localizados fora do Brasil. Ambas possuem políticas de proteção compatíveis com o GDPR e a LGPD.</p>
+            <p>Os dados são armazenados em servidores da <strong>Neon.tech</strong> e <strong>Vercel</strong>, que podem estar localizados fora do Brasil. Ambas possuem políticas de proteção compatíveis com o GDPR e a LGPD.</p>
           </Article>
 
           <Article title="3.10 Alterações nesta política">

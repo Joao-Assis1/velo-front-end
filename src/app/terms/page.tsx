@@ -61,8 +61,8 @@ export default function TermsPage() {
           <Article title="1.5 Pagamentos e cancelamentos">
             <ul className="list-disc pl-5 space-y-1">
               <li>O pagamento é processado de forma segura pela plataforma via Stripe.</li>
-              <li>Cancelamentos com <strong>mais de 2 horas de antecedência</strong> dão direito a reembolso integral.</li>
-              <li>Cancelamentos com <strong>menos de 2 horas de antecedência</strong> estão sujeitos à política de reembolso disponível nas configurações do app.</li>
+              <li>Cancelamentos com <strong>mais de 24 horas de antecedência</strong> dão direito a reembolso integral.</li>
+              <li>Cancelamentos com <strong>menos de 24 horas de antecedência</strong> estão sujeitos à política de reembolso disponível nas configurações do app.</li>
               <li>O Velo emite comprovante de todas as transações realizadas.</li>
             </ul>
           </Article>
@@ -70,7 +70,7 @@ export default function TermsPage() {
           <Article title="1.6 Conduta esperada do aluno">
             <ul className="list-disc pl-5 space-y-1">
               <li>Fornecer informações verdadeiras no cadastro.</li>
-              <li>Comparecer às aulas agendadas ou cancelar com antecedência mínima de 2 horas.</li>
+              <li>Comparecer às aulas agendadas ou cancelar com antecedência mínima de 24 horas.</li>
               <li>Tratar o instrutor com respeito e urbanidade.</li>
               <li>Utilizar o canal de denúncias de forma responsável e verídica.</li>
             </ul>
@@ -128,7 +128,7 @@ export default function TermsPage() {
           <Article title="2.3 Obrigações do instrutor na plataforma">
             <ul className="list-disc pl-5 space-y-1">
               <li>Fornecer informações verdadeiras e manter o perfil atualizado.</li>
-              <li>Comparecer às aulas agendadas ou cancelar com no mínimo 2 horas de antecedência.</li>
+              <li>Comparecer às aulas agendadas ou cancelar com no mínimo 24 horas de antecedência.</li>
               <li>Tratar alunos com respeito, profissionalismo e urbanidade.</li>
               <li>Registrar as aulas realizadas no sistema oficial do DETRAN.</li>
               <li>Não prometer ou sugerir aprovação garantida nas provas.</li>

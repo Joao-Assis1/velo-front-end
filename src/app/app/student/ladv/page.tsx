@@ -12,7 +12,7 @@ import {
 import { useInvalidateJourney } from "@/hooks/useJourney";
 import { DocumentUploader } from "@/components/journey/DocumentUploader";
 import { Button } from "@/components/ui/button";
-import { IdCard, PenLine, ChevronUp, ChevronDown } from "lucide-react";
+import { IdCard, PenLine, ChevronUp, ChevronDown, Smartphone, CalendarClock, Timer } from "lucide-react";
 
 type ManualShape = {
   ladvNumber: string;
@@ -88,6 +88,17 @@ export default function LadvPage() {
             Envie a versão digital aqui para liberar o agendamento de aulas
             práticas.
           </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+              <Smartphone size={12} aria-hidden /> App CNH do Brasil
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+              <CalendarClock size={12} aria-hidden /> Válida por 12 meses
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+              <Timer size={12} aria-hidden /> Mínimo 2h de prática
+            </span>
+          </div>
         </div>
       </header>
 

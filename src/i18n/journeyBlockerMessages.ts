@@ -44,14 +44,14 @@ export const journeyBlockerMessages: Record<
   AWAITING_LADV_UPLOAD: {
     title: "Envie sua LADV",
     description:
-      "Faça upload da Licença de Aprendizagem (LADV) emitida pelo DETRAN para liberar aulas práticas.",
+      "Faça upload da Licença de Aprendizagem (LADV) emitida via app CNH do Brasil para liberar aulas práticas.",
     ctaLabel: "Enviar LADV",
     ctaHref: "/app/student/ladv",
   },
   LADV_EXPIRED: {
     title: "Sua LADV venceu",
     description:
-      "Reemita a LADV no DETRAN-MS e faça novo upload para voltar a agendar aulas.",
+      "Reemita a LADV via app CNH do Brasil e faça novo upload para voltar a agendar aulas.",
     ctaLabel: "Reenviar LADV",
     ctaHref: "/app/student/ladv",
   },

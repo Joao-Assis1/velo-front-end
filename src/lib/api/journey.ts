@@ -11,6 +11,7 @@ export type JourneyStage =
   | "LADV_UPLOADED_VALID"
   | "PRACTICAL_IN_PROGRESS"
   | "READY_FOR_PRACTICAL_EXAM";
+  // Ordem do processo real: curso teórico → RENACH → exames → exame teórico → LADV → aulas práticas → exame prático
 
 export type JourneyBlocker = {
   code: string;

@@ -74,16 +74,16 @@ const JOURNEY_GUIDE: GuideEntry[] = [
 ];
 
 const STAGE_LABELS: Record<JourneyStage, string> = {
-  REGISTERED: "Registrado",
-  RENACH_PENDING: "RENACH Pendente",
-  MEDICAL_PENDING: "Exame Médico Pendente",
-  PSYCH_PENDING: "Psicotécnico Pendente",
+  REGISTERED:                "Registrado",
   THEORY_COURSE_IN_PROGRESS: "Curso Teórico em Andamento",
-  THEORY_EXAM_PENDING: "Exame Teórico Pendente",
-  AWAITING_LADV_UPLOAD: "Aguardando Envio da LADV",
-  LADV_UPLOADED_VALID: "LADV Validada",
-  PRACTICAL_IN_PROGRESS: "Aulas Práticas em Andamento",
-  READY_FOR_PRACTICAL_EXAM: "Pronto para o Exame Prático",
+  RENACH_PENDING:            "RENACH Pendente",
+  MEDICAL_PENDING:           "Exame Médico Pendente",
+  PSYCH_PENDING:             "Psicotécnico Pendente",
+  THEORY_EXAM_PENDING:       "Exame Teórico Pendente",
+  AWAITING_LADV_UPLOAD:      "Aguardando Envio da LADV",
+  LADV_UPLOADED_VALID:       "LADV Validada",
+  PRACTICAL_IN_PROGRESS:     "Aulas Práticas em Andamento",
+  READY_FOR_PRACTICAL_EXAM:  "Pronto para o Exame Prático",
 };
 
 export default function ConciergePage() {

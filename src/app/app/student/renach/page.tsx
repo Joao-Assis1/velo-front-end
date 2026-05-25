@@ -76,7 +76,8 @@ export default function RenachPage() {
         <div>
           <h1 className="text-2xl font-bold">Processo RENACH</h1>
           <p className="text-sm text-zinc-600">
-            Abertura do processo no DETRAN-MS, biometria e captura de dados.
+            Abertura do processo de habilitação no DETRAN-MS. Faça isso após
+            concluir o curso teórico.
           </p>
         </div>
       </header>
@@ -91,6 +92,25 @@ export default function RenachPage() {
             emissão da sua Permissão para Dirigir.
           </p>
         </div>
+      </section>
+
+      <section className="rounded-xl border border-zinc-200 bg-white p-4">
+        <h2 className="text-base font-semibold">Como abrir o processo no DETRAN-MS</h2>
+        <ol className="ml-5 mt-2 list-decimal space-y-2 text-sm text-zinc-800">
+          <li>
+            <strong>Pague a taxa de serviço</strong> — cobrada pelo DETRAN-MS no
+            momento da abertura do processo
+          </li>
+          <li>
+            <strong>Faça o agendamento</strong> — pelo site do DETRAN-MS ou
+            ligue para o 0800 do DETRAN
+          </li>
+          <li>
+            <strong>Compareça no dia agendado</strong> — para coleta de dados,
+            biometria facial e digitais. O DETRAN indicará a clínica para os
+            exames obrigatórios
+          </li>
+        </ol>
       </section>
 
       {guide && (

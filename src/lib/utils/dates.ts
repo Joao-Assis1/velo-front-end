@@ -1,5 +1,15 @@
 import { format } from 'date-fns';
 
+/** Converts DD/MM/YYYY → YYYY-MM-DD for API submission. Returns empty string if invalid. */
+export function brDateToISO(ddmmyyyy: string): string {
+  const parts = ddmmyyyy.replace(/\D/g, '');
+  if (parts.length !== 8) return '';
+  const day = parts.slice(0, 2);
+  const month = parts.slice(2, 4);
+  const year = parts.slice(4, 8);
+  return `${year}-${month}-${day}`;
+}
+
 export function formatBRDate(str: string | null | undefined): string {
   const d = parseBRDate(str);
   return d ? format(d, 'dd/MM/yyyy') : (str ?? '');

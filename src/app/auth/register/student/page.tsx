@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
+import { maskDate } from "@/lib/utils/masks";
+import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
 const UF_LIST = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
@@ -74,8 +76,10 @@ export default function StudentRegisterPage() {
     if (!isValidCPF(form.cpf)) return "CPF inválido.";
     const phone = form.phone.replace(/\D/g, "");
     if (phone.length < 10) return "Telefone inválido.";
-    if (!form.birthDate) return "Data de nascimento obrigatória.";
-    const age = Math.floor((Date.now() - new Date(form.birthDate).getTime()) / 31557600000);
+    if (!form.birthDate || form.birthDate.replace(/\D/g, '').length < 8) return "Data de nascimento obrigatória.";
+    const birthDateObj = parseBRDate(form.birthDate);
+    if (!birthDateObj) return "Data de nascimento inválida.";
+    const age = Math.floor((Date.now() - birthDateObj.getTime()) / 31557600000);
     if (age < 18) return "Você deve ter pelo menos 18 anos.";
     if (!form.motherName.trim()) return "Nome da mãe obrigatório.";
     if (!form.ufDomicile) return "UF de domicílio obrigatória.";
@@ -109,7 +113,7 @@ export default function StudentRegisterPage() {
         password: form.password,
         phone: form.phone.replace(/\D/g, ""),
         cpf: form.cpf.replace(/\D/g, ""),
-        birthDate: form.birthDate,
+        birthDate: brDateToISO(form.birthDate),
         motherName: form.motherName.trim(),
         intendedCategory: form.intendedCategory,
         ufDomicile: form.ufDomicile,
@@ -246,10 +250,9 @@ export default function StudentRegisterPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Data de nascimento *" hint="Mínimo 18 anos">
                   <input
-                    type="date"
                     value={form.birthDate}
-                    onChange={(e) => set("birthDate", e.target.value)}
-                    max={new Date(Date.now() - 18 * 31557600000).toISOString().split("T")[0]}
+                    onChange={(e) => set("birthDate", maskDate(e.target.value))}
+                    placeholder="DD/MM/AAAA" maxLength={10} inputMode="numeric"
                     className={inputCls}
                   />
                 </Field>

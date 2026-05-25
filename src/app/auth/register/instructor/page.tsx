@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
-import { maskCNH, maskRENACH, maskPlate } from "@/lib/utils/masks";
+import { maskCNH, maskRENACH, maskPlate, maskDate } from "@/lib/utils/masks";
+import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
 const UF_LIST = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 const CNH_CATS = ["A", "B", "C", "D", "E", "AB", "AC", "AD", "AE"];
@@ -83,8 +84,10 @@ export default function InstructorRegisterPage() {
   const validateStep2 = () => {
     if (form.cpf.replace(/\D/g, "").length !== 11) return "CPF deve ter 11 dígitos.";
     if (form.phone.replace(/\D/g, "").length < 10) return "Telefone inválido.";
-    if (!form.birthDate) return "Data de nascimento obrigatória.";
-    const age = Math.floor((Date.now() - new Date(form.birthDate).getTime()) / 31557600000);
+    if (!form.birthDate || form.birthDate.replace(/\D/g, '').length < 8) return "Data de nascimento obrigatória.";
+    const birthDateObj = parseBRDate(form.birthDate);
+    if (!birthDateObj) return "Data de nascimento inválida.";
+    const age = Math.floor((Date.now() - birthDateObj.getTime()) / 31557600000);
     if (age < 21) return "Instrutor deve ter no mínimo 21 anos.";
     if (!form.educationLevel) return "Nível de escolaridade obrigatório.";
     const validEdu = ["Médio Completo", "Superior Incompleto", "Superior Completo", "Pós-Graduação"];
@@ -97,9 +100,10 @@ export default function InstructorRegisterPage() {
   const validateStep3 = () => {
     if (form.cnhNumber.replace(/\D/g, "").length !== 11) return "Número da CNH deve ter 11 dígitos.";
     if (!form.cnhCategory) return "Selecione a categoria da CNH.";
-    if (!form.cnhExpiry) return "Data de validade da CNH obrigatória.";
-    const expiry = new Date(form.cnhExpiry);
-    if (expiry < new Date()) return "CNH está vencida. Renove antes de se cadastrar.";
+    if (!form.cnhExpiry || form.cnhExpiry.replace(/\D/g, '').length < 8) return "Data de validade da CNH obrigatória.";
+    const expiryObj = parseBRDate(form.cnhExpiry);
+    if (!expiryObj) return "Data de validade da CNH inválida.";
+    if (expiryObj < new Date()) return "CNH está vencida. Renove antes de se cadastrar.";
     if (!form.renachNumber.trim()) return "Número RENACH obrigatório.";
     if (!form.instructorType) return "Selecione o tipo de instrutor.";
     if (!form.certidaoNegativa.trim()) return "Nº da Certidão Negativa obrigatório.";
@@ -143,7 +147,7 @@ export default function InstructorRegisterPage() {
         password: form.password,
         phone: form.phone.replace(/\D/g, ""),
         cpf: form.cpf.replace(/\D/g, ""),
-        birthDate: form.birthDate,
+        birthDate: brDateToISO(form.birthDate),
         educationLevel: form.educationLevel,
         instructorType: form.instructorType,
         location: form.location.trim(),
@@ -151,7 +155,7 @@ export default function InstructorRegisterPage() {
         pricePerClass: Number(form.pricePerClass),
         cnhNumber: form.cnhNumber.replace(/\D/g, ""),
         cnhCategory: form.cnhCategory,
-        cnhExpiry: form.cnhExpiry,
+        cnhExpiry: brDateToISO(form.cnhExpiry),
         cnhEar: form.cnhEar,
         renachNumber: form.renachNumber.trim(),
         certidaoNegativa: form.certidaoNegativa.trim(),
@@ -258,9 +262,9 @@ export default function InstructorRegisterPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Data de nascimento *" hint="Mínimo 21 anos">
-                  <input type="date" value={form.birthDate}
-                    onChange={(e) => set("birthDate", e.target.value)}
-                    max={new Date(Date.now() - 21 * 31557600000).toISOString().split("T")[0]}
+                  <input value={form.birthDate}
+                    onChange={(e) => set("birthDate", maskDate(e.target.value))}
+                    placeholder="DD/MM/AAAA" maxLength={10} inputMode="numeric"
                     className={inputCls} />
                 </Field>
                 <Field label="Escolaridade *">
@@ -334,9 +338,9 @@ export default function InstructorRegisterPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Validade da CNH *">
-                  <input type="date" value={form.cnhExpiry}
-                    onChange={(e) => set("cnhExpiry", e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
+                  <input value={form.cnhExpiry}
+                    onChange={(e) => set("cnhExpiry", maskDate(e.target.value))}
+                    placeholder="DD/MM/AAAA" maxLength={10} inputMode="numeric"
                     className={inputCls} />
                 </Field>
                 <Field label="Nº RENACH *" hint="UF + 9 dígitos — ex: MS123456789">

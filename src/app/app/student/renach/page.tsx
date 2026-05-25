@@ -9,6 +9,8 @@ import {
   RenachGuide,
   RenachStatus,
 } from "@/lib/api/stages";
+import { maskDate } from "@/lib/utils/masks";
+import { brDateToISO } from "@/lib/utils/dates";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 
@@ -24,7 +26,8 @@ export default function RenachPage() {
   const [status, setStatus] = useState<RenachStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const { register, handleSubmit, formState } = useForm<FormShape>({
+  const [biometryDisplay, setBiometryDisplay] = useState("");
+  const { register, handleSubmit, formState, setValue } = useForm<FormShape>({
     defaultValues: { ufDetran: "MS" },
   });
 
@@ -51,7 +54,10 @@ export default function RenachPage() {
     setBusy(true);
     setError(null);
     try {
-      const updated = await submitMyRenach(values);
+      const updated = await submitMyRenach({
+        ...values,
+        biometryDoneAt: brDateToISO(values.biometryDoneAt),
+      });
       setStatus(updated);
       await invalidate();
     } catch (e: any) {
@@ -121,10 +127,18 @@ export default function RenachPage() {
             <label className="flex flex-col gap-1 text-sm">
               Data da biometria
               <input
-                type="date"
-                {...register("biometryDoneAt", { required: true })}
+                value={biometryDisplay}
+                onChange={(e) => {
+                  const masked = maskDate(e.target.value);
+                  setBiometryDisplay(masked);
+                  setValue("biometryDoneAt", masked, { shouldValidate: true });
+                }}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                inputMode="numeric"
                 className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
               />
+              <input type="hidden" {...register("biometryDoneAt", { required: true, minLength: 10 })} />
             </label>
             <Button type="submit" disabled={busy || !formState.isValid}>
               {busy ? "Enviando…" : "Confirmar RENACH"}

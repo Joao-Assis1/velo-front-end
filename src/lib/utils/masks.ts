@@ -88,6 +88,11 @@ export const isValidPlate = (plate: string) => {
   return traditionalRegex.test(plate) || mercosulRegex.test(plate);
 };
 
+export const maskTime = (value: string): string => {
+  const digits = value.replace(/\D/g, '').substring(0, 4);
+  return digits.length >= 3 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
+};
+
 export const maskCardNumber = (value: string): string => {
   return value
     .replace(/\D/g, '')

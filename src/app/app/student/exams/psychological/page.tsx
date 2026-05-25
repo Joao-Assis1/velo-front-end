@@ -15,12 +15,15 @@ import { ProtocolPdfDownload } from "@/components/journey/ProtocolPdfDownload";
 import { Button } from "@/components/ui/button";
 import type { Clinic } from "@/lib/api/clinics";
 import { Brain } from "lucide-react";
+import { maskDate, maskTime } from "@/lib/utils/masks";
+import { brDateToISO } from "@/lib/utils/dates";
 
 export default function PsychologicalExamPage() {
   const catalog = useClinicCatalog("PSYCHOLOGICAL");
   const invalidate = useInvalidateJourney();
   const [selected, setSelected] = useState<Clinic | null>(null);
   const [date, setDate] = useState<string>("");
+  const [time, setTime] = useState<string>("");
   const [status, setStatus] = useState<ClinicExamStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -30,13 +33,13 @@ export default function PsychologicalExamPage() {
   }, []);
 
   async function handleSchedule() {
-    if (!selected || !date) return;
+    if (!selected || !date || !time) return;
     setBusy(true);
     setError(null);
     try {
       const updated = await schedulePsychExam({
         clinicId: selected.id,
-        scheduledAt: new Date(date).toISOString(),
+        scheduledAt: new Date(`${brDateToISO(date)}T${time}`).toISOString(),
       });
       setStatus(updated);
       await invalidate();
@@ -100,18 +103,33 @@ export default function PsychologicalExamPage() {
           {selected && (
             <section className="rounded-xl border border-zinc-200 bg-white p-4">
               <h2 className="text-base font-semibold">Agendamento</h2>
-              <label className="mt-2 flex flex-col gap-1 text-sm">
-                Data e hora
-                <input
-                  type="datetime-local"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-                />
-              </label>
+              <div className="mt-2 flex gap-3">
+                <label className="flex flex-1 flex-col gap-1 text-sm">
+                  Data
+                  <input
+                    value={date}
+                    onChange={(e) => setDate(maskDate(e.target.value))}
+                    placeholder="DD/MM/AAAA"
+                    maxLength={10}
+                    inputMode="numeric"
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="flex w-28 flex-col gap-1 text-sm">
+                  Hora
+                  <input
+                    value={time}
+                    onChange={(e) => setTime(maskTime(e.target.value))}
+                    placeholder="HH:MM"
+                    maxLength={5}
+                    inputMode="numeric"
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                  />
+                </label>
+              </div>
               <Button
                 onClick={handleSchedule}
-                disabled={busy || !date}
+                disabled={busy || !date || !time}
                 className="mt-3"
               >
                 {busy ? "Agendando…" : "Confirmar agendamento"}

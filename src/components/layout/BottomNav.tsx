@@ -20,6 +20,7 @@ import {
   GraduationCap,
   IdCard,
   BarChart2,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MoreDrawer, NavItem } from "./MoreDrawer";
@@ -42,6 +43,7 @@ const studentSecondaryNav: NavItem[] = [
   { icon: GraduationCap, label: "Teórico", href: "/app/student/exams/theory-official" },
   { icon: IdCard, label: "LADV", href: "/app/student/ladv" },
   { icon: BarChart2, label: "Progresso", href: "/app/student/progress" },
+  { icon: Scale, label: "Disputas", href: "/app/student/dispute" },
   { icon: User, label: "Perfil", href: "/app/student/profile" },
   { icon: Settings, label: "Config", href: "/app/student/settings" },
 ];

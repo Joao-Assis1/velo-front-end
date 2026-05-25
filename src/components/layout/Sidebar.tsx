@@ -21,6 +21,7 @@ import {
   Brain,
   GraduationCap,
   IdCard,
+  Scale,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/AppContext';
@@ -38,6 +39,7 @@ const studentNav = [
   { icon: BookOpen, label: 'Progresso', href: '/app/student/progress' },
   { icon: Users, label: 'Instrutores', href: '/app/student/instructors' },
   { icon: CreditCard, label: 'Pagamentos', href: '/app/student/payments' },
+  { icon: Scale, label: 'Disputas', href: '/app/student/dispute' },
   { icon: User, label: 'Meu Perfil', href: '/app/student/profile' },
   { icon: Settings, label: 'Configurações', href: '/app/student/settings' },
 ];
@@ -83,8 +85,8 @@ export const Sidebar = () => {
               href={item.href}
               className={cn(
                 "flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group",
-                isActive 
-                  ? "bg-velo-blue text-white shadow-md shadow-velo-blue/20" 
+                isActive
+                  ? "bg-velo-blue text-white shadow-md shadow-velo-blue/20"
                   : "text-slate-600 hover:bg-slate-50 hover:text-velo-blue"
               )}
             >

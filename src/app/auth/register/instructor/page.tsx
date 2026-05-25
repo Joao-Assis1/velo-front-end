@@ -6,9 +6,9 @@ import { useApp } from "@/context/AppContext";
 import Link from "next/link";
 import { maskCNH, maskRENACH, maskPlate } from "@/lib/utils/masks";
 
-const UF_LIST = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
-const CNH_CATS = ["A","B","C","D","E","AB","AC","AD","AE"];
-const EDU_LEVELS = ["Médio Completo","Superior Incompleto","Superior Completo","Pós-Graduação"];
+const UF_LIST = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+const CNH_CATS = ["A", "B", "C", "D", "E", "AB", "AC", "AD", "AE"];
+const EDU_LEVELS = ["Médio Completo", "Superior Incompleto", "Superior Completo", "Pós-Graduação"];
 
 interface FormData {
   // Step 1 — Acesso
@@ -103,11 +103,11 @@ export default function InstructorRegisterPage() {
     if (!form.renachNumber.trim()) return "Número RENACH obrigatório.";
     if (!form.instructorType) return "Selecione o tipo de instrutor.";
     if (!form.certidaoNegativa.trim()) return "Nº da Certidão Negativa obrigatório.";
-    
+
     if (!form.noGravissima) return "Você declara não ter infração gravíssima nos últimos 60 dias?";
     if (!form.hasInstructorCourse) return "É obrigatório possuir certificado de curso específico.";
     if (!form.noCassacao) return "Você declara não ter sofrido penalidade de cassação da CNH?";
-    
+
     return null;
   };
 
@@ -188,11 +188,10 @@ export default function InstructorRegisterPage() {
         <div className="flex items-center justify-center gap-1.5 mb-8">
           {STEPS.map((label, i) => (
             <div key={i} className="flex items-center gap-1.5">
-              <div className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all ${
-                step === i + 1 ? "bg-blue-600 text-white"
-                : step > i + 1 ? "bg-green-100 text-green-700"
-                : "bg-slate-100 text-slate-400"
-              }`}>
+              <div className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all ${step === i + 1 ? "bg-blue-600 text-white"
+                  : step > i + 1 ? "bg-green-100 text-green-700"
+                    : "bg-slate-100 text-slate-400"
+                }`}>
                 <span>{step > i + 1 ? "✓" : i + 1}</span>
                 <span className="hidden sm:inline">{label}</span>
               </div>
@@ -298,10 +297,10 @@ export default function InstructorRegisterPage() {
           {step === 3 && (
             <div className="space-y-4">
               <h2 className="text-base font-bold text-slate-800">Habilitação e Credencial</h2>
-              
+
               <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
                 <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">Declarações Obrigatórias</p>
-                
+
                 <CheckDeclaration
                   checked={form.noGravissima}
                   onChange={(v) => set("noGravissima", v)}
@@ -340,10 +339,10 @@ export default function InstructorRegisterPage() {
                     min={new Date().toISOString().split("T")[0]}
                     className={inputCls} />
                 </Field>
-                <Field label="Nº RENACH *" hint="11 dígitos do Registro Nacional CNH">
+                <Field label="Nº RENACH *" hint="UF + 9 dígitos — ex: MS123456789">
                   <input value={form.renachNumber}
                     onChange={(e) => set("renachNumber", maskRENACH(e.target.value))}
-                    placeholder="00000000000" maxLength={11} inputMode="numeric" className={inputCls} />
+                    placeholder="MS000000000" maxLength={11} className={inputCls} />
                 </Field>
               </div>
 
@@ -354,9 +353,8 @@ export default function InstructorRegisterPage() {
                 <div className="flex gap-3">
                   {[true, false].map((v) => (
                     <button key={String(v)} type="button" onClick={() => set("cnhEar", v)}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all ${
-                        form.cnhEar === v ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300"
-                      }`}>
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all ${form.cnhEar === v ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300"
+                        }`}>
                       {v ? "✓ Possuo EAR" : "✗ Não possuo"}
                     </button>
                   ))}
@@ -372,9 +370,8 @@ export default function InstructorRegisterPage() {
                 <div className="grid grid-cols-2 gap-3">
                   {(["Credenciado", "Autônomo"] as const).map((t) => (
                     <button key={t} type="button" onClick={() => set("instructorType", t)}
-                      className={`py-3 rounded-xl text-sm font-bold border-2 transition-all ${
-                        form.instructorType === t ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300"
-                      }`}>
+                      className={`py-3 rounded-xl text-sm font-bold border-2 transition-all ${form.instructorType === t ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300"
+                        }`}>
                       {t === "Credenciado" ? "🏫 Credenciado (CFC)" : "🚗 Autônomo"}
                     </button>
                   ))}
@@ -416,9 +413,8 @@ export default function InstructorRegisterPage() {
                 <div className="grid grid-cols-2 gap-3">
                   {(["Manual", "Automatic"] as const).map((t) => (
                     <button key={t} type="button" onClick={() => set("transmission", t)}
-                      className={`py-3 rounded-xl text-sm font-bold border-2 transition-all ${
-                        form.transmission === t ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300"
-                      }`}>
+                      className={`py-3 rounded-xl text-sm font-bold border-2 transition-all ${form.transmission === t ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300"
+                        }`}>
                       {t === "Manual" ? "⚙️ Manual" : "🤖 Automático"}
                     </button>
                   ))}
@@ -434,9 +430,8 @@ export default function InstructorRegisterPage() {
                 onClick={() => set("termsAccepted", !form.termsAccepted)}
                 onKeyDown={(e) => (e.key === " " || e.key === "Enter") && set("termsAccepted", !form.termsAccepted)}
               >
-                <div className={`mt-0.5 w-5 h-5 shrink-0 rounded flex items-center justify-center border-2 transition-all ${
-                  form.termsAccepted ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
-                }`}>
+                <div className={`mt-0.5 w-5 h-5 shrink-0 rounded flex items-center justify-center border-2 transition-all ${form.termsAccepted ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
+                  }`}>
                   {form.termsAccepted && <span className="text-white text-xs font-bold">✓</span>}
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
@@ -506,9 +501,8 @@ function CheckDeclaration({ checked, onChange, label }: { checked: boolean; onCh
       onClick={() => onChange(!checked)}
       onKeyDown={(e) => (e.key === " " || e.key === "Enter") && onChange(!checked)}
     >
-      <div className={`mt-0.5 w-5 h-5 shrink-0 rounded flex items-center justify-center border-2 transition-all ${
-        checked ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
-      }`}>
+      <div className={`mt-0.5 w-5 h-5 shrink-0 rounded flex items-center justify-center border-2 transition-all ${checked ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white"
+        }`}>
         {checked && <span className="text-white text-xs font-bold">✓</span>}
       </div>
       <span className="text-xs text-slate-600 leading-tight">{label}</span>

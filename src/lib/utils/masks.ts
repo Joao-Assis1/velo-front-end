@@ -46,7 +46,8 @@ export const maskCNH = (value: string) => {
  */
 export const maskRENACH = (value: string) => {
   return value
-    .replace(/\D/g, '')
+    .replace(/[^A-Za-z0-9]/g, '')
+    .toUpperCase()
     .substring(0, 11);
 };
 

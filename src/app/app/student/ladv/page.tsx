@@ -84,9 +84,9 @@ export default function LadvPage() {
         <div>
           <h1 className="text-2xl font-bold">LADV — Licença de Aprendizagem</h1>
           <p className="text-sm text-zinc-600">
-            A LADV é emitida pelo DETRAN-MS após aprovação no exame teórico.
-            Envie a versão digital aqui para liberar o agendamento de aulas
-            práticas.
+            A LADV é emitida via app CNH do Brasil após aprovação no exame
+            teórico. Envie a versão digital aqui para liberar o agendamento de
+            aulas práticas.
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">

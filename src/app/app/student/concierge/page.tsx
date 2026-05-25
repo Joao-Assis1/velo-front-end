@@ -23,17 +23,17 @@ type GuideEntry = {
 const JOURNEY_GUIDE: GuideEntry[] = [
   {
     step: 1,
+    title: "RENACH",
+    description: "Inicie o processo no app CNH do Brasil, cadastre-se no DETRAN-MS e realize a biometria. Categorias A e B também precisam do exame toxicológico (Lei 15.153/2025).",
+    cost: "Gratuito",
+    href: "/app/student/renach",
+  },
+  {
+    step: 2,
     title: "Exame médico e psicológico",
     description: "Realize em clínica credenciada pelo DETRAN-MS. Leve RG e CPF.",
     cost: "R$ 200–350",
     href: "/app/student/exams/medical",
-  },
-  {
-    step: 2,
-    title: "RENACH",
-    description: "Abra o processo no DETRAN-MS e realize a biometria.",
-    cost: "Gratuito",
-    href: "/app/student/renach",
   },
   {
     step: 3,
@@ -68,22 +68,22 @@ const JOURNEY_GUIDE: GuideEntry[] = [
     title: "Exame prático DETRAN",
     description: "Duração ~15 minutos. Agendado pelo portal DETRAN-MS.",
     cost: "~R$ 100",
-    href: "https://detran.ms.gov.br",
+    href: "https://meudetran.ms.gov.br/",
     external: true,
   },
 ];
 
 const STAGE_LABELS: Record<JourneyStage, string> = {
-  REGISTERED:                "Registrado",
-  RENACH_PENDING:            "RENACH Pendente",
-  MEDICAL_PENDING:           "Exame Médico Pendente",
-  PSYCH_PENDING:             "Psicotécnico Pendente",
+  REGISTERED: "Registrado",
+  RENACH_PENDING: "RENACH Pendente",
+  MEDICAL_PENDING: "Exame Médico Pendente",
+  PSYCH_PENDING: "Psicotécnico Pendente",
   THEORY_COURSE_IN_PROGRESS: "Curso Teórico em Andamento",
-  THEORY_EXAM_PENDING:       "Exame Teórico Pendente",
-  AWAITING_LADV_UPLOAD:      "Aguardando Envio da LADV",
-  LADV_UPLOADED_VALID:       "LADV Validada",
-  PRACTICAL_IN_PROGRESS:     "Aulas Práticas em Andamento",
-  READY_FOR_PRACTICAL_EXAM:  "Pronto para o Exame Prático",
+  THEORY_EXAM_PENDING: "Exame Teórico Pendente",
+  AWAITING_LADV_UPLOAD: "Aguardando Envio da LADV",
+  LADV_UPLOADED_VALID: "LADV Validada",
+  PRACTICAL_IN_PROGRESS: "Aulas Práticas em Andamento",
+  READY_FOR_PRACTICAL_EXAM: "Pronto para o Exame Prático",
 };
 
 export default function ConciergePage() {

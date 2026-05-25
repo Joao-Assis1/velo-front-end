@@ -12,7 +12,7 @@ import {
 import { maskDate } from "@/lib/utils/masks";
 import { brDateToISO } from "@/lib/utils/dates";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, AlertTriangle } from "lucide-react";
 
 type FormShape = {
   renachNumber: string;
@@ -80,6 +80,18 @@ export default function RenachPage() {
           </p>
         </div>
       </header>
+
+      <section className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4">
+        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
+        <div className="text-sm text-amber-800">
+          <p className="font-semibold">Exame toxicológico obrigatório</p>
+          <p className="mt-0.5">
+            Categorias A e B exigem exame toxicológico com resultado negativo
+            (Lei 15.153/2025). Realize em laboratório credenciado antes da
+            emissão da sua Permissão para Dirigir.
+          </p>
+        </div>
+      </section>
 
       {guide && (
         <section className="rounded-xl border border-zinc-200 bg-white p-4">

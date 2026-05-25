@@ -96,24 +96,22 @@ export default function LadvPage() {
               <CalendarClock size={12} aria-hidden /> Válida por 12 meses
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-              <Timer size={12} aria-hidden /> Mínimo 2h de prática
+              <Timer size={12} aria-hidden /> Mínimo 2h de prática (nova regra)
             </span>
           </div>
         </div>
       </header>
 
-      {guide && (
-        <section className="rounded-xl border border-zinc-200 bg-white p-4">
-          <h2 className="text-base font-semibold">
-            Como obter a LADV em {guide.uf}
-          </h2>
-          <ol className="ml-5 mt-2 list-decimal space-y-1 text-sm text-zinc-800">
-            {guide.steps.map((l, i) => (
-              <li key={i}>{l}</li>
-            ))}
-          </ol>
-        </section>
-      )}
+      <section className="rounded-xl border border-zinc-200 bg-white p-4">
+        <h2 className="text-base font-semibold">Como emitir pelo app CNH do Brasil</h2>
+        <ol className="ml-5 mt-2 list-decimal space-y-2 text-sm text-zinc-800">
+          <li>Abra o app <strong>CNH do Brasil</strong></li>
+          <li>Toque em <strong>Condutor</strong></li>
+          <li>Selecione <strong>Primeira habilitação</strong></li>
+          <li>Acesse <strong>Curso prático</strong></li>
+          <li>Sua LADV estará disponível para emissão</li>
+        </ol>
+      </section>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-4">
         <h2 className="text-base font-semibold">Status atual</h2>

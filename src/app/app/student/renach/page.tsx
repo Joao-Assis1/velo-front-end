@@ -4,9 +4,7 @@ import { useForm } from "react-hook-form";
 import { useInvalidateJourney } from "@/hooks/useJourney";
 import {
   getMyRenach,
-  getRenachGuide,
   submitMyRenach,
-  RenachGuide,
   RenachStatus,
 } from "@/lib/api/stages";
 import { maskDate } from "@/lib/utils/masks";
@@ -22,7 +20,6 @@ type FormShape = {
 
 export default function RenachPage() {
   const invalidate = useInvalidateJourney();
-  const [guide, setGuide] = useState<RenachGuide | null>(null);
   const [status, setStatus] = useState<RenachStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -33,16 +30,16 @@ export default function RenachPage() {
 
   useEffect(() => {
     let cancel = false;
-    Promise.allSettled([getRenachGuide("MS"), getMyRenach()]).then(
-      ([guideResult, statusResult]) => {
+    getMyRenach().then(
+      (data) => {
         if (cancel) return;
-        if (guideResult.status === "fulfilled") setGuide(guideResult.value);
-        if (statusResult.status === "fulfilled") setStatus(statusResult.value);
-        if (statusResult.status === "rejected") {
-          const msg: string = (statusResult.reason as any)?.message ?? "";
-          if (!/not found|404/i.test(msg))
-            setError(msg || "Erro ao carregar dados do RENACH.");
-        }
+        setStatus(data);
+      },
+      (reason) => {
+        if (cancel) return;
+        const msg: string = reason?.message ?? "";
+        if (!/not found|404/i.test(msg))
+          setError(msg || "Erro ao carregar dados do RENACH.");
       },
     );
     return () => {
@@ -106,25 +103,12 @@ export default function RenachPage() {
             ligue para o 0800 do DETRAN
           </li>
           <li>
-            <strong>Compareça no dia agendado</strong> — para coleta de dados,
-            biometria facial e digitais. O DETRAN indicará a clínica para os
-            exames obrigatórios
+            <strong>Compareça no dia marcado</strong> — com RG, CPF e
+            comprovante de residência, para coleta de dados, biometria facial
+            e digitais. O DETRAN indicará a clínica para os exames obrigatórios
           </li>
         </ol>
       </section>
-
-      {guide && (
-        <section className="rounded-xl border border-zinc-200 bg-white p-4">
-          <h2 className="text-base font-semibold">
-            Instruções para o DETRAN-{guide.uf}
-          </h2>
-          <ol className="ml-5 mt-2 list-decimal space-y-1 text-sm text-zinc-800">
-            {guide.steps.map((line, i) => (
-              <li key={i}>{line}</li>
-            ))}
-          </ol>
-        </section>
-      )}
 
       <section className="rounded-xl border border-zinc-200 bg-white p-4">
         <h2 className="text-base font-semibold">

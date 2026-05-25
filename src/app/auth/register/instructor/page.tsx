@@ -7,8 +7,7 @@ import Link from "next/link";
 import { maskCNH, maskRENACH, maskPlate, maskDate } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
-const UF_LIST = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
-const CNH_CATS = ["A", "B", "C", "D", "E", "AB", "AC", "AD", "AE"];
+const CNH_CATS = ["A", "B", "AB"];
 const EDU_LEVELS = ["Médio Completo", "Superior Incompleto", "Superior Completo", "Pós-Graduação"];
 
 interface FormData {

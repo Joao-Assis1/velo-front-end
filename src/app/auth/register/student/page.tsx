@@ -7,7 +7,6 @@ import Link from "next/link";
 import { maskDate } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
-const UF_LIST = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
 function isValidCPF(cpf: string): boolean {
   const d = cpf.replace(/\D/g, "");
@@ -41,7 +40,7 @@ interface FormData {
 
 const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
-  cpf: "", phone: "", birthDate: "", motherName: "", ufDomicile: "", intendedCategory: "B",
+  cpf: "", phone: "", birthDate: "", motherName: "", ufDomicile: "MS", intendedCategory: "B",
   termsAccepted: false, ladvSimulated: false,
 };
 
@@ -256,11 +255,11 @@ export default function StudentRegisterPage() {
                     className={inputCls}
                   />
                 </Field>
-                <Field label="UF de domicílio *">
-                  <select value={form.ufDomicile} onChange={(e) => set("ufDomicile", e.target.value)} className={inputCls}>
-                    <option value="">Selecione</option>
-                    {UF_LIST.map((uf) => <option key={uf}>{uf}</option>)}
-                  </select>
+                <Field label="UF de domicílio" hint="Disponível apenas no MS">
+                  <div className="flex items-center gap-3 bg-blue-50 border-2 border-blue-200 rounded-xl px-4 py-3">
+                    <span className="text-lg font-black text-blue-700">MS</span>
+                    <span className="text-sm text-blue-700 font-medium">Mato Grosso do Sul</span>
+                  </div>
                 </Field>
               </div>
 

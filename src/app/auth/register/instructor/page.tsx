@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
-import { maskCNH, maskRENACH, maskPlate, maskDate } from "@/lib/utils/masks";
+import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
 const CNH_CATS = ["A", "B", "AB"];
@@ -54,12 +54,6 @@ const INITIAL: FormData = {
   hasDoubleCommand: false,
   termsAccepted: false,
 };
-
-function mask(value: string, pattern: string) {
-  let i = 0;
-  const v = value.replace(/\D/g, "");
-  return pattern.replace(/#/g, () => v[i++] || "").replace(/[#-]+$/, "");
-}
 
 export default function InstructorRegisterPage() {
   const router = useRouter();
@@ -249,12 +243,12 @@ export default function InstructorRegisterPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Field label="CPF *">
                   <input value={form.cpf}
-                    onChange={(e) => set("cpf", mask(e.target.value, "###.###.###-##"))}
+                    onChange={(e) => set("cpf", maskPattern(e.target.value, "###.###.###-##"))}
                     placeholder="000.000.000-00" maxLength={14} className={inputCls} />
                 </Field>
                 <Field label="Telefone *">
                   <input value={form.phone}
-                    onChange={(e) => set("phone", mask(e.target.value, "(##) #####-####"))}
+                    onChange={(e) => set("phone", maskPattern(e.target.value, "(##) #####-####"))}
                     placeholder="(11) 99999-9999" maxLength={15} className={inputCls} />
                 </Field>
               </div>

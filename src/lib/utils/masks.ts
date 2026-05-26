@@ -104,3 +104,15 @@ export const maskCardNumber = (value: string): string => {
 export const maskCVV = (value: string): string => {
   return value.replace(/\D/g, '').substring(0, 4);
 };
+
+/**
+ * Applies a pattern mask to a numeric string.
+ * Use '#' as digit placeholder. Example: maskPattern("12345678901", "###.###.###-##") → "123.456.789-01"
+ */
+export function maskPattern(value: string, pattern: string): string {
+  let i = 0;
+  const digits = value.replace(/\D/g, "");
+  return pattern
+    .replace(/#/g, () => digits[i++] ?? "")
+    .replace(/[#\-./]+$/, "");
+}

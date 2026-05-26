@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
-import { maskDate } from "@/lib/utils/masks";
+import { maskDate, maskPattern } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
 
@@ -43,12 +43,6 @@ const INITIAL: FormData = {
   cpf: "", phone: "", birthDate: "", motherName: "", ufDomicile: "MS", intendedCategory: "B",
   termsAccepted: false, ladvSimulated: false,
 };
-
-function mask(value: string, pattern: string) {
-  let i = 0;
-  const v = value.replace(/\D/g, "");
-  return pattern.replace(/#/g, () => v[i++] || "").replace(/[#-]+$/, "");
-}
 
 export default function StudentRegisterPage() {
   const router = useRouter();
@@ -229,7 +223,7 @@ export default function StudentRegisterPage() {
                 <Field label="CPF *">
                   <input
                     value={form.cpf}
-                    onChange={(e) => set("cpf", mask(e.target.value, "###.###.###-##"))}
+                    onChange={(e) => set("cpf", maskPattern(e.target.value, "###.###.###-##"))}
                     placeholder="000.000.000-00"
                     maxLength={14}
                     className={inputCls}
@@ -238,7 +232,7 @@ export default function StudentRegisterPage() {
                 <Field label="Telefone *">
                   <input
                     value={form.phone}
-                    onChange={(e) => set("phone", mask(e.target.value, "(##) #####-####"))}
+                    onChange={(e) => set("phone", maskPattern(e.target.value, "(##) #####-####"))}
                     placeholder="(11) 99999-9999"
                     maxLength={15}
                     className={inputCls}

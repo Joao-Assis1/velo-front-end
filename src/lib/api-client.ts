@@ -17,6 +17,12 @@ function resolveBaseUrl(): string {
   );
 }
 
+function resolveTestModeHeader(): Record<string, string> {
+  return process.env.NEXT_PUBLIC_TEST_MODE === "true"
+    ? { "X-Test-Mode": "true" }
+    : {};
+}
+
 const PUBLIC_ENDPOINTS = [
   '/auth/login/',
   '/auth/register/',
@@ -40,6 +46,7 @@ export async function fetchWrapper<T>(
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...auth,
+      ...resolveTestModeHeader(),
       ...options.headers,
     },
     cache: options.cache || "no-store",
@@ -67,7 +74,7 @@ export async function fetchBlob(
   const auth = await resolveAuthHeader();
   const response = await fetch(url, {
     ...options,
-    headers: { ...auth, ...options.headers },
+    headers: { ...auth, ...resolveTestModeHeader(), ...options.headers },
     cache: "no-store",
   });
   if (!response.ok) throw new Error(`Falha ao baixar: ${response.status}`);

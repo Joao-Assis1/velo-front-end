@@ -20,6 +20,11 @@ export async function loginStudentAction(credentials: any) {
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
+
+    if (process.env.NEXT_PUBLIC_TEST_MODE === "true") {
+      await fetchWrapper("/payment-methods/me/seed-test", { method: "POST" }).catch(() => {});
+    }
+
     return {
       success: true,
       data: authResult.user,
@@ -86,6 +91,11 @@ export async function loginInstructorAction(credentials: any) {
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
+
+    if (process.env.NEXT_PUBLIC_TEST_MODE === "true") {
+      await fetchWrapper("/instructors/me/seed-test", { method: "POST" }).catch(() => {});
+    }
+
     return { success: true, data: mapped, token: authResult.access_token };
   } catch (error: any) {
     return { success: false, error: error.message };

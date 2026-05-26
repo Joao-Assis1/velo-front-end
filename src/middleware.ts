@@ -19,6 +19,9 @@ export default function authMiddleware(request: NextRequest) {
   }
 
   if (token && isAuthRoute) {
+    // Decode JWT payload only for UI routing (student vs instructor dashboard).
+    // Signature verification is intentionally skipped here — the backend validates
+    // the Bearer token on every API call. The middleware's sole job is redirect UX.
     try {
       const payload = JSON.parse(
         atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))

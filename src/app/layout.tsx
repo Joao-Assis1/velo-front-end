@@ -10,6 +10,14 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans", weight: ["3
 export const metadata: Metadata = {
   title: "Velo - Direção segura, futuro certo.",
   description: "Sistema de gerenciamento de autoescola",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Velo",
+  },
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 export default function RootLayout({

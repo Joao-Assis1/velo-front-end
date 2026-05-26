@@ -24,8 +24,8 @@ function resolveTestModeHeader(): Record<string, string> {
 }
 
 const PUBLIC_ENDPOINTS = [
-  '/auth/login/',
-  '/auth/register/',
+  '/auth/login',
+  '/auth/register',
   '/auth/forgot-password',
   '/auth/reset-password',
 ];

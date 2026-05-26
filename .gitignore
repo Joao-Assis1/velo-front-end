@@ -41,3 +41,4 @@ src/docs/
 # Playwright artifacts
 test-results/
 playwright-report/
+.worktrees/

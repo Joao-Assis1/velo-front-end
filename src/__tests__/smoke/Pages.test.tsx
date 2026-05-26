@@ -1,0 +1,153 @@
+import { describe, it, expect, vi } from "vitest";
+import { render } from "@testing-library/react";
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppProvider } from "@/context/AppContext";
+
+// Mocking server actions to prevent real calls
+vi.mock("@/lib/actions/lessons", () => ({
+  getLessonsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  createLessonAction: vi.fn(),
+  checkInAction: vi.fn(),
+  checkOutAction: vi.fn(),
+  submitStudentFeedbackAction: vi.fn(),
+  submitInstructorFeedbackAction: vi.fn(),
+  submitBiometryAction: vi.fn(),
+  cancelLessonAction: vi.fn().mockResolvedValue({ success: true }),
+  getEscrowStatusAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/auth", () => ({
+  loginStudentAction: vi.fn(),
+  loginInstructorAction: vi.fn(),
+  registerStudentAction: vi.fn(),
+  registerInstructorAction: vi.fn(),
+  forgotPasswordAction: vi.fn().mockResolvedValue({ success: true }),
+  resetPasswordAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/instructors", () => ({
+  getInstructorsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+}));
+
+vi.mock("@/lib/actions/students", () => ({
+  getStudentChecklistAction: vi.fn().mockResolvedValue({
+    success: true,
+    data: { medico: false, psicotecnico: false, teorico: false, pratico: false },
+  }),
+  updateChecklistStepAction: vi.fn().mockResolvedValue({ success: true }),
+  createStudentAction: vi.fn(),
+  getStudentAction: vi.fn(),
+  updateStudentAction: vi.fn(),
+  uploadLadvAction: vi.fn(),
+  getLadvStatusAction: vi.fn(),
+}));
+
+vi.mock("@/lib/actions/disputes", () => ({
+  openDisputeAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/payments", () => ({
+  processPaymentAction: vi.fn().mockResolvedValue({ success: true }),
+  getStudentPaymentsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  getPaymentByIdAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/academy", () => ({
+  getAcademyModulesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  seedAcademyAction: vi.fn().mockResolvedValue({ success: true }),
+  submitAcademyScoreAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/lib/actions/profileActions", () => ({
+  getStudentProfileAction: vi.fn().mockResolvedValue({ success: true }),
+  updateStudentProfileAction: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+// Mock Next.js navigation
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn(),
+}));
+
+// Import pages
+import HomePage from "@/app/page";
+import LoginPage from "@/app/auth/login/page";
+import RegisterPage from "@/app/auth/register/page";
+import ForgotPasswordPage from "@/app/auth/forgot-password/page";
+import ResetPasswordPage from "@/app/auth/reset-password/page";
+import InstructorDashboardPage from "@/app/app/instructor/dashboard/page";
+import StudentAcademyPage from "@/app/app/student/academy/page";
+import StudentDashboardPage from "@/app/app/student/dashboard/page";
+import StudentInstructorsPage from "@/app/app/student/instructors/page";
+import StudentConciergePage from "@/app/app/student/concierge/page";
+import StudentDisputePage from "@/app/app/student/dispute/page";
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>
+    <AppProvider>{children}</AppProvider>
+  </QueryClientProvider>
+);
+
+describe("Smoke Testing - All Pages", () => {
+  it("renders Landing Page without crashing", () => {
+    const { container } = render(<HomePage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Login Page without crashing", () => {
+    const { container } = render(<LoginPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Register Page without crashing", () => {
+    const { container } = render(<RegisterPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Instructor Dashboard without crashing", () => {
+    const { container } = render(<InstructorDashboardPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Student Academy without crashing", () => {
+    const { container } = render(<StudentAcademyPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Student Dashboard without crashing", () => {
+    const { container } = render(<StudentDashboardPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Student Instructors without crashing", () => {
+    const { container } = render(<StudentInstructorsPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders ForgotPasswordPage without crashing", () => {
+    const { container } = render(<ForgotPasswordPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders ResetPasswordPage without crashing (no token)", () => {
+    const { container } = render(<ResetPasswordPage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Student Concierge (Navegador) page without crashing", () => {
+    const { container } = render(<StudentConciergePage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+
+  it("renders Student Dispute page without crashing", () => {
+    const { container } = render(<StudentDisputePage />, { wrapper });
+    expect(container).toBeDefined();
+  });
+});

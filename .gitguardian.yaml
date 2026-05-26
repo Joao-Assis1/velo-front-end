@@ -1,0 +1,4 @@
+version: 2
+ignore-paths:
+  - src/__tests__/
+  - e2e/

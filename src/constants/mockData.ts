@@ -1,6 +1,4 @@
-import { Instructor, Student, ScheduledClass } from "../types";
-
-export const MOCK_INSTRUCTORS: Instructor[] = [];
+import { Student, ScheduledClass } from "../types";
 
 export const INITIAL_STUDENT_PROFILE: Student = {
   id: '',
@@ -13,3 +11,4 @@ export const INITIAL_STUDENT_PROFILE: Student = {
 };
 
 export const INITIAL_SCHEDULED_CLASSES: ScheduledClass[] = [];
+

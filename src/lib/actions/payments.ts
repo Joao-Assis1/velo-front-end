@@ -9,9 +9,9 @@ export async function processPaymentAction(dto: {
   lessonId?: string;
 }) {
   try {
-    const res = await fetchWrapper<any>("/payments", {
+    const res = await fetchWrapper<any>("/payments-stripe/charge", {
       method: "POST",
-      body: JSON.stringify(dto),
+      body: JSON.stringify({ lessonId: dto.lessonId, paymentMethodId: dto.paymentMethodId }),
     });
     return { success: true, data: res.data };
   } catch (error: any) {
@@ -21,7 +21,16 @@ export async function processPaymentAction(dto: {
 
 export async function getStudentPaymentsAction(studentId: string) {
   try {
-    const res = await fetchWrapper<any>(`/payments/student/${studentId}`);
+    const res = await fetchWrapper<any>(`/payments?studentId=${studentId}`);
+    return { success: true, data: res.data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getPaymentByIdAction(id: string) {
+  try {
+    const res = await fetchWrapper<any>(`/payments/${id}`);
     return { success: true, data: res.data };
   } catch (error: any) {
     return { success: false, error: error.message };

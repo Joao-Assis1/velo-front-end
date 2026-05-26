@@ -3,8 +3,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { User, Phone, Mail, FileText, CreditCard, LogOut, ChevronRight, Settings, ShieldCheck } from 'lucide-react';
-import { Card } from '@/components/ui-custom';
 import { Student, Screen } from '@/types';
+import { cn } from '@/lib/utils';
 
 export const StudentProfile = ({ 
   profile, 
@@ -22,54 +22,66 @@ export const StudentProfile = ({
   ];
 
   return (
-    <div className="pb-24 pt-6 px-4 space-y-6 bg-white min-h-screen">
-      <header className="text-center pt-4 pb-2">
-        <div className="relative inline-block mb-4">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-50 shadow-md bg-slate-100 flex items-center justify-center">
-            {profile ? (
-              <img src={profile.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}`} alt={profile.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="animate-pulse w-full h-full bg-slate-200"></div>
-            )}
-          </div>
-          <div className="absolute -bottom-1 -right-1 bg-velo-green text-white p-1.5 rounded-full border-2 border-white shadow-sm">
-            <ShieldCheck size={14} fill="currentColor" fillOpacity={0.2} />
-          </div>
-        </div>
-        <h1 className="text-2xl font-bold text-slate-900">{profile?.name || "Carregando..."}</h1>
-        <p className="text-slate-500 text-sm">Aluno Velo • Nível 4</p>
-      </header>
+    <div className="min-h-screen bg-slate-50">
+      {/* Dark header com avatar */}
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/8 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="max-w-2xl mx-auto w-full px-4 md:px-6 pt-8 pb-8 text-center relative z-10">
+          <div className="relative inline-block mb-3">
+            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 shadow-xl bg-white/10 flex items-center justify-center mx-auto">
+              {profile ? (
+                profile.profilePicture ? (
+                  <img src={profile.profilePicture} alt={profile.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white font-bold text-3xl">
+                    {profile.name?.charAt(0)?.toUpperCase()}
+                  </span>
+                )
+              ) : (
+                <div className="animate-pulse w-full h-full bg-white/20" />
+              )}
+            </div>
 
-      <div className="grid grid-cols-1 gap-3">
+            <div className="absolute -bottom-1 -right-1 bg-velo-green text-white p-1 rounded-full border-2 border-slate-900 shadow-sm">
+              <ShieldCheck size={12} fill="currentColor" fillOpacity={0.2} />
+            </div>
+          </div>
+          <h1 className="text-xl font-extrabold text-slate-50">{profile?.name || "Carregando..."}</h1>
+          <p className="text-xs font-bold text-blue-400 mt-0.5 tracking-widest uppercase">Aluno ativo</p>
+        </div>
+      </div>
+
+      {/* Menu items */}
+      <div className="w-full px-4 pt-6 pb-28 md:pb-12 space-y-2">
         {menuItems.map((item) => (
-          <button 
+          <button
             key={item.id}
             onClick={() => onNavigate(item.id as Screen)}
-            className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all group active:scale-[0.98]"
+            className="w-full flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors group active:scale-[0.98] shadow-sm cursor-pointer"
           >
             <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 ${item.bg} ${item.color} rounded-xl flex items-center justify-center`}>
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", item.bg, item.color)}>
                 <item.icon size={20} />
               </div>
-              <span className="font-bold text-slate-700">{item.label}</span>
+              <span className="font-bold text-slate-800">{item.label}</span>
             </div>
             <ChevronRight size={18} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
           </button>
         ))}
-      </div>
 
-      <div className="pt-4">
-        <button 
-          onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 p-4 text-red-500 font-bold hover:bg-red-50 rounded-2xl transition-all active:scale-[0.98]"
-        >
-          <LogOut size={20} />
-          Sair da Conta
-        </button>
-      </div>
+        <div className="pt-2">
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-2 p-4 bg-white border border-red-100 text-red-500 font-bold rounded-2xl hover:bg-red-50 transition-colors active:scale-[0.98] shadow-sm cursor-pointer"
+          >
+            <LogOut size={18} />
+            Sair da conta
+          </button>
+        </div>
 
-      <div className="pt-8 text-center">
-        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Versão 0.1.0-alpha</p>
+        <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest pt-4">
+          Versão 0.1.0-alpha
+        </p>
       </div>
     </div>
   );

@@ -32,10 +32,18 @@ export const InstructorSchema = z.object({
   vehicleYear: z.string().optional(),
   availability: z.array(AvailabilitySchema).optional(),
   busySlots: z.array(BusySlotSchema).optional(),
+  // CONTRAN 1.020/2025
+  birthDate: z.coerce.date().optional(),
   cnhNumber: z.string().optional(),
-  cnhExpiry: z.coerce.date().optional(),
+  cnhCategory: z.string().optional(),
   cnhEar: z.boolean().optional(),
-  certidaoNegativa: z.boolean().optional(),
+  educationLevel: z.string().optional(),
+  renachNumber: z.string().optional(),
+  certidaoNegativa: z.string().optional(),
+  noGravissima: z.boolean().optional(),
+  hasInstructorCourse: z.boolean().optional(),
+  noCassacao: z.boolean().optional(),
+  hasDoubleCommand: z.boolean().optional(),
   termsAcceptedAt: z.coerce.date().optional(),
 });
 
@@ -47,6 +55,11 @@ export const StudentSchema = z.object({
   cpf: z.string().optional(),
   profilePicture: z.string().url().optional(),
   ladvUploaded: z.boolean().default(false),
+  // CONTRAN 1.020/2025
+  birthDate: z.coerce.date().optional(),
+  motherName: z.string().optional(),
+  intendedCategory: z.enum(["A", "B", "ACC", "AB"]).optional(),
+  ufDomicile: z.string().optional(),
   termsAcceptedAt: z.coerce.date().optional(),
 });
 
@@ -60,7 +73,7 @@ export const LessonSchema = z.object({
   date: z.coerce.date(),
   startTime: z.string(),
   endTime: z.string(),
-  status: z.enum(["upcoming", "in-progress", "completed", "cancelled"]),
+  status: z.enum(["pending_acceptance", "upcoming", "in-progress", "completed", "cancelled"]),
   price: z.number().positive().optional(),
   studentFeedbackRating: z.number().min(0).max(5).optional(),
   studentFeedbackText: z.string().optional(),
@@ -70,6 +83,9 @@ export const LessonSchema = z.object({
   checkInTime: z.coerce.date().optional(),
   checkOutTime: z.coerce.date().optional(),
   durationMinutes: z.number().optional(),
+  disputeOpened: z.boolean().optional(),
+  disputeReason: z.string().optional(),
+  paymentReleased: z.boolean().optional(),
 });
 
 export const CreateLessonSchema = z.object({

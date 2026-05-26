@@ -3,6 +3,8 @@
 import { revalidateTag } from "next/cache";
 import { fetchWrapper } from "../api-client";
 import { CreateLessonDto, LessonType } from "../validations";
+import { BiometryStage } from "../../types";
+import { parseBRDate } from "../utils/dates";
 
 function mapLesson(lesson: any): LessonType {
   return {
@@ -10,7 +12,7 @@ function mapLesson(lesson: any): LessonType {
     studentId: lesson.studentId,
     instructorId: lesson.instructorId,
     instructorName: lesson.instructor?.name,
-    date: new Date(lesson.date),
+    date: parseBRDate(lesson.date) ?? new Date(lesson.date),
     startTime: lesson.startTime,
     endTime: lesson.endTime,
     status: lesson.status as any,
@@ -20,11 +22,12 @@ function mapLesson(lesson: any): LessonType {
     instructorFeedback: lesson.instructorFeedback || undefined,
     studentName: lesson.student?.name,
     studentImage: lesson.student?.profilePicture || undefined,
-    checkInTime: lesson.checkInTime ? new Date(lesson.checkInTime) : undefined,
-    checkOutTime: lesson.checkOutTime
-      ? new Date(lesson.checkOutTime)
-      : undefined,
+    checkInTime: lesson.checkInTime ? parseBRDate(lesson.checkInTime) ?? undefined : undefined,
+    checkOutTime: lesson.checkOutTime ? parseBRDate(lesson.checkOutTime) ?? undefined : undefined,
     durationMinutes: lesson.durationMinutes || undefined,
+    disputeOpened: lesson.disputeOpened ?? false,
+    disputeReason: lesson.disputeReason || undefined,
+    paymentReleased: lesson.paymentReleased ?? false,
   };
 }
 
@@ -133,6 +136,84 @@ export async function submitInstructorFeedbackAction(
     return { success: true, data: mapLesson(apiResponse?.data) };
   } catch (error: any) {
     console.error("Error instructor feedback:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function submitBiometryAction(
+  id: string,
+  stage: BiometryStage,
+  coords: { lat: number; lng: number },
+  status = "SUCCESS",
+) {
+  try {
+    const step = stage.toLowerCase() as "start" | "mid" | "end";
+    return await fetchWrapper<any>(`/lessons/${id}/biometry`, {
+      method: "POST",
+      body: JSON.stringify({ lat: coords.lat, lng: coords.lng, status, step }),
+    });
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function acceptLessonAction(id: string) {
+  try {
+    const apiResponse = await fetchWrapper<any>(`/lessons/${id}/accept`, {
+      method: "PATCH",
+    });
+
+    revalidateTag("lessons", "default");
+    return { success: true, data: mapLesson(apiResponse?.data) };
+  } catch (error: any) {
+    console.error("Error accepting lesson:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function rejectLessonAction(id: string) {
+  try {
+    const apiResponse = await fetchWrapper<any>(`/lessons/${id}/reject`, {
+      method: "PATCH",
+    });
+
+    revalidateTag("lessons", "default");
+    return { success: true, data: mapLesson(apiResponse?.data) };
+  } catch (error: any) {
+    console.error("Error rejecting lesson:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function cancelLessonAction(id: string) {
+  try {
+    const apiResponse = await fetchWrapper<any>(`/lessons/${id}/cancel`, {
+      method: "PATCH",
+    });
+
+    revalidateTag("lessons", "default");
+    return { success: true, data: mapLesson(apiResponse?.data) };
+  } catch (error: any) {
+    console.error("Error cancelling lesson:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getEscrowStatusAction(id: string) {
+  try {
+    return await fetchWrapper<any>(`/lessons/${id}/escrow`);
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function submitTelemetryBatchAction(lessonId: string, points: any[]) {
+  try {
+    return await fetchWrapper<any>("/telemetria/batch", {
+      method: "POST",
+      body: JSON.stringify({ lessonId, points }),
+    });
+  } catch (error: any) {
     return { success: false, error: error.message };
   }
 }

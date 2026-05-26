@@ -1,14 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Screen, UserRole, Instructor, Student, ScheduledClass } from '../types';
-import { 
-  createLessonAction, 
-  checkInAction, 
-  checkOutAction, 
-  submitStudentFeedbackAction, 
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
+import {
+  createLessonAction,
+  cancelLessonAction,
+  checkInAction,
+  checkOutAction,
+  submitStudentFeedbackAction,
   submitInstructorFeedbackAction,
-  getLessonsAction
+  getLessonsAction,
+  acceptLessonAction,
+  rejectLessonAction
 } from '@/lib/actions/lessons';
 import { 
   loginStudentAction, 
@@ -18,60 +21,76 @@ import {
 } from '@/lib/actions/auth';
 import { updateInstructorProfileAction } from '@/lib/actions/instructors';
 import { updateStudentProfileAction } from '@/lib/actions/profileActions';
+import { getAcademyModulesAction } from '@/lib/actions/academy';
+import { INITIAL_STUDENT_PROFILE } from '../constants/mockData';
 
 interface AppContextType {
-  screen: Screen;
   userRole: UserRole;
-  selectedInstructorId: string | null;
   hasLadv: boolean;
   hasPaymentMethod: boolean;
   instructorProfile: Instructor | null;
   studentProfile: Student | null;
   scheduledClasses: ScheduledClass[];
   busySlots: Record<string, string[]>;
+  detranStages: DetranStage[];
+  academyModules: AcademyModule[];
+  availableBalance: number;
+  pendingBalance: number;
+  activeClassId: string | null;
   
   // Actions
-  navigateTo: (screen: Screen) => void;
   setUserRole: (role: UserRole) => void;
-  selectInstructor: (id: string) => void;
   setHasLadv: (status: boolean) => void;
   setInstructorProfile: (profile: Instructor | null) => void;
   setStudentProfile: (profile: Student | null) => void;
   setScheduledClasses: (classes: ScheduledClass[]) => void;
   setBusySlots: (slots: Record<string, string[]>) => void;
+  setDetranStages: (stages: DetranStage[]) => void;
+  setAcademyModules: React.Dispatch<React.SetStateAction<AcademyModule[]>>;
+  setActiveClassId: (id: string | null) => void;
   
-  login: (credentials?: any) => Promise<void>;
+  login: (credentials?: any, forcedRole?: UserRole) => Promise<void>;
   register: (data: any) => Promise<void>;
   updateStudentProfile: (data: any) => Promise<void>;
   updateInstructorProfile: (data: any) => Promise<void>;
   logout: () => void;
   
+  refreshLessons: () => void;
+
   // Business logic
-  cancelClass: (id: string) => void;
+  cancelClass: (id: string) => Promise<void>;
   rateClass: (id: string, rating: number, text: string) => void;
   bookClass: (date: Date, startTime: string, endTime: string, instructor: Instructor) => void;
   giveFeedback: (id: string, feedback: string) => void;
   checkIn: (id: string) => void;
   checkOut: (id: string) => void;
+  startClass: (id: string) => void;
+  acceptLesson: (id: string) => Promise<void>;
+  rejectLesson: (id: string) => Promise<void>;
+  finishClass: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [screen, setScreen] = useState<Screen>('splash');
   const [userRole, setUserRole] = useState<UserRole>(null);
-  const [selectedInstructorId, setSelectedInstructorId] = useState<string | null>(null);
   const [hasLadv, setHasLadv] = useState(false);
   const [instructorProfile, setInstructorProfile] = useState<Instructor | null>(null);
   const [studentProfile, setStudentProfile] = useState<Student | null>(null);
   const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [busySlots, setBusySlots] = useState<Record<string, string[]>>({});
+  const [detranStages, setDetranStages] = useState<DetranStage[]>([]);
+  const [academyModules, setAcademyModules] = useState<AcademyModule[]>([]);
+  const [availableBalance, setAvailableBalance] = useState(0);
+  const [pendingBalance, setPendingBalance] = useState(0);
+  const [activeClassId, setActiveClassId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [lessonsRefreshKey, setLessonsRefreshKey] = useState(0);
+  const refreshLessons = useCallback(() => setLessonsRefreshKey(k => k + 1), []);
 
   useEffect(() => {
     try {
       const persistedUserRole = localStorage.getItem('velo-userRole');
-      const persistedScreen = localStorage.getItem('velo-screen');
       const persistedInstructorProfile = localStorage.getItem('velo-instructorProfile');
       const persistedStudentProfile = localStorage.getItem('velo-studentProfile');
       const persistedHasLadv = localStorage.getItem('velo-hasLadv');
@@ -83,7 +102,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }
       }
       
-      if (persistedScreen) setScreen(persistedScreen as Screen);
       if (persistedInstructorProfile && persistedInstructorProfile !== 'undefined') setInstructorProfile(JSON.parse(persistedInstructorProfile));
       if (persistedStudentProfile && persistedStudentProfile !== 'undefined') setStudentProfile(JSON.parse(persistedStudentProfile));
       if (persistedHasLadv) setHasLadv(JSON.parse(persistedHasLadv));
@@ -95,7 +113,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!isHydrated) return;
-    localStorage.setItem('velo-screen', screen);
     localStorage.setItem('velo-userRole', JSON.stringify(userRole));
     localStorage.setItem('velo-hasLadv', JSON.stringify(hasLadv));
     if (instructorProfile) {
@@ -108,14 +125,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     } else {
       localStorage.removeItem('velo-studentProfile');
     }
-  }, [screen, userRole, hasLadv, instructorProfile, studentProfile, isHydrated]);
+  }, [userRole, hasLadv, instructorProfile, studentProfile, isHydrated]);
 
   useEffect(() => {
     const loadInitialData = async () => {
       if (userRole === 'student' && studentProfile?.id) {
+        // Fetch Lessons
         const lessonsRes = await getLessonsAction({ studentId: studentProfile.id });
         if (lessonsRes.success && lessonsRes.data) {
           setScheduledClasses(lessonsRes.data as ScheduledClass[]);
+        }
+
+        // Fetch Academy Modules
+        const academyRes = await getAcademyModulesAction();
+        if (academyRes.success && academyRes.data) {
+          setAcademyModules(academyRes.data as AcademyModule[]);
         }
       } else if (userRole === 'instructor' && instructorProfile?.id) {
         const lessonsRes = await getLessonsAction({ instructorId: instructorProfile.id });
@@ -127,22 +151,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (isHydrated) {
       loadInitialData();
     }
-  }, [userRole, studentProfile?.id, instructorProfile?.id, isHydrated]);
+  }, [userRole, studentProfile?.id, instructorProfile?.id, isHydrated, lessonsRefreshKey]);
 
-  const navigateTo = (newScreen: Screen) => {
-    setScreen(newScreen);
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
-  };
-
-  const selectInstructor = (id: string) => {
-    setSelectedInstructorId(id);
-    navigateTo('instructor-profile-view');
-  };
-
-  const login = async (credentials?: any) => {
-    if (userRole === 'student') {
+  const login = async (credentials?: any, forcedRole?: UserRole) => {
+    const roleToUse = forcedRole || userRole;
+    if (roleToUse === 'student') {
       const res = await loginStudentAction(credentials);
       if (!res.success || !res.data) {
         throw new Error(res.error || 'Credenciais inválidas');
@@ -151,9 +164,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('velo-token', res.token);
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
+      setUserRole('student');
       setStudentProfile(res.data as Student);
       setHasLadv((res.data as any).ladvUploaded ?? false);
-      navigateTo('student-home');
     } else {
       const res = await loginInstructorAction(credentials);
       if (!res.success || !res.data) {
@@ -163,8 +176,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('velo-token', res.token);
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
+      setUserRole('instructor');
       setInstructorProfile(res.data as Instructor);
-      navigateTo('instructor-dashboard');
     }
   };
 
@@ -179,7 +192,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
       setStudentProfile(res.data as Student);
-      navigateTo('student-home');
     } else {
       const res = await registerInstructorAction(data);
       if (!res.success || !res.data) {
@@ -197,19 +209,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         availability: res.data.availability ?? [],
         busySlots: res.data.busySlots ?? [],
       });
-      navigateTo('instructor-dashboard');
     }
   };
 
   const updateStudentProfile = async (data: any) => {
     if (!studentProfile?.id) return;
     try {
-      const res = await updateStudentProfileAction(studentProfile.id, data);
-      if (res.success) {
-        setStudentProfile((prev) => (prev ? { ...prev, ...data } : null));
-      } else {
-        throw new Error(res.error);
+      const allowedFields = ['name', 'phone', 'profilePicture', 'motherName', 'intendedCategory', 'ufDomicile'];
+      const payload: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (data[field] !== undefined) payload[field] = data[field];
       }
+      if (data.birthDate instanceof Date) {
+        payload.birthDate = data.birthDate.toISOString();
+      } else if (data.birthDate) {
+        payload.birthDate = data.birthDate;
+      }
+
+      const res = await updateStudentProfileAction(studentProfile.id, payload);
+      if (!res.success) throw new Error(res.error);
+
+      setStudentProfile((prev) => (prev ? { ...prev, ...data } : null));
     } catch (err: any) {
       console.error("Failed to update student profile:", err);
       throw err;
@@ -219,18 +239,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const updateInstructorProfile = async (data: any) => {
     if (!instructorProfile?.id) return;
     try {
-      const { 
-        id, email, rating, reviewsCount, availability, busySlots, 
-        vehicleId, vehicleModel, vehiclePlate, vehicleYear, transmission,
-        instructorType, ...updateData 
-      } = data;
+      const allowedFields = [
+        'name', 'phone', 'cpf', 'profilePicture', 'bio', 'location',
+        'pricePerClass', 'cnhNumber', 'cnhCategory', 'cnhExpiry', 'cnhEar',
+        'certidaoNegativa', 'termsAcceptedAt',
+      ];
 
-      const res = await updateInstructorProfileAction(instructorProfile.id, updateData);
-      if (res.success) {
-        setInstructorProfile((prev) => (prev ? { ...prev, ...data } : null));
-      } else {
-        throw new Error(res.error);
+      const payload: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (data[field] !== undefined) {
+          payload[field] = data[field];
+        }
       }
+      if (payload.certidaoNegativa !== undefined) {
+        payload.certidaoNegativa = String(payload.certidaoNegativa);
+      }
+
+      const res = await updateInstructorProfileAction(instructorProfile.id, payload);
+      if (!res.success) throw new Error(res.error);
+
+      setInstructorProfile((prev) => (prev ? { ...prev, ...data } : null));
     } catch (err: any) {
       console.error("Failed to update instructor profile:", err);
       throw err;
@@ -244,11 +272,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setInstructorProfile(null);
     localStorage.removeItem('velo-token');
     document.cookie = "velo-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    setScreen('onboarding');
   };
 
-  const cancelClass = (id: string) => {
-    setScheduledClasses(prev => prev.filter(c => c.id !== id));
+  const cancelClass = async (id: string) => {
+    const result = await cancelLessonAction(id);
+    if (result.success) {
+      setScheduledClasses(prev => prev.filter(c => c.id !== id));
+    } else {
+      throw new Error(result.error || 'Não foi possível cancelar a aula');
+    }
   };
 
   const rateClass = async (id: string, rating: number, text: string) => {
@@ -266,6 +298,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const bookClass = async (date: Date, startTime: string, endTime: string, instructor: Instructor) => {
     try {
+      const defaultPM = (studentProfile as any)?.paymentMethods?.find(
+        (pm: any) => pm.isDefault && !pm.isDeleted
+      );
+      if (!defaultPM && instructor.pricePerClass) {
+        throw new Error('Nenhum cartão padrão cadastrado. Adicione um cartão antes de agendar.');
+      }
+
       const lessonDto = {
         studentId: studentProfile?.id || '00000000-0000-0000-0000-000000000000',
         instructorId: instructor.id,
@@ -275,13 +314,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         price: instructor.pricePerClass,
         vehicleId: instructor.vehicleId
       };
-      
+
       const result = await createLessonAction(lessonDto);
-      if (result.success && result.data) {
-        setScheduledClasses(prev => [...prev, result.data as ScheduledClass]);
-      } else {
+      if (!result.success || !result.data) {
         throw new Error(result.error || 'Failed to book class');
       }
+
+      const lesson = result.data as ScheduledClass;
+      setScheduledClasses(prev => [...prev, lesson]);
     } catch (err) {
       console.error('Failed to book class:', err);
       throw err;
@@ -333,39 +373,101 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const startClass = (id: string) => {
+    setScheduledClasses(prev => prev.map(c => 
+      c.id === id ? { ...c, status: 'in-progress', checkInTime: new Date() } : c
+    ));
+    setActiveClassId(id);
+  };
+
+  const finishClass = (id: string) => {
+    setScheduledClasses(prev => prev.map(c => {
+      if (c.id === id) {
+        const checkOutTime = new Date();
+        const checkInTime = c.checkInTime || new Date();
+        const durationMinutes = Math.max(1, Math.round((checkOutTime.getTime() - checkInTime.getTime()) / 60000));
+        
+        return { ...c, status: 'completed', checkOutTime, durationMinutes };
+      }
+      return c;
+    }));
+    setActiveClassId(null);
+  };
+
+  const acceptLesson = async (id: string) => {
+    try {
+      const result = await acceptLessonAction(id);
+      if (result.success) {
+        setScheduledClasses(prev => prev.map(c =>
+          c.id === id ? { ...c, status: 'upcoming' } : c
+        ));
+      } else {
+        throw new Error(result.error || 'Não foi possível aceitar a aula');
+      }
+    } catch (err) {
+      console.error('Failed to accept lesson:', err);
+      throw err;
+    }
+  };
+
+  const rejectLesson = async (id: string) => {
+    try {
+      const result = await rejectLessonAction(id);
+      if (result.success) {
+        setScheduledClasses(prev => prev.map(c =>
+          c.id === id ? { ...c, status: 'cancelled' } : c
+        ));
+      } else {
+        throw new Error(result.error || 'Não foi possível recusar a aula');
+      }
+    } catch (err) {
+      console.error('Failed to reject lesson:', err);
+      throw err;
+    }
+  };
+
   const hasPaymentMethod = (studentProfile?.paymentMethods?.length ?? 0) > 0;
 
   return (
     <AppContext.Provider
       value={{
-        screen,
         userRole,
-        selectedInstructorId,
         hasLadv,
         hasPaymentMethod,
         instructorProfile,
         studentProfile,
         scheduledClasses,
         busySlots,
-        navigateTo,
+        detranStages,
+        academyModules,
+        availableBalance,
+        pendingBalance,
+        activeClassId,
         setUserRole,
-        selectInstructor,
         setHasLadv,
         setInstructorProfile,
         setStudentProfile,
         setScheduledClasses,
         setBusySlots,
+        setDetranStages,
+        setAcademyModules,
+        setActiveClassId,
         login,
         register,
         updateStudentProfile,
         updateInstructorProfile,
         logout,
+        refreshLessons,
         cancelClass,
         rateClass,
         bookClass,
         giveFeedback,
         checkIn,
-        checkOut
+        checkOut,
+        startClass,
+        finishClass,
+        acceptLesson,
+        rejectLesson
       }}
     >
       {children}

@@ -1,4 +1,5 @@
 node_modules/
+npm-cache/
 build/
 dist/
 coverage/
@@ -16,8 +17,28 @@ API_DATA_FLOW.md
 prisma
 prisma.config.ts
 .agent
-docs
+doc/
+docs/
 .agents/workflows
 FLUXO-INSTRUTOR.MD
 FLUXO-ALUNO.md
 velo.md
+velo-frontend-plan.md
+.gemini-kit
+GEMINI.md
+CLAUDE.md
+.claude/
+tsconfig.tsbuildinfo
+.gemini/settings.json
+.agents/plan.md
+.playwright-mcp
+cenario*.png
+payments-page.png
+# AI-generated plans and local tooling
+docs/superpowers/
+src/docs/
+.mcp.json
+# Playwright artifacts
+test-results/
+playwright-report/
+.worktrees/

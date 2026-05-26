@@ -1,15 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AppProvider } from "@/context/AppContext";
 import Providers from "@/components/Providers";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans", weight: ["300","400","500","600","700","800","900"] });
 
 export const metadata: Metadata = {
   title: "Velo - Direção segura, futuro certo.",
   description: "Sistema de gerenciamento de autoescola",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Velo",
+  },
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 export default function RootLayout({
@@ -18,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={cn("font-sans", inter.variable)}>
+    <html lang="pt-BR" className={cn("font-sans", outfit.variable)} suppressHydrationWarning>
       <body className="antialiased">
         <Providers>
           <AppProvider>

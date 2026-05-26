@@ -2,17 +2,31 @@
 
 import { fetchWrapper } from "../api-client";
 
+export async function getStudentProfileAction(id: string) {
+  try {
+    const apiResponse = await fetchWrapper<any>(`/students/${id}`);
+    return { success: true, data: apiResponse?.data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 export async function updateStudentProfileAction(id: string, data: any) {
   try {
+    const payload: Record<string, any> = {};
+    const allowed = ['name', 'phone', 'profilePicture', 'motherName', 'intendedCategory', 'ufDomicile'];
+    for (const field of allowed) {
+      if (data[field] !== undefined) payload[field] = data[field];
+    }
+    if (data.birthDate instanceof Date) {
+      payload.birthDate = data.birthDate.toISOString();
+    } else if (data.birthDate) {
+      payload.birthDate = data.birthDate;
+    }
+
     const apiResponse = await fetchWrapper<any>(`/students/${id}`, {
       method: "PATCH",
-      body: JSON.stringify({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        ladvUploaded: data.ladvUploaded,
-        profilePicture: data.profilePicture,
-      }),
+      body: JSON.stringify(payload),
     });
 
     return { success: true, data: apiResponse?.data };
@@ -149,6 +163,21 @@ export async function updateInstructorVehicleAction(
     return { success: true, data: apiResponse?.data };
   } catch (error: any) {
     console.error("Erro no updateInstructorVehicleAction:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function uploadVehiclePhotoAction(vehicleId: string, file: File) {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const apiResponse = await fetchWrapper<any>(`/vehicles/${vehicleId}/photo`, {
+      method: "PATCH",
+      body: formData,
+    });
+    return { success: true, data: apiResponse?.data };
+  } catch (error: any) {
+    console.error("Erro no uploadVehiclePhotoAction:", error);
     return { success: false, error: error.message };
   }
 }

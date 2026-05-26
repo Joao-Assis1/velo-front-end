@@ -30,7 +30,13 @@ export async function getStudentAction(id: string) {
       throw new Error("Student not found");
     }
 
-    return { success: true, data: student as StudentType };
+    return { 
+      success: true, 
+      data: {
+        ...student,
+        birthDate: student.birthDate ? new Date(student.birthDate) : undefined,
+      } as StudentType 
+    };
   } catch (error: any) {
     console.error("Error fetching student:", error);
     return { success: false, error: error.message };
@@ -70,6 +76,40 @@ export async function uploadLadvAction(studentId: string, formData: FormData) {
 export async function getLadvStatusAction(studentId: string) {
   try {
     const res = await fetchWrapper<any>(`/students/${studentId}/ladv/status`);
+    return { success: true, data: res.data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getStudentChecklistAction(studentId: string) {
+  try {
+    const res = await fetchWrapper<any>(`/students/${studentId}/checklist`);
+    return {
+      success: true,
+      data: res.data as {
+        medico: boolean;
+        psicotecnico: boolean;
+        teorico: boolean;
+        pratico: boolean;
+      },
+    };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateChecklistStepAction(
+  studentId: string,
+  step: 'medico' | 'psicotecnico' | 'teorico' | 'pratico',
+  completed: boolean,
+) {
+  try {
+    const res = await fetchWrapper<any>(`/students/${studentId}/checklist/${step}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ completed }),
+    });
+    revalidateTag('students', 'default');
     return { success: true, data: res.data };
   } catch (error: any) {
     return { success: false, error: error.message };

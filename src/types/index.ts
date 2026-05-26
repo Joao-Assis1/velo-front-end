@@ -34,7 +34,7 @@ export interface Availability {
 
 export interface BusySlot {
   id: string;
-  date: Date;
+  date: string;
   startTime: string;
   endTime: string;
   reason?: string;
@@ -44,6 +44,7 @@ export interface Instructor {
   id: string;
   email: string;
   name: string;
+  phone?: string;
   profilePicture?: string;
   vehicleImage?: string;
   vehicleModel?: string;
@@ -60,6 +61,24 @@ export interface Instructor {
   vehicleYear?: string;
   availability?: Availability[];
   busySlots?: BusySlot[];
+  // CONTRAN 1.020/2025
+  birthDate?: Date;
+  cnhNumber?: string;
+  cnhCategory?: string;
+  cnhEar?: boolean;
+  educationLevel?: string;
+  renachNumber?: string;
+  certidaoNegativa?: boolean;
+  noGravissima?: boolean;
+  hasInstructorCourse?: boolean;
+  noCassacao?: boolean;
+  isActive?: boolean;
+  cnhExpiry?: Date;
+  hasDoubleCommand?: boolean;
+  pixKey?: string;
+  stripeAccountId?: string;
+  stripeAccountStatus?: 'PENDING' | 'ONBOARDING' | 'ACTIVE' | 'RESTRICTED';
+  stripePayoutsEnabled?: boolean;
 }
 
 export interface Student {
@@ -73,6 +92,17 @@ export interface Student {
   ladvValidationDate?: Date;
   ladvDocumentUrl?: string;
   paymentMethods?: PaymentMethod[];
+  // CONTRAN 1.020/2025
+  birthDate?: Date;
+  motherName?: string;
+  intendedCategory?: 'A' | 'B' | 'ACC' | 'AB';
+  ufDomicile?: string;
+  checklist?: {
+    medico: boolean;
+    psicotecnico: boolean;
+    teorico: boolean;
+    pratico: boolean;
+  };
 }
 
 export interface PaymentMethod {
@@ -94,7 +124,7 @@ export interface ScheduledClass {
   date: Date;
   startTime: string;
   endTime: string;
-  status: 'upcoming' | 'in-progress' | 'completed' | 'cancelled';
+  status: 'pending_acceptance' | 'upcoming' | 'in-progress' | 'completed' | 'cancelled';
   price?: number;
   studentFeedbackRating?: number;
   studentFeedbackText?: string;
@@ -104,4 +134,53 @@ export interface ScheduledClass {
   checkInTime?: Date;
   checkOutTime?: Date;
   durationMinutes?: number;
+  disputeOpened?: boolean;
+  disputeReason?: string;
+  paymentReleased?: boolean;
+  payment?: { status: 'PENDING' | 'COMPLETED' | 'OVERDUE' | 'REFUNDED' } | null;
 }
+
+export interface DetranStage {
+  id: string;
+  label: string;
+  status: 'locked' | 'current' | 'completed';
+  iconName?: string;
+}
+
+export interface InstructorFilter {
+  region?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  days?: string[];
+  transmission?: 'Manual' | 'Automatic';
+  minRating?: number;
+}
+
+export interface QuizQuestion {
+  id: string;
+  text: string;
+  options: { id: string; text: string }[];
+  correctOptionId: string;
+}
+
+export interface AcademyModule {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  progress: number; // 0-100
+  isLocked: boolean;
+  videoUrl?: string;
+  questions?: QuizQuestion[];
+}
+
+export type EscrowStatus = 'LOCKED' | 'IN_PROGRESS' | 'RELEASED' | 'UNDER_ANALYSIS';
+
+export interface LessonEscrow {
+  status: EscrowStatus;
+  amount: number;
+  fee: number;
+  netAmount: number;
+}
+
+export type BiometryStage = 'START' | 'MID' | 'END';

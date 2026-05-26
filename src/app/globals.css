@@ -5,20 +5,35 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
 
-  --color-velo-blue: #0066CC;
-  --color-velo-blue-dark: #004C99;
-  --color-velo-blue-light: #E6F0FF;
-  --color-velo-green: #10B981;
-  --color-velo-green-dark: #059669;
+  --color-velo-blue: #2563eb;
+  --color-velo-blue-dark: #1d4ed8;
+  --color-velo-blue-light: #eff6ff;
+  --color-velo-green: #059669;
+  --color-velo-green-dark: #047857;
   --color-velo-green-light: #D1FAE5;
+  --color-velo-gold: #D97706;
+  --color-velo-gold-dark: #B45309;
+  --color-velo-gold-light: #FEF3C7;
+  --color-velo-bg: #ffffff;
 }
 
 body {
-  background-color: #F8FAFC;
+  background-color: var(--color-velo-bg);
   color: #1E293B;
   font-family: var(--font-sans);
+}
+
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Previne zoom automático do iOS ao focar em inputs com font-size < 16px */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: max(16px, 1em);
+  }
 }
 
 /* Custom Utilities */
@@ -33,6 +48,10 @@ body {
 .mask-gradient-right {
   mask-image: linear-gradient(to right, black 85%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
 @theme inline {

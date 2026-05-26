@@ -72,6 +72,7 @@ export const Sidebar = () => {
             height={33}
             className="group-hover:opacity-80 transition-opacity"
             priority
+            unoptimized
           />
         </Link>
       </div>

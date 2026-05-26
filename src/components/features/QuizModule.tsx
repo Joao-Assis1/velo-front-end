@@ -42,9 +42,8 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
 
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = selectedOptionId === currentQuestion.correctOptionId;
-    
-    // Map A=0, B=1, C=2, D=3
-    const answerIndex = selectedOptionId.charCodeAt(0) - 65;
+
+    const answerIndex = currentQuestion.options.findIndex(o => o.id === selectedOptionId);
 
     setUserAnswers(prev => [...prev, { questionId: currentQuestion.id, answer: answerIndex }]);
 

@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
-  <polygon points="3,6 10,6 16,20 22,6 29,6 20,27 12,27" fill="white"/>
-  <polygon points="3,6 9,6 15,20 16,20 10,6" fill="white" opacity="0.3"/>
-  <rect x="1" y="22" width="7" height="1.8" rx="0.9" fill="white" opacity="0.35"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <rect width="40" height="40" rx="10" fill="url(#bg)"/>
+  <polygon points="5,8 13,8 20,24 27,8 35,8 26,34 14,34" fill="white"/>
+  <polygon points="5,8 11,8 18,24 20,24 13,8" fill="white" opacity="0.3"/>
+  <rect x="1" y="22" width="8" height="2" rx="1" fill="white" opacity="0.35"/>
   <rect x="1" y="25" width="5" height="1.8" rx="0.9" fill="white" opacity="0.2"/>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+    <linearGradient id="bg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#2563eb"/>
       <stop offset="100%" stop-color="#1d4ed8"/>
     </linearGradient>

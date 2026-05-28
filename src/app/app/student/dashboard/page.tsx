@@ -22,9 +22,6 @@ import { ptBR } from 'date-fns/locale';
 
 const STAGE_ALERTS: Partial<Record<JourneyStage, { id: string; type: 'urgent' | 'warning' | 'info'; title: string; message: string }>> = {
   RENACH_PENDING: { id: 'renach', type: 'urgent', title: 'Abra seu processo no DETRAN', message: 'Pague a taxa, agende pelo site ou telefone do DETRAN-MS e compareça para a biometria.' },
-  MEDICAL_PENDING: { id: 'medico', type: 'warning', title: 'Exame Médico Pendente', message: 'Agende seu exame médico em uma clínica credenciada pelo DETRAN para avançar.' },
-  PSYCH_PENDING: { id: 'psico', type: 'warning', title: 'Exame Psicotécnico Pendente', message: 'Agende seu exame psicotécnico em uma clínica credenciada pelo DETRAN.' },
-  THEORY_EXAM_PENDING: { id: 'teoria', type: 'warning', title: 'Exame Teórico Pendente', message: 'Você precisa realizar o exame teórico no DETRAN para prosseguir.' },
   AWAITING_LADV_UPLOAD: { id: 'ladv', type: 'info', title: 'LADV Pendente', message: 'Sua LADV ainda não foi validada. Você precisa dela para agendar as aulas práticas.' },
 };
 

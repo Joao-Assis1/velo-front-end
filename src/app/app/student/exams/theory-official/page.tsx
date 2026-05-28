@@ -68,10 +68,7 @@ export default function TheoryOfficialPage() {
 
       {already ? (
         <section className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-800">
-          Aprovação registrada em{" "}
-          {status?.declaredAt
-            ? new Date(status.declaredAt).toLocaleString("pt-BR")
-            : "—"}
+          Aprovação registrada em {status?.declaredAt ?? "—"}
           . Próximo passo: enviar sua LADV.
         </section>
       ) : (

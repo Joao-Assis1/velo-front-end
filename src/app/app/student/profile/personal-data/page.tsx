@@ -7,6 +7,13 @@ import { useApp } from "@/context/AppContext";
 import { getStudentProfileAction } from "@/lib/actions/profileActions";
 import { Student } from "@/types";
 
+function parseBRDate(value: string): Date | undefined {
+  const [day, month, year] = value.split("/");
+  if (!day || !month || !year) return undefined;
+  const d = new Date(`${year}-${month}-${day}`);
+  return isNaN(d.getTime()) ? undefined : d;
+}
+
 function mapApiToStudent(data: any): Student {
   return {
     id: data.id,
@@ -16,9 +23,9 @@ function mapApiToStudent(data: any): Student {
     cpf: data.cpf ?? "",
     profilePicture: data.profilePicture ?? "",
     ladvUploaded: data.ladvUploaded ?? false,
-    ladvValidationDate: data.ladv_validation_date ? new Date(data.ladv_validation_date) : undefined,
+    ladvValidationDate: data.ladv_validation_date ? parseBRDate(data.ladv_validation_date) : undefined,
     ladvDocumentUrl: data.ladv_document_url ?? undefined,
-    birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
+    birthDate: data.birthDate ? parseBRDate(data.birthDate) : undefined,
     motherName: data.motherName ?? "",
     intendedCategory: data.intendedCategory ?? "B",
     ufDomicile: data.ufDomicile ?? "MS",

@@ -27,6 +27,10 @@ export default function MedicalExamPage() {
   const [status, setStatus] = useState<ClinicExamStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [laudoResult, setLaudoResult] = useState<
+    "APTO" | "INAPTO" | "APTO_COM_RESTRICOES"
+  >("APTO");
+  const [laudoValidUntil, setLaudoValidUntil] = useState<string>("");
 
   useEffect(() => {
     getMyMedicalExam().then(setStatus).catch(() => undefined);
@@ -51,10 +55,15 @@ export default function MedicalExamPage() {
   }
 
   async function handleUpload(file: File) {
+    if (!laudoValidUntil) return;
     setBusy(true);
     setError(null);
     try {
-      const updated = await uploadMedicalLaudo(file);
+      const updated = await uploadMedicalLaudo(
+        file,
+        laudoResult,
+        new Date(brDateToISO(laudoValidUntil)),
+      );
       setStatus(updated);
       await invalidate();
     } catch (e: any) {
@@ -77,7 +86,7 @@ export default function MedicalExamPage() {
         </div>
       </header>
 
-      {status?.laudoStatus === "APPROVED" ? (
+      {status?.status === "APPROVED" ? (
         <section className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-800">
           Laudo médico aprovado ✓
         </section>
@@ -146,13 +155,45 @@ export default function MedicalExamPage() {
             <section className="rounded-xl border border-zinc-200 bg-white p-4">
               <h2 className="text-base font-semibold">Enviar laudo APTO</h2>
               <p className="mt-1 text-sm text-zinc-600">
-                Agendado para{" "}
-                {new Date(status.scheduledAt).toLocaleString("pt-BR")}.
+                Agendado para {status.scheduledAt}.
               </p>
-              <div className="mt-3">
+              <div className="mt-3 flex flex-col gap-3">
+                <label className="flex flex-col gap-1 text-sm">
+                  Resultado
+                  <select
+                    value={laudoResult}
+                    onChange={(e) =>
+                      setLaudoResult(
+                        e.target.value as
+                          | "APTO"
+                          | "INAPTO"
+                          | "APTO_COM_RESTRICOES",
+                      )
+                    }
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                  >
+                    <option value="APTO">APTO</option>
+                    <option value="INAPTO">INAPTO</option>
+                    <option value="APTO_COM_RESTRICOES">
+                      APTO com restrições
+                    </option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  Validade do laudo
+                  <input
+                    value={laudoValidUntil}
+                    onChange={(e) => setLaudoValidUntil(maskDate(e.target.value))}
+                    placeholder="DD/MM/AAAA"
+                    maxLength={10}
+                    inputMode="numeric"
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                  />
+                </label>
                 <DocumentUploader
                   label="Enviar laudo (PDF/JPG/PNG)"
                   onFile={handleUpload}
+                  disabled={busy || !laudoValidUntil}
                 />
               </div>
             </section>
@@ -164,6 +205,7 @@ export default function MedicalExamPage() {
         <ProtocolPdfDownload
           fetcher={downloadMedicalProtocol}
           filename="protocolo-medico.pdf"
+          disabled={!status}
         />
       </section>
 

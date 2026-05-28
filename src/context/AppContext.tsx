@@ -192,6 +192,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
       setStudentProfile(res.data as Student);
+      setHasLadv((res.data as any).ladvUploaded ?? false);
     } else {
       const res = await registerInstructorAction(data);
       if (!res.success || !res.data) {

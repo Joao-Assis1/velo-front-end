@@ -34,7 +34,7 @@ export const StudentPayments = ({
 }: {
   onBack: () => void
 }) => {
-  const { studentProfile } = useApp();
+  const { studentProfile, setStudentProfile } = useApp();
   const queryClient = useQueryClient();
   const [isAdding, setIsAdding] = useState(false);
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
@@ -48,6 +48,14 @@ export const StudentPayments = ({
     },
     enabled: !!studentProfile?.id
   });
+
+  const cardsSerialized = JSON.stringify(cards);
+  React.useEffect(() => {
+    if (!loadingCards && studentProfile) {
+      setStudentProfile({ ...studentProfile, paymentMethods: cards as any[] });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardsSerialized, loadingCards]);
 
   const { data: history = [], isLoading: loadingHistory } = useQuery({
     queryKey: ['payments', studentProfile?.id],

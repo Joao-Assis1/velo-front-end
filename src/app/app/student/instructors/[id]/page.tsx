@@ -73,7 +73,7 @@ export default function InstructorProfilePage() {
         onBack={() => router.back()}
         hasLadv={hasLadv}
         hasPaymentMethod={hasPaymentMethod}
-        onUploadLadv={() => router.push("/app/student/payments")}
+        onUploadLadv={() => router.push("/app/student/ladv")}
         onAddPaymentMethod={() => router.push("/app/student/payments")}
         onBookClass={handleBookClass}
         busySlots={busySlots}

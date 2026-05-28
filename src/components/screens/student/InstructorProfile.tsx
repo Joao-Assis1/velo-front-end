@@ -156,10 +156,6 @@ export const InstructorProfileView = ({
   };
 
   const handleBookClick = () => {
-    if (!selectedTime) {
-      alert("Por favor, selecione um horário primeiro.");
-      return;
-    }
 
     if (!hasLadv) {
       setShowLadvAlert(true);

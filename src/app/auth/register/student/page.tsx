@@ -115,7 +115,7 @@ export default function StudentRegisterPage() {
       router.push("/app/student/dashboard");
     } catch (e: any) {
       const msg: string = e?.message || "Erro ao criar conta. Tente novamente.";
-      if (msg.includes("CPF")) { setStep(2); }
+      if (msg.toLowerCase().includes("cpf")) { setStep(2); }
       setError(msg);
     } finally {
       setLoading(false);

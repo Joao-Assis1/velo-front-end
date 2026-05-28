@@ -27,6 +27,10 @@ export default function PsychologicalExamPage() {
   const [status, setStatus] = useState<ClinicExamStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [laudoResult, setLaudoResult] = useState<
+    "APTO" | "INAPTO" | "APTO_COM_RESTRICOES"
+  >("APTO");
+  const [laudoValidUntil, setLaudoValidUntil] = useState<string>("");
 
   useEffect(() => {
     getMyPsychExam().then(setStatus).catch(() => undefined);
@@ -51,10 +55,15 @@ export default function PsychologicalExamPage() {
   }
 
   async function handleUpload(file: File) {
+    if (!laudoValidUntil) return;
     setBusy(true);
     setError(null);
     try {
-      const updated = await uploadPsychLaudo(file);
+      const updated = await uploadPsychLaudo(
+        file,
+        laudoResult,
+        new Date(laudoValidUntil),
+      );
       setStatus(updated);
       await invalidate();
     } catch (e: any) {
@@ -77,7 +86,7 @@ export default function PsychologicalExamPage() {
         </div>
       </header>
 
-      {status?.laudoStatus === "APPROVED" ? (
+      {status?.status === "APPROVED" ? (
         <section className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-800">
           Laudo psicológico aprovado ✓
         </section>
@@ -144,10 +153,42 @@ export default function PsychologicalExamPage() {
                 Agendado para{" "}
                 {new Date(status.scheduledAt).toLocaleString("pt-BR")}.
               </p>
-              <div className="mt-3">
+              <div className="mt-3 flex flex-col gap-3">
+                <label className="flex flex-col gap-1 text-sm">
+                  Resultado
+                  <select
+                    value={laudoResult}
+                    onChange={(e) =>
+                      setLaudoResult(
+                        e.target.value as
+                          | "APTO"
+                          | "INAPTO"
+                          | "APTO_COM_RESTRICOES",
+                      )
+                    }
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                  >
+                    <option value="APTO">APTO</option>
+                    <option value="INAPTO">INAPTO</option>
+                    <option value="APTO_COM_RESTRICOES">
+                      APTO com restrições
+                    </option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  Validade do laudo
+                  <input
+                    type="date"
+                    value={laudoValidUntil}
+                    onChange={(e) => setLaudoValidUntil(e.target.value)}
+                    min={new Date().toISOString().slice(0, 10)}
+                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                  />
+                </label>
                 <DocumentUploader
                   label="Enviar laudo (PDF/JPG/PNG)"
                   onFile={handleUpload}
+                  disabled={busy || !laudoValidUntil}
                 />
               </div>
             </section>

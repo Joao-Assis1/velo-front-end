@@ -53,7 +53,7 @@ export type ClinicExamStatus = {
   scheduledAt: string | null;
   clinicId: string | null;
   laudoUrl: string | null;
-  laudoStatus: "PENDING" | "APPROVED" | "REJECTED" | null;
+  status: "SCHEDULED" | "RESULT_UPLOADED" | "APPROVED" | "REJECTED" | null;
 };
 
 export async function getMyMedicalExam(): Promise<ClinicExamStatus> {
@@ -72,9 +72,15 @@ export async function scheduleMedicalExam(payload: {
   return res.data;
 }
 
-export async function uploadMedicalLaudo(file: File): Promise<ClinicExamStatus> {
+export async function uploadMedicalLaudo(
+  file: File,
+  result: "APTO" | "INAPTO" | "APTO_COM_RESTRICOES",
+  validUntil: Date,
+): Promise<ClinicExamStatus> {
   const form = new FormData();
   form.append("file", file);
+  form.append("result", result);
+  form.append("validUntil", validUntil.toISOString());
   const res = await fetchWrapper<Wrapped<ClinicExamStatus>>(
     "/medical-exam/me/laudo",
     { method: "POST", body: form },
@@ -83,7 +89,7 @@ export async function uploadMedicalLaudo(file: File): Promise<ClinicExamStatus> 
 }
 
 export async function downloadMedicalProtocol(): Promise<Blob> {
-  return fetchBlob("/medical-exam/me/protocol.pdf");
+  return fetchBlob("/medical-exam/me/protocol/pdf");
 }
 
 export async function getMyPsychExam(): Promise<ClinicExamStatus> {
@@ -104,9 +110,15 @@ export async function schedulePsychExam(payload: {
   return res.data;
 }
 
-export async function uploadPsychLaudo(file: File): Promise<ClinicExamStatus> {
+export async function uploadPsychLaudo(
+  file: File,
+  result: "APTO" | "INAPTO" | "APTO_COM_RESTRICOES",
+  validUntil: Date,
+): Promise<ClinicExamStatus> {
   const form = new FormData();
   form.append("file", file);
+  form.append("result", result);
+  form.append("validUntil", validUntil.toISOString());
   const res = await fetchWrapper<Wrapped<ClinicExamStatus>>(
     "/psychological-exam/me/laudo",
     { method: "POST", body: form },
@@ -115,7 +127,7 @@ export async function uploadPsychLaudo(file: File): Promise<ClinicExamStatus> {
 }
 
 export async function downloadPsychProtocol(): Promise<Blob> {
-  return fetchBlob("/psychological-exam/me/protocol.pdf");
+  return fetchBlob("/psychological-exam/me/protocol/pdf");
 }
 
 // === Official theory exam ===

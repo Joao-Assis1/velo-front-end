@@ -62,7 +62,7 @@ export default function MedicalExamPage() {
       const updated = await uploadMedicalLaudo(
         file,
         laudoResult,
-        new Date(laudoValidUntil),
+        new Date(brDateToISO(laudoValidUntil)),
       );
       setStatus(updated);
       await invalidate();
@@ -182,10 +182,11 @@ export default function MedicalExamPage() {
                 <label className="flex flex-col gap-1 text-sm">
                   Validade do laudo
                   <input
-                    type="date"
                     value={laudoValidUntil}
-                    onChange={(e) => setLaudoValidUntil(e.target.value)}
-                    min={new Date().toISOString().slice(0, 10)}
+                    onChange={(e) => setLaudoValidUntil(maskDate(e.target.value))}
+                    placeholder="DD/MM/AAAA"
+                    maxLength={10}
+                    inputMode="numeric"
                     className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
                   />
                 </label>

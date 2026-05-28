@@ -127,7 +127,8 @@ export default function RenachPage() {
             <label className="flex flex-col gap-1 text-sm">
               Número do RENACH
               <input
-                {...register("renachNumber", { required: true, minLength: 6 })}
+                {...register("renachNumber", { required: true, minLength: 11, maxLength: 11 })}
+                maxLength={11}
                 className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
                 placeholder="MS000000000"
               />

@@ -15,9 +15,11 @@ export function ProtocolPdfDownload({
   disabled?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function download() {
     setBusy(true);
+    setError(null);
     try {
       const blob = await fetcher();
       const url = URL.createObjectURL(blob);
@@ -26,15 +28,24 @@ export function ProtocolPdfDownload({
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setError(e?.message ?? "Erro ao baixar protocolo.");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Button variant="outline" onClick={download} disabled={busy || disabled}>
-      <FileDown className="mr-1 h-4 w-4" aria-hidden />
-      {busy ? "Gerando…" : label}
-    </Button>
+    <div className="flex flex-col gap-1">
+      <Button variant="outline" onClick={download} disabled={busy || disabled}>
+        <FileDown className="mr-1 h-4 w-4" aria-hidden />
+        {busy ? "Gerando…" : label}
+      </Button>
+      {error && (
+        <p role="alert" className="text-sm text-rose-600">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }

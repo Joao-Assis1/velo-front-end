@@ -205,6 +205,7 @@ export default function MedicalExamPage() {
         <ProtocolPdfDownload
           fetcher={downloadMedicalProtocol}
           filename="protocolo-medico.pdf"
+          disabled={!status}
         />
       </section>
 

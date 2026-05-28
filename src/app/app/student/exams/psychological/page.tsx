@@ -200,6 +200,7 @@ export default function PsychologicalExamPage() {
         <ProtocolPdfDownload
           fetcher={downloadPsychProtocol}
           filename="protocolo-psicologico.pdf"
+          disabled={!status}
         />
       </section>
 

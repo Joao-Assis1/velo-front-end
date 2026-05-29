@@ -60,7 +60,7 @@ const JOURNEY_GUIDE: GuideEntry[] = [
   {
     step: 6,
     title: "Exame prático DETRAN",
-    description: "Duração ~15 minutos. Agendado pelo portal DETRAN-MS.",
+    description: "Duração ~15 minutos. Agendado pelo site DETRAN-MS.",
     cost: "~R$ 100",
     href: "https://meudetran.ms.gov.br/",
     external: true,
@@ -68,13 +68,13 @@ const JOURNEY_GUIDE: GuideEntry[] = [
 ];
 
 const STAGE_LABELS: Record<JourneyStage, string> = {
-  REGISTERED:                "Registrado",
+  REGISTERED: "Registrado",
   THEORY_COURSE_IN_PROGRESS: "Curso Teórico em Andamento",
-  RENACH_PENDING:            "RENACH Pendente",
-  AWAITING_LADV_UPLOAD:      "Aguardando Envio da LADV",
-  LADV_UPLOADED_VALID:       "LADV Validada",
-  PRACTICAL_IN_PROGRESS:     "Aulas Práticas em Andamento",
-  READY_FOR_PRACTICAL_EXAM:  "Pronto para o Exame Prático",
+  RENACH_PENDING: "RENACH Pendente",
+  AWAITING_LADV_UPLOAD: "Aguardando Envio da LADV",
+  LADV_UPLOADED_VALID: "LADV Validada",
+  PRACTICAL_IN_PROGRESS: "Aulas Práticas em Andamento",
+  READY_FOR_PRACTICAL_EXAM: "Pronto para o Exame Prático",
 };
 
 export default function ConciergePage() {

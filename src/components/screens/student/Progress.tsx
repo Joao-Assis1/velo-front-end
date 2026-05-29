@@ -45,7 +45,7 @@ export const StudentProgress = () => {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const completedMinutes = completedClasses.reduce(
-    (sum, c) => sum + (c.durationMinutes ?? 60),
+    (sum, c) => sum + (c.durationMinutes ?? 50),
     0,
   );
   const progressPct = Math.min((completedMinutes / MINIMUM_MINUTES) * 100, 100);

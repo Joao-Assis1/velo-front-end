@@ -34,9 +34,11 @@ export const StudentProgress = () => {
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [declareError, setDeclareError] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { refreshLessons(); }, []);
+  useEffect(() => {
+    refreshLessons();
+  }, [refreshLessons]);
 
   const completedClasses = scheduledClasses
     .filter((c) => c.status.toLowerCase() === "completed")
@@ -60,6 +62,7 @@ export const StudentProgress = () => {
   const handleFeedbackSubmit = async () => {
     if (!ratingClass || rating === 0) return;
     setIsSubmitting(true);
+    setFeedbackError(null);
     try {
       const result = await submitStudentFeedbackAction(ratingClass.id, rating, feedback);
       if (result.success) {
@@ -68,10 +71,10 @@ export const StudentProgress = () => {
         setFeedback("");
         refreshLessons();
       } else {
-        console.error("Erro ao enviar avaliação:", result.error);
+        setFeedbackError(result.error ?? "Erro ao enviar avaliação.");
       }
-    } catch (error) {
-      console.error("Falha ao enviar avaliação:", error);
+    } catch {
+      setFeedbackError("Falha ao enviar avaliação. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -280,6 +283,7 @@ export const StudentProgress = () => {
                             setRatingClass(cls);
                             setRating(0);
                             setFeedback("");
+                            setFeedbackError(null);
                           }}
                           className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
                         >
@@ -353,6 +357,9 @@ export const StudentProgress = () => {
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition resize-none mb-4"
                 rows={3}
               />
+              {feedbackError && (
+                <p className="text-xs text-rose-600 mb-3">{feedbackError}</p>
+              )}
               <button
                 onClick={handleFeedbackSubmit}
                 disabled={rating === 0 || isSubmitting}

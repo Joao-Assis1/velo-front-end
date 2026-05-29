@@ -266,7 +266,7 @@ export const StudentConcierge = () => {
                     <ExternalLink size={18} />
                   </div>
                   <div>
-                    <p className="font-extrabold text-slate-800 text-sm">Portal DETRAN MS</p>
+                    <p className="font-extrabold text-slate-800 text-sm">Site DETRAN MS</p>
                     <p className="text-xs text-slate-400">Taxas e serviços online</p>
                   </div>
                 </div>

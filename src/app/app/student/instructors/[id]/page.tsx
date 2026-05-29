@@ -1,11 +1,16 @@
 "use client";
 
 import React, { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { InstructorProfileView } from "@/components/screens/student/InstructorProfile";
+
+const InstructorProfileView = dynamic(
+  () => import("@/components/screens/student/InstructorProfile").then((m) => ({ default: m.InstructorProfileView })),
+  { loading: () => <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-12 h-12 animate-spin text-velo-blue" /></div> },
+);
 import { getInstructorByIdAction } from "@/lib/actions/instructors";
 import { useApp } from "@/context/AppContext";
 import { Instructor } from "@/types";

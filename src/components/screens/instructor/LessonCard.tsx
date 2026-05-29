@@ -33,13 +33,13 @@ export type LessonData = {
   price?: number;
 };
 
-export const LessonCard = ({
+export const LessonCard = React.memo(function LessonCard({
   lesson,
   onUpdate,
 }: {
   lesson: LessonData;
   onUpdate?: () => void;
-}) => {
+}) {
   const { checkIn, checkOut, acceptLesson, rejectLesson } = useApp();
   const [currentStatus, setCurrentStatus] = useState(lesson.status);
   const [isLoading, setIsLoading] = useState(false);
@@ -395,4 +395,4 @@ export const LessonCard = ({
       </AnimatePresence>
     </div>
   );
-};
+});

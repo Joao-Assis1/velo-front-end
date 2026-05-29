@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
 import {
   createLessonAction,
@@ -43,7 +44,7 @@ interface AppContextType {
   setHasLadv: (status: boolean) => void;
   setInstructorProfile: (profile: Instructor | null) => void;
   setStudentProfile: (profile: Student | null) => void;
-  setScheduledClasses: (classes: ScheduledClass[]) => void;
+  setScheduledClasses: (updater: ScheduledClass[] | ((prev: ScheduledClass[]) => ScheduledClass[])) => void;
   setBusySlots: (slots: Record<string, string[]>) => void;
   setDetranStages: (stages: DetranStage[]) => void;
   setAcademyModules: React.Dispatch<React.SetStateAction<AcademyModule[]>>;
@@ -77,7 +78,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [hasLadv, setHasLadv] = useState(false);
   const [instructorProfile, setInstructorProfile] = useState<Instructor | null>(null);
   const [studentProfile, setStudentProfile] = useState<Student | null>(null);
-  const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [busySlots, setBusySlots] = useState<Record<string, string[]>>({});
   const [detranStages, setDetranStages] = useState<DetranStage[]>([]);
   const [academyModules, setAcademyModules] = useState<AcademyModule[]>([]);
@@ -85,8 +85,45 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [pendingBalance, setPendingBalance] = useState(0);
   const [activeClassId, setActiveClassId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [lessonsRefreshKey, setLessonsRefreshKey] = useState(0);
-  const refreshLessons = useCallback(() => setLessonsRefreshKey(k => k + 1), []);
+
+  const queryClient = useQueryClient();
+
+  const lessonsQueryKey = useMemo(() =>
+    userRole === 'student'
+      ? ['lessons', 'student', studentProfile?.id ?? null]
+      : ['lessons', 'instructor', instructorProfile?.id ?? null],
+    [userRole, studentProfile?.id, instructorProfile?.id]
+  );
+
+  const { data: scheduledClasses = [] } = useQuery({
+    queryKey: lessonsQueryKey,
+    queryFn: async () => {
+      if (userRole === 'student' && studentProfile?.id) {
+        const res = await getLessonsAction({ studentId: studentProfile.id });
+        return (res.success && res.data) ? res.data as ScheduledClass[] : [];
+      }
+      if (userRole === 'instructor' && instructorProfile?.id) {
+        const res = await getLessonsAction({ instructorId: instructorProfile.id });
+        return (res.success && res.data) ? res.data as ScheduledClass[] : [];
+      }
+      return [];
+    },
+    enabled: isHydrated && (
+      (userRole === 'student' && !!studentProfile?.id) ||
+      (userRole === 'instructor' && !!instructorProfile?.id)
+    ),
+    staleTime: 30_000,
+  });
+
+  const setScheduledClasses = useCallback((updater: ScheduledClass[] | ((prev: ScheduledClass[]) => ScheduledClass[])) => {
+    queryClient.setQueryData<ScheduledClass[]>(lessonsQueryKey, (prev = []) =>
+      typeof updater === 'function' ? updater(prev) : updater
+    );
+  }, [queryClient, lessonsQueryKey]);
+
+  const refreshLessons = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['lessons'] });
+  }, [queryClient]);
 
   useEffect(() => {
     try {
@@ -128,30 +165,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, [userRole, hasLadv, instructorProfile, studentProfile, isHydrated]);
 
   useEffect(() => {
-    const loadInitialData = async () => {
-      if (userRole === 'student' && studentProfile?.id) {
-        // Fetch Lessons
-        const lessonsRes = await getLessonsAction({ studentId: studentProfile.id });
-        if (lessonsRes.success && lessonsRes.data) {
-          setScheduledClasses(lessonsRes.data as ScheduledClass[]);
-        }
-
-        // Fetch Academy Modules
-        const academyRes = await getAcademyModulesAction();
-        if (academyRes.success && academyRes.data) {
-          setAcademyModules(academyRes.data as AcademyModule[]);
-        }
-      } else if (userRole === 'instructor' && instructorProfile?.id) {
-        const lessonsRes = await getLessonsAction({ instructorId: instructorProfile.id });
-        if (lessonsRes.success && lessonsRes.data) {
-          setScheduledClasses(lessonsRes.data as ScheduledClass[]);
-        }
-      }
-    };
-    if (isHydrated) {
-      loadInitialData();
-    }
-  }, [userRole, studentProfile?.id, instructorProfile?.id, isHydrated, lessonsRefreshKey]);
+    if (!isHydrated || userRole !== 'student' || !studentProfile?.id) return;
+    getAcademyModulesAction().then(res => {
+      if (res.success && res.data) setAcademyModules(res.data as AcademyModule[]);
+    });
+  }, [userRole, studentProfile?.id, isHydrated]);
 
   const login = async (credentials?: any, forcedRole?: UserRole) => {
     const roleToUse = forcedRole || userRole;

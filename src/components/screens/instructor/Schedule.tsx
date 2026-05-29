@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Bell, Calendar, History, Plus } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -25,29 +25,23 @@ export const InstructorSchedule = ({
 }) => {
   const [isBlockModalOpen, setIsBlockModalOpen] = React.useState(false);
 
-  const sortedClasses = [...classes].sort((a, b) => {
-    const dateDiff = a.date.getTime() - b.date.getTime();
-    if (dateDiff !== 0) return dateDiff;
-    return a.startTime.localeCompare(b.startTime);
-  });
-
-  const pendingClasses = sortedClasses.filter((c) => c.status === "pending_acceptance");
-  const upcomingClasses = sortedClasses.filter(
-    (c) => c.status === "upcoming" || c.status === "in-progress"
-  );
-  const pastClasses = sortedClasses
-    .filter((c) => c.status === "completed" || c.status === "cancelled")
-    .reverse();
-
-  const groupedUpcoming = upcomingClasses.reduce(
-    (acc, cls) => {
+  const { pendingClasses, upcomingClasses, pastClasses, groupedUpcoming } = useMemo(() => {
+    const sorted = [...classes].sort((a, b) => {
+      const dateDiff = a.date.getTime() - b.date.getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return a.startTime.localeCompare(b.startTime);
+    });
+    const pending = sorted.filter((c) => c.status === "pending_acceptance");
+    const upcoming = sorted.filter((c) => c.status === "upcoming" || c.status === "in-progress");
+    const past = sorted.filter((c) => c.status === "completed" || c.status === "cancelled").reverse();
+    const grouped = upcoming.reduce((acc, cls) => {
       const dateKey = format(cls.date, "yyyy-MM-dd");
       if (!acc[dateKey]) acc[dateKey] = [];
       acc[dateKey].push(cls);
       return acc;
-    },
-    {} as Record<string, ScheduledClass[]>
-  );
+    }, {} as Record<string, ScheduledClass[]>);
+    return { pendingClasses: pending, upcomingClasses: upcoming, pastClasses: past, groupedUpcoming: grouped };
+  }, [classes]);
 
   const mapToLessonData = (cls: ScheduledClass): LessonData => ({
     id: cls.id,

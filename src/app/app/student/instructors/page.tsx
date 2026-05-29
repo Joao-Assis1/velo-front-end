@@ -28,6 +28,13 @@ export default function InstructorMarketplace() {
     }
   });
 
+  const normalizeTransmission = (v?: string): string | undefined => {
+    const up = (v ?? '').toUpperCase();
+    if (up === 'MANUAL') return 'Manual';
+    if (up === 'AUTO' || up === 'AUTOMATIC') return 'Automatic';
+    return v;
+  };
+
   const filteredInstructors = instructors.filter(instructor => {
     if (instructor.isActive === false) return false;
 
@@ -42,7 +49,7 @@ export default function InstructorMarketplace() {
     const matchesPrice = !filters.maxPrice || (instructor.pricePerClass || 0) <= filters.maxPrice;
 
     const matchesTransmission = !filters.transmission ||
-      instructor.transmission === filters.transmission;
+      normalizeTransmission(instructor.transmission) === filters.transmission;
 
     const matchesRating = !filters.minRating || (instructor.rating ?? 0) >= filters.minRating;
 

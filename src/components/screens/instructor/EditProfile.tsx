@@ -15,7 +15,9 @@ import {
 import { Button, Input } from "@/components/ui-custom";
 import { AvatarUploader } from "@/components/ui-custom/AvatarUploader";
 import { Instructor } from "@/types";
-import { maskCNH, maskRENACH } from "@/lib/utils/masks";
+import { maskCNH, maskRENACH, maskDate } from "@/lib/utils/masks";
+import { parseBRDate } from "@/lib/utils/dates";
+import { format } from "date-fns";
 
 const inputCls = "w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition";
 const selectCls = "w-full bg-white border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition appearance-none text-sm text-slate-700";
@@ -52,15 +54,20 @@ export const InstructorEditProfile = ({
     },
   );
 
-  useEffect(() => {
-    if (profile) setLocalProfile(profile);
-  }, [profile]);
-
-  const formatDateForInput = (date?: Date | string) => {
+  const toDisplayDate = (date?: Date | string): string => {
     if (!date) return "";
     const d = typeof date === "string" ? new Date(date) : date;
-    return d.toISOString().split("T")[0];
+    return isNaN(d.getTime()) ? "" : format(d, "dd/MM/yyyy");
   };
+
+  const [birthDateText, setBirthDateText] = useState(() => toDisplayDate(profile?.birthDate));
+
+  useEffect(() => {
+    if (profile) {
+      setLocalProfile(profile);
+      setBirthDateText(toDisplayDate(profile.birthDate));
+    }
+  }, [profile]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -136,9 +143,19 @@ export const InstructorEditProfile = ({
             <div className="space-y-1.5">
               <label className={labelCls}>Data de Nascimento</label>
               <Input
-                type="date"
-                value={formatDateForInput(localProfile.birthDate)}
-                onChange={(e) => setLocalProfile({ ...localProfile, birthDate: new Date(e.target.value) })}
+                type="text"
+                value={birthDateText}
+                onChange={(e) => {
+                  const masked = maskDate(e.target.value);
+                  setBirthDateText(masked);
+                  if (masked.replace(/\D/g, "").length === 8) {
+                    const parsed = parseBRDate(masked);
+                    if (parsed) setLocalProfile({ ...localProfile, birthDate: parsed });
+                  }
+                }}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                inputMode="numeric"
                 icon={<Calendar size={16} />}
               />
             </div>

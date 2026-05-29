@@ -23,7 +23,7 @@ export function NextStepCard({
               Pronto para o exame DETRAN
             </h3>
             <p className="text-sm text-emerald-800">
-              Marque seu exame prático oficial pelo portal DETRAN-MS.
+              Marque seu exame prático oficial pelo site do DETRAN-MS.
             </p>
           </div>
         </div>

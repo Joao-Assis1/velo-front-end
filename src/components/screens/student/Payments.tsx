@@ -11,7 +11,7 @@ import { getStudentPaymentsAction } from '@/lib/actions/payments';
 import { useApp } from '@/context/AppContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AddCardForm } from '@/components/features/AddCardForm';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 
 const statusConfig = (s: string) => {
   switch (s) {
@@ -35,6 +35,7 @@ export const StudentPayments = ({
   onBack: () => void
 }) => {
   const { studentProfile, setStudentProfile } = useApp();
+  const prefersReduced = useReducedMotion();
   const queryClient = useQueryClient();
   const [isAdding, setIsAdding] = useState(false);
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
@@ -103,10 +104,10 @@ export const StudentPayments = ({
           {isAdding ? (
             <motion.div
               key="add-card"
-              initial={{ opacity: 0, y: 8 }}
+              initial={prefersReduced ? {} : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={prefersReduced ? {} : { opacity: 0, y: -8 }}
+              transition={prefersReduced ? { duration: 0 } : { duration: 0.2 }}
               className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
             >
               <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
@@ -250,9 +251,9 @@ export const StudentPayments = ({
                       return (
                         <motion.div
                           key={payment.id}
-                          initial={{ opacity: 0, y: 4 }}
+                          initial={prefersReduced ? {} : { opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.04 }}
+                          transition={prefersReduced ? { duration: 0 } : { delay: i * 0.04 }}
                           className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between hover:shadow-md transition-all"
                         >
                           <div>

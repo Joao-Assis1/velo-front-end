@@ -22,25 +22,6 @@ export const journeyBlockerMessages: Record<
     ctaLabel: "Como abrir o RENACH",
     ctaHref: "/app/student/renach",
   },
-  MEDICAL_PENDING: {
-    title: "Exame médico pendente",
-    description: "Escolha uma clínica conveniada e envie o laudo APTO.",
-    ctaLabel: "Agendar exame médico",
-    ctaHref: "/app/student/exams/medical",
-  },
-  PSYCH_PENDING: {
-    title: "Exame psicológico pendente",
-    description: "Escolha uma clínica conveniada e envie o laudo APTO.",
-    ctaLabel: "Agendar exame psicológico",
-    ctaHref: "/app/student/exams/psychological",
-  },
-  THEORY_EXAM_PENDING: {
-    title: "Faça o exame teórico oficial no DETRAN",
-    description:
-      "Após aprovação, volte e declare o resultado para liberar a LADV.",
-    ctaLabel: "Declarar exame teórico",
-    ctaHref: "/app/student/exams/theory-official",
-  },
   AWAITING_LADV_UPLOAD: {
     title: "Envie sua LADV",
     description:

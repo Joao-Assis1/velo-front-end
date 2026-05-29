@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Star, AlertTriangle, Clock } from 'lucide-react';
@@ -30,12 +30,18 @@ export const StudentSchedule = ({
   const [rating, setRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
 
-  const upcomingClasses = classes
-    .filter(c => c.status === 'pending_acceptance' || c.status === 'upcoming' || c.status === 'in-progress')
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
-  const pastClasses = classes
-    .filter(c => c.status === 'completed' || c.status === 'cancelled')
-    .sort((a, b) => b.date.getTime() - a.date.getTime());
+  const upcomingClasses = useMemo(() =>
+    classes
+      .filter(c => c.status === 'pending_acceptance' || c.status === 'upcoming' || c.status === 'in-progress')
+      .sort((a, b) => a.date.getTime() - b.date.getTime()),
+    [classes]
+  );
+  const pastClasses = useMemo(() =>
+    classes
+      .filter(c => c.status === 'completed' || c.status === 'cancelled')
+      .sort((a, b) => b.date.getTime() - a.date.getTime()),
+    [classes]
+  );
 
   const handleRateSubmit = () => {
     if (classToRate && rating > 0) {

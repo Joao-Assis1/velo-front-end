@@ -1,8 +1,14 @@
 "use client";
 
 import React, { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { InstructorSchedule } from "@/components/screens/instructor/Schedule";
+import { Loader2 } from "lucide-react";
+
+const InstructorSchedule = dynamic(
+  () => import("@/components/screens/instructor/Schedule").then((m) => ({ default: m.InstructorSchedule })),
+  { loading: () => <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-10 h-10 animate-spin text-velo-blue" /></div> },
+);
 import { useApp } from "@/context/AppContext";
 
 const SCREEN_TO_PATH: Record<string, string> = {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Star, MessageSquare, Clock, CheckCircle2, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
@@ -40,19 +40,21 @@ export const StudentProgress = () => {
     refreshLessons();
   }, [refreshLessons]);
 
-  const completedClasses = scheduledClasses
-    .filter((c) => c.status.toLowerCase() === "completed")
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  const completedMinutes = completedClasses.reduce(
-    (sum, c) => sum + (c.durationMinutes ?? 50),
-    0,
+  const completedClasses = useMemo(() =>
+    scheduledClasses
+      .filter((c) => c.status.toLowerCase() === "completed")
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    [scheduledClasses]
   );
-  const progressPct = Math.min((completedMinutes / MINIMUM_MINUTES) * 100, 100);
-  const remainingMinutes = Math.max(MINIMUM_MINUTES - completedMinutes, 0);
-  const minimumMet = completedMinutes >= MINIMUM_MINUTES;
 
-  const strokeDashoffset = CIRCUMFERENCE - (progressPct / 100) * CIRCUMFERENCE;
+  const completedMinutes = useMemo(() =>
+    completedClasses.reduce((sum, c) => sum + (c.durationMinutes ?? 50), 0),
+    [completedClasses]
+  );
+  const progressPct = useMemo(() => Math.min((completedMinutes / MINIMUM_MINUTES) * 100, 100), [completedMinutes]);
+  const remainingMinutes = useMemo(() => Math.max(MINIMUM_MINUTES - completedMinutes, 0), [completedMinutes]);
+  const minimumMet = useMemo(() => completedMinutes >= MINIMUM_MINUTES, [completedMinutes]);
+  const strokeDashoffset = useMemo(() => CIRCUMFERENCE - (progressPct / 100) * CIRCUMFERENCE, [progressPct]);
 
   const canDeclare =
     minimumMet &&

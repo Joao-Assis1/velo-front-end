@@ -17,7 +17,9 @@ import {
 import { AvatarUploader } from "@/components/ui-custom/AvatarUploader";
 import { Student } from "@/types";
 import { updateStudentProfileAction } from "@/lib/actions/profileActions";
-import { maskCPF, maskPhone } from "@/lib/utils/masks";
+import { maskCPF, maskPhone, maskDate } from "@/lib/utils/masks";
+import { parseBRDate } from "@/lib/utils/dates";
+import { format } from "date-fns";
 
 export const StudentPersonalData = ({
   profile,
@@ -40,16 +42,20 @@ export const StudentPersonalData = ({
     },
   );
 
-  useEffect(() => {
-    if (profile) setLocalProfile(profile);
-  }, [profile]);
-
-  // Helper to format date for input type="date"
-  const formatDateForInput = (date?: Date | string) => {
+  const toDisplayDate = (date?: Date | string): string => {
     if (!date) return "";
     const d = typeof date === "string" ? new Date(date) : date;
-    return d.toISOString().split("T")[0];
+    return isNaN(d.getTime()) ? "" : format(d, "dd/MM/yyyy");
   };
+
+  const [birthDateText, setBirthDateText] = useState(() => toDisplayDate(profile?.birthDate));
+
+  useEffect(() => {
+    if (profile) {
+      setLocalProfile(profile);
+      setBirthDateText(toDisplayDate(profile.birthDate));
+    }
+  }, [profile]);
 
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -187,12 +193,20 @@ export const StudentPersonalData = ({
             Data de Nascimento
           </label>
           <input
-            type="date"
-            value={formatDateForInput(localProfile.birthDate)}
-            onChange={(e) =>
-              setLocalProfile({ ...localProfile, birthDate: new Date(e.target.value) })
-            }
-            className="w-full text-sm font-semibold text-slate-900 bg-transparent outline-none cursor-pointer"
+            type="text"
+            value={birthDateText}
+            onChange={(e) => {
+              const masked = maskDate(e.target.value);
+              setBirthDateText(masked);
+              if (masked.replace(/\D/g, "").length === 8) {
+                const parsed = parseBRDate(masked);
+                if (parsed) setLocalProfile({ ...localProfile, birthDate: parsed });
+              }
+            }}
+            placeholder="DD/MM/AAAA"
+            maxLength={10}
+            inputMode="numeric"
+            className="w-full text-sm font-semibold text-slate-900 bg-transparent outline-none"
             required
           />
         </div>

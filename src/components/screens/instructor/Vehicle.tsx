@@ -177,11 +177,11 @@ export const InstructorVehicle = ({
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Câmbio</label>
               <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
-                {[{ id: "MANUAL", label: "Manual" }, { id: "AUTO", label: "Automático" }].map((t) => {
+                {[{ id: "Manual", label: "Manual" }, { id: "Automatic", label: "Automático" }].map((t) => {
                   const isActive =
                     localProfile.transmission === t.id ||
-                    (t.id === "MANUAL" && localProfile.transmission?.toString().toUpperCase() === "MANUAL") ||
-                    (t.id === "AUTO" && localProfile.transmission?.toString().toUpperCase().startsWith("AUTO"));
+                    (t.id === "Manual" && localProfile.transmission?.toString().toUpperCase() === "MANUAL") ||
+                    (t.id === "Automatic" && localProfile.transmission?.toString().toUpperCase().startsWith("AUTO"));
                   return (
                     <button
                       key={t.id}

@@ -31,7 +31,7 @@ export default function InstructorMarketplace() {
   const normalizeTransmission = (v?: string): string | undefined => {
     const up = (v ?? '').toUpperCase();
     if (up === 'MANUAL') return 'Manual';
-    if (up === 'AUTO' || up === 'AUTOMATIC') return 'Automatic';
+    if (up === 'AUTO' || up === 'AUTOMATIC' || up === 'AUTOMATICO') return 'Automatic';
     return v;
   };
 

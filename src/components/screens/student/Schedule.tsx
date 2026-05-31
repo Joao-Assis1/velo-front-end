@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { Calendar, Star, AlertTriangle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -22,6 +22,7 @@ export const StudentSchedule = ({
   onRateClass: (id: string, rating: number, text: string) => void,
   topBanner?: React.ReactNode,
 }) => {
+  const prefersReduced = useReducedMotion();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
   const [classToCancel, setClassToCancel] = useState<string | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
@@ -106,9 +107,9 @@ export const StudentSchedule = ({
               {upcomingClasses.map((cls, i) => (
                 <motion.div
                   key={cls.id}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={prefersReduced ? {} : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05, duration: 0.2 }}
+                  transition={prefersReduced ? { duration: 0 } : { delay: i * 0.05, duration: 0.2 }}
                   className={cn(
                     "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col justify-between hover:shadow-md transition-all",
                     i === 0 && "border-blue-100 shadow-md shadow-blue-50/50 border-l-[3px] border-l-blue-600"
@@ -176,9 +177,9 @@ export const StudentSchedule = ({
               {pastClasses.map((cls, i) => (
                 <motion.div
                   key={cls.id}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={prefersReduced ? {} : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05, duration: 0.2 }}
+                  transition={prefersReduced ? { duration: 0 } : { delay: i * 0.05, duration: 0.2 }}
                   className={cn(
                     "bg-white rounded-2xl border border-slate-100 shadow-sm p-4 hover:shadow-md transition-all border-l-[3px]",
                     cls.status === 'completed' ? "border-l-green-500" : "border-l-slate-300"
@@ -262,17 +263,18 @@ export const StudentSchedule = ({
         {classToCancel && (
           <div className="fixed inset-0 z-50 flex items-end justify-center">
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={prefersReduced ? {} : { opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={prefersReduced ? {} : { opacity: 0 }}
+              transition={prefersReduced ? { duration: 0 } : { duration: 0.18 }}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
               onClick={() => setClassToCancel(null)}
             />
             <motion.div
-              initial={{ y: "100%" }}
+              initial={prefersReduced ? {} : { y: "100%" }}
               animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              exit={prefersReduced ? {} : { y: "100%" }}
+              transition={prefersReduced ? { duration: 0 } : { type: "spring", damping: 25, stiffness: 220 }}
               className="bg-white rounded-t-3xl p-6 w-full max-w-md relative z-10 shadow-2xl border-t border-slate-100 pb-8"
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />
@@ -327,17 +329,18 @@ export const StudentSchedule = ({
         {classToRate && (
           <div className="fixed inset-0 z-50 flex items-end justify-center">
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={prefersReduced ? {} : { opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={prefersReduced ? {} : { opacity: 0 }}
+              transition={prefersReduced ? { duration: 0 } : { duration: 0.18 }}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
               onClick={() => setClassToRate(null)}
             />
             <motion.div
-              initial={{ y: "100%" }}
+              initial={prefersReduced ? {} : { y: "100%" }}
               animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              exit={prefersReduced ? {} : { y: "100%" }}
+              transition={prefersReduced ? { duration: 0 } : { type: "spring", damping: 25, stiffness: 220 }}
               className="bg-white rounded-t-3xl p-6 w-full max-w-md relative z-10 shadow-2xl border-t border-slate-100 pb-8"
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />

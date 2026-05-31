@@ -43,16 +43,27 @@ export const InstructorVehicle = ({
   );
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [plateError, setPlateError] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (localProfile.vehiclePlate && !isValidPlate(localProfile.vehiclePlate)) {
-      setPlateError(true);
-      return;
+    const newErrors: Record<string, string> = {};
+    if (!localProfile.vehicleModel?.trim()) newErrors.model = "Modelo obrigatório.";
+    if (!localProfile.vehiclePlate?.trim()) {
+      newErrors.plate = "Placa obrigatória.";
+    } else if (!isValidPlate(localProfile.vehiclePlate)) {
+      newErrors.plate = "Placa inválida. Use AAA-0000 ou AAA-0A00.";
     }
-    setPlateError(false);
+    const yr = Number(localProfile.vehicleYear);
+    if (!String(localProfile.vehicleYear ?? "").trim()) {
+      newErrors.year = "Ano obrigatório.";
+    } else if (!/^\d{4}$/.test(String(localProfile.vehicleYear)) || yr < 1950 || yr > new Date().getFullYear() + 1) {
+      newErrors.year = "Ano inválido.";
+    }
+    if (!localProfile.transmission) newErrors.transmission = "Selecione o tipo de câmbio.";
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+    setErrors({});
     if (localProfile && localProfile.id) {
       try {
         setIsLoading(true);
@@ -139,44 +150,46 @@ export const InstructorVehicle = ({
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dados do veículo</p>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Modelo</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Modelo *</label>
               <Input
                 value={localProfile.vehicleModel}
                 onChange={(e) => setLocalProfile({ ...localProfile, vehicleModel: e.target.value })}
                 placeholder="Ex: Volkswagen Polo 1.0"
                 icon={<Car size={16} />}
+                className={cn(errors.model && "border-red-500 focus-visible:ring-red-200")}
               />
+              {errors.model && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.model}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Placa</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Placa *</label>
                 <Input
                   value={localProfile.vehiclePlate || ""}
                   onChange={(e) => setLocalProfile({ ...localProfile, vehiclePlate: maskPlate(e.target.value) })}
                   placeholder="ABC-1234"
-                  className={cn(plateError && "border-red-500 focus-visible:ring-red-200")}
+                  className={cn(errors.plate && "border-red-500 focus-visible:ring-red-200")}
                 />
-                {plateError && (
-                  <p className="text-[10px] font-bold text-red-500 mt-1">
-                    Placa inválida. Use AAA-0000 ou AAA-0A00.
-                  </p>
-                )}
+                {errors.plate && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.plate}</p>}
               </div>
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ano</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ano *</label>
                 <Input
                   value={localProfile.vehicleYear || ""}
-                  onChange={(e) => setLocalProfile({ ...localProfile, vehicleYear: e.target.value })}
+                  onChange={(e) => setLocalProfile({ ...localProfile, vehicleYear: e.target.value.replace(/\D/g, "").substring(0, 4) })}
                   placeholder="2023"
+                  inputMode="numeric"
+                  maxLength={4}
+                  className={cn(errors.year && "border-red-500 focus-visible:ring-red-200")}
                 />
+                {errors.year && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.year}</p>}
               </div>
             </div>
 
             {/* Transmission toggle */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Câmbio</label>
-              <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Câmbio *</label>
+              <div className={cn("flex gap-1 p-1 bg-slate-100 rounded-xl", errors.transmission && "ring-2 ring-red-400 ring-offset-1")}>
                 {[{ id: "Manual", label: "Manual" }, { id: "Automatic", label: "Automático" }].map((t) => {
                   const isActive =
                     localProfile.transmission === t.id ||
@@ -197,6 +210,7 @@ export const InstructorVehicle = ({
                   );
                 })}
               </div>
+              {errors.transmission && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.transmission}</p>}
             </div>
           </div>
 

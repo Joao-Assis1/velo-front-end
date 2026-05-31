@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { maskDate, maskPattern } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
@@ -51,6 +52,8 @@ export default function StudentRegisterPage() {
   const [form, setForm] = useState<FormData>(INITIAL);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const set = (field: keyof FormData, value: string | boolean) =>
     setForm((p) => ({ ...p, [field]: value }));
@@ -188,24 +191,46 @@ export default function StudentRegisterPage() {
               </Field>
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Senha *" hint="Mínimo 6 caracteres">
-                  <input
-                    type="password"
-                    value={form.password}
-                    onChange={(e) => set("password", e.target.value)}
-                    placeholder="••••••••"
-                    className={inputCls}
-                    autoComplete="new-password"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={form.password}
+                      onChange={(e) => set("password", e.target.value)}
+                      placeholder="••••••••"
+                      className={`${inputCls} pr-10`}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </Field>
                 <Field label="Confirmar senha *">
-                  <input
-                    type="password"
-                    value={form.confirmPassword}
-                    onChange={(e) => set("confirmPassword", e.target.value)}
-                    placeholder="••••••••"
-                    className={inputCls}
-                    autoComplete="new-password"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={form.confirmPassword}
+                      onChange={(e) => set("confirmPassword", e.target.value)}
+                      placeholder="••••••••"
+                      className={`${inputCls} pr-10`}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                      aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </Field>
               </div>
             </div>

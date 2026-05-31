@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
@@ -39,7 +40,7 @@ interface FormData {
   // Step 4 — Veículo e Termos
   vehiclePlate: string;
   vehicleModel: string;
-  vehicleYear: string;
+  vehicleYear: number;
   transmission: "Manual" | "Automatic" | "";
   hasDoubleCommand: boolean;
   termsAccepted: boolean;
@@ -62,6 +63,8 @@ export default function InstructorRegisterPage() {
   const [form, setForm] = useState<FormData>(INITIAL);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const set = (field: keyof FormData, value: string | boolean) =>
     setForm((p) => ({ ...p, [field]: value }));
@@ -186,8 +189,8 @@ export default function InstructorRegisterPage() {
           {STEPS.map((label, i) => (
             <div key={i} className="flex items-center gap-1.5">
               <div className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all ${step === i + 1 ? "bg-blue-600 text-white"
-                  : step > i + 1 ? "bg-green-100 text-green-700"
-                    : "bg-slate-100 text-slate-400"
+                : step > i + 1 ? "bg-green-100 text-green-700"
+                  : "bg-slate-100 text-slate-400"
                 }`}>
                 <span>{step > i + 1 ? "✓" : i + 1}</span>
                 <span className="hidden sm:inline">{label}</span>
@@ -216,12 +219,30 @@ export default function InstructorRegisterPage() {
               </Field>
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Senha *" hint="Mínimo 6 caracteres">
-                  <input type="password" value={form.password} onChange={(e) => set("password", e.target.value)}
-                    placeholder="••••••••" className={inputCls} autoComplete="new-password" />
+                  <div className="relative">
+                    <input type={showPassword ? "text" : "password"} value={form.password}
+                      onChange={(e) => set("password", e.target.value)}
+                      placeholder="••••••••" className={`${inputCls} pr-10`} autoComplete="new-password" />
+                    <button type="button" onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </Field>
                 <Field label="Confirmar senha *">
-                  <input type="password" value={form.confirmPassword} onChange={(e) => set("confirmPassword", e.target.value)}
-                    placeholder="••••••••" className={inputCls} autoComplete="new-password" />
+                  <div className="relative">
+                    <input type={showConfirmPassword ? "text" : "password"} value={form.confirmPassword}
+                      onChange={(e) => set("confirmPassword", e.target.value)}
+                      placeholder="••••••••" className={`${inputCls} pr-10`} autoComplete="new-password" />
+                    <button type="button" onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                      aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}>
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </Field>
               </div>
             </div>
@@ -375,9 +396,11 @@ export default function InstructorRegisterPage() {
                 </div>
               </Field>
 
-              <Field label="Certidão Negativa de Antecedentes *" hint="Nº do documento ou protocolo de emissão">
-                <input value={form.certidaoNegativa} onChange={(e) => set("certidaoNegativa", e.target.value)}
-                  placeholder="Nº ou protocolo da Certidão Negativa" className={inputCls} />
+              <Field label="Certidão Negativa de Antecedentes *" hint="Protocolo emitido pela Polícia Federal (policiafederal.gov.br)">
+                <input value={form.certidaoNegativa}
+                  onChange={(e) => set("certidaoNegativa", maskPattern(e.target.value, "########/####"))}
+                  placeholder="00000000/2024" maxLength={13} inputMode="numeric"
+                  className={inputCls} />
               </Field>
             </div>
           )}

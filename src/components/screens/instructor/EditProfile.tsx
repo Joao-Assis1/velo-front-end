@@ -258,6 +258,56 @@ export const InstructorEditProfile = ({
             </div>
 
             <div className="space-y-1.5">
+              <label className={labelCls}>Nº Credencial DETRAN</label>
+              <Input
+                value={localProfile.detranCredentialNumber || ""}
+                onChange={(e) => setLocalProfile({ ...localProfile, detranCredentialNumber: e.target.value })}
+                placeholder="Ex: 00012345"
+                icon={<Award size={16} />}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={labelCls}>UF da Credencial</label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                  <MapPin size={16} />
+                </div>
+                <select
+                  className={selectCls + " pl-10"}
+                  value={localProfile.detranCredentialUf || ""}
+                  onChange={(e) => setLocalProfile({ ...localProfile, detranCredentialUf: e.target.value })}
+                >
+                  <option value="">Selecione a UF</option>
+                  {["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"].map((uf) => (
+                    <option key={uf} value={uf}>{uf}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {localProfile.credentialStatus && (
+              <div className="space-y-1.5">
+                <label className={labelCls}>Status da Credencial</label>
+                <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                    localProfile.credentialStatus === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                    localProfile.credentialStatus === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {localProfile.credentialStatus === 'APPROVED' ? 'Aprovada' :
+                     localProfile.credentialStatus === 'REJECTED' ? 'Rejeitada' : 'Pendente'}
+                  </span>
+                  {localProfile.credentialValidUntil && (
+                    <span className="text-xs text-slate-500">
+                      válida até {format(new Date(localProfile.credentialValidUntil), 'dd/MM/yyyy')}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
               <label className={labelCls}>Escolaridade</label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">

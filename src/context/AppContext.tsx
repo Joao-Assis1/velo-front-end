@@ -262,6 +262,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         'name', 'phone', 'cpf', 'profilePicture', 'bio', 'location',
         'pricePerClass', 'cnhNumber', 'cnhCategory', 'cnhExpiry', 'cnhEar',
         'certidaoNegativa', 'termsAcceptedAt', 'renachNumber', 'instructorType', 'educationLevel',
+        'detranCredentialNumber', 'detranCredentialUf',
       ];
 
       const payload: Record<string, any> = {};

@@ -40,7 +40,7 @@ interface FormData {
   // Step 4 — Veículo e Termos
   vehiclePlate: string;
   vehicleModel: string;
-  vehicleYear: number;
+  vehicleYear: string;
   transmission: "Manual" | "Automatic" | "";
   hasDoubleCommand: boolean;
   termsAccepted: boolean;

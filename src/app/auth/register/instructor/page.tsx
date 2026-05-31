@@ -417,9 +417,9 @@ export default function InstructorRegisterPage() {
                     placeholder="ABC-1234 ou ABC1D23" maxLength={8} className={inputCls} />
                 </Field>
                 <Field label="Ano *">
-                  <input type="number" value={form.vehicleYear}
-                    onChange={(e) => set("vehicleYear", e.target.value)}
-                    placeholder="2018" min={2000} max={new Date().getFullYear() + 1}
+                  <input value={form.vehicleYear}
+                    onChange={(e) => set("vehicleYear", e.target.value.replace(/\D/g, "").substring(0, 4))}
+                    placeholder="2018" inputMode="numeric" maxLength={4}
                     className={inputCls} />
                 </Field>
               </div>

@@ -142,6 +142,7 @@ export default function LadvPage() {
         </div>
       </section>
 
+      {status?.ladvOcrStatus !== "PASS" && (
       <section className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
         <button
           type="button"
@@ -165,9 +166,11 @@ export default function LadvPage() {
             <label className="flex flex-col gap-1 text-sm">
               Número da LADV
               <input
-                {...register("ladvNumber", { required: true, minLength: 6 })}
+                {...register("ladvNumber", { required: true, minLength: 7, maxLength: 7, pattern: /^\d{7}$/ })}
                 className="rounded-lg border border-zinc-300 px-3 py-2 text-sm"
-                placeholder="LADV-MS-000000"
+                placeholder="Ex: 1234567"
+                maxLength={7}
+                inputMode="numeric"
               />
             </label>
             <label className="flex flex-col gap-1 text-sm">
@@ -211,6 +214,7 @@ export default function LadvPage() {
           </form>
         )}
       </section>
+      )}
 
       {error && (
         <p role="alert" className="text-sm text-rose-600">

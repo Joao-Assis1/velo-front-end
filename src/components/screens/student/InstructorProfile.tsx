@@ -156,7 +156,6 @@ export const InstructorProfileView = ({
   };
 
   const handleBookClick = () => {
-
     if (!hasLadv) {
       setShowLadvAlert(true);
       return;
@@ -167,6 +166,12 @@ export const InstructorProfileView = ({
       return;
     }
 
+    if (!instructor.cnhNumber || instructor.cnhNumber.replace(/\D/g, "").length !== 11) {
+      setBookingError("Este instrutor não possui CNH cadastrada. Escolha outro instrutor.");
+      return;
+    }
+
+    setBookingError("");
     setShowBookingModal(true);
   };
 
@@ -193,10 +198,13 @@ export const InstructorProfileView = ({
       } catch (error: any) {
         const msg: string = error?.message || "";
         const isConflict = /409|reservado|conflict|already booked|already/i.test(msg);
+        const isCnhError = /CNH number.*validation|cnhNumber|cnh.*invalid/i.test(msg);
         if (isConflict) {
           setBookingError("Este horário acabou de ser reservado. Escolha outro horário.");
           setShowBookingModal(false);
           setSelectedTime(null);
+        } else if (isCnhError) {
+          setBookingError("Instrutor sem CNH válida cadastrada. Escolha outro instrutor.");
         } else {
           setBookingError(msg || "Erro inesperado ao agendar.");
         }

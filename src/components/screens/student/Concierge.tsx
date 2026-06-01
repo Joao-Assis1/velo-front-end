@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Loader2, MapPin, ExternalLink, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Loader2, MapPin, ExternalLink, ShieldCheck, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '@/context/AppContext';
 import { BurocraticConcierge, AlertType } from '@/components/features/BurocraticConcierge';
@@ -79,6 +80,7 @@ const STEPS: { key: ChecklistStep; label: string; description: string }[] = [
 ];
 
 export const StudentConcierge = () => {
+  const router = useRouter();
   const { studentProfile } = useApp();
   const queryClient = useQueryClient();
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
@@ -186,10 +188,15 @@ export const StudentConcierge = () => {
               <div className="space-y-2.5">
                 {STEPS.map((step) => {
                   const done = checklist?.[step.key] ?? false;
+                  const isPratico = step.key === 'pratico';
                   return (
                     <button
                       key={step.key}
-                      onClick={() => mutation.mutate({ step: step.key, completed: !done })}
+                      onClick={() =>
+                        isPratico
+                          ? router.push('/app/student/instructors')
+                          : mutation.mutate({ step: step.key, completed: !done })
+                      }
                       disabled={mutation.isPending}
                       className={cn(
                         "w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-4.5 flex items-center gap-4 text-left transition-all duration-200 active:scale-[0.98] cursor-pointer group",
@@ -218,9 +225,13 @@ export const StudentConcierge = () => {
                           "text-xs mt-0.5 truncate",
                           done ? "text-slate-350" : "text-slate-450"
                         )}>
-                          {step.description}
+                          {isPratico ? 'Buscar instrutor credenciado' : step.description}
                         </p>
                       </div>
+
+                      {isPratico && !done && (
+                        <ChevronRight size={16} className="text-slate-400 shrink-0 group-hover:text-blue-600 transition-colors" />
+                      )}
                     </button>
                   );
                 })}

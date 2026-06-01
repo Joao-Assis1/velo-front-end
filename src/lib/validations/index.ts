@@ -45,6 +45,10 @@ export const InstructorSchema = z.object({
   noCassacao: z.boolean().optional(),
   hasDoubleCommand: z.boolean().optional(),
   termsAcceptedAt: z.coerce.date().optional(),
+  detranCredentialNumber: z.string().optional(),
+  detranCredentialUf: z.string().optional(),
+  credentialStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+  credentialValidUntil: z.coerce.date().optional(),
 });
 
 export const StudentSchema = z.object({

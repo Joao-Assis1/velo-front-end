@@ -25,7 +25,7 @@ function mapApiToStudent(data: any): Student {
     ladvUploaded: data.ladvUploaded ?? false,
     ladvValidationDate: data.ladv_validation_date ? parseBRDate(data.ladv_validation_date) : undefined,
     ladvDocumentUrl: data.ladv_document_url ?? undefined,
-    birthDate: data.birthDate ? parseBRDate(data.birthDate) : undefined,
+    birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
     motherName: data.motherName ?? "",
     intendedCategory: data.intendedCategory ?? "B",
     ufDomicile: data.ufDomicile ?? "MS",

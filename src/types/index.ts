@@ -75,7 +75,10 @@ export interface Instructor {
   isActive?: boolean;
   cnhExpiry?: Date;
   hasDoubleCommand?: boolean;
-  pixKey?: string;
+  detranCredentialNumber?: string;
+  detranCredentialUf?: string;
+  credentialStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  credentialValidUntil?: Date;
   stripeAccountId?: string;
   stripeAccountStatus?: 'PENDING' | 'ONBOARDING' | 'ACTIVE' | 'RESTRICTED';
   stripePayoutsEnabled?: boolean;

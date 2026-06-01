@@ -55,7 +55,7 @@ const JOURNEY_GUIDE: GuideEntry[] = [
     title: "Aulas práticas",
     description: "Mínimo 2 horas com instrutor credenciado (Resolução CONTRAN 1.020/2025).",
     cost: "R$ 60–120 / aula",
-    href: "/app/student/schedule",
+    href: "/app/student/instructors",
   },
   {
     step: 6,

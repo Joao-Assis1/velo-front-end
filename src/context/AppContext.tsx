@@ -261,7 +261,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const allowedFields = [
         'name', 'phone', 'cpf', 'profilePicture', 'bio', 'location',
         'pricePerClass', 'cnhNumber', 'cnhCategory', 'cnhExpiry', 'cnhEar',
-        'certidaoNegativa', 'termsAcceptedAt',
+        'certidaoNegativa', 'termsAcceptedAt', 'renachNumber', 'instructorType', 'educationLevel',
+        'detranCredentialNumber', 'detranCredentialUf',
       ];
 
       const payload: Record<string, any> = {};
@@ -269,6 +270,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (data[field] !== undefined) {
           payload[field] = data[field];
         }
+      }
+      if (data.birthDate instanceof Date) {
+        payload.birthDate = data.birthDate.toISOString();
+      } else if (data.birthDate) {
+        payload.birthDate = data.birthDate;
       }
       if (payload.certidaoNegativa !== undefined) {
         payload.certidaoNegativa = String(payload.certidaoNegativa);

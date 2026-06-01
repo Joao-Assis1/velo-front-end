@@ -74,7 +74,6 @@ export const QuizModule = ({ questions, onFinish, onRestart, onNextModule }: Qui
   };
 
   const handleRestart = () => {
-    resetQuizState();
     onRestart();
   };
 

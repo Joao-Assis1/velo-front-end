@@ -32,6 +32,7 @@ interface FormData {
   cnhEar: boolean;    // Exercício de Atividade Remunerada
   renachNumber: string;
   detranCredentialNumber: string;
+  detranCredentialUf: string;
   instructorType: "Credenciado" | "Autônomo" | "";
   certidaoNegativa: string; // número/protocolo
   // Novos requisitos
@@ -50,7 +51,7 @@ interface FormData {
 const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
   cpf: "", phone: "", birthDate: "", educationLevel: "", location: "", bio: "", pricePerClass: "",
-  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", detranCredentialNumber: "", instructorType: "", certidaoNegativa: "",
+  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", detranCredentialNumber: "", detranCredentialUf: "", instructorType: "", certidaoNegativa: "",
   noGravissima: false, hasInstructorCourse: false, noCassacao: false,
   vehiclePlate: "", vehicleModel: "", vehicleYear: "", transmission: "",
   hasDoubleCommand: false,
@@ -156,6 +157,8 @@ export default function InstructorRegisterPage() {
         cnhEar: form.cnhEar,
         renachNumber: form.renachNumber.trim(),
         detranCredentialNumber: form.detranCredentialNumber.trim() || undefined,
+        detranCredentialUf: form.detranCredentialUf || undefined,
+        hasDoubleCommand: form.hasDoubleCommand,
         certidaoNegativa: form.certidaoNegativa.trim(),
         noGravissima: form.noGravissima,
         hasInstructorCourse: form.hasInstructorCourse,
@@ -369,12 +372,22 @@ export default function InstructorRegisterPage() {
                 </Field>
               </div>
 
-              <Field label="Nº Credencial DETRAN" hint="Número de credencial emitido pelo DETRAN (opcional)">
-                <input value={form.detranCredentialNumber}
-                  onChange={(e) => set("detranCredentialNumber", e.target.value.replace(/\D/g, ""))}
-                  placeholder="Ex: 00012345" inputMode="numeric"
-                  className={inputCls} />
-              </Field>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Nº Credencial DETRAN" hint="Opcional">
+                  <input value={form.detranCredentialNumber}
+                    onChange={(e) => set("detranCredentialNumber", e.target.value.replace(/\D/g, ""))}
+                    placeholder="Ex: 00012345" inputMode="numeric"
+                    className={inputCls} />
+                </Field>
+                <Field label="UF da Credencial" hint="Opcional">
+                  <select value={form.detranCredentialUf} onChange={(e) => set("detranCredentialUf", e.target.value)} className={inputCls}>
+                    <option value="">Selecione</option>
+                    {["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"].map((uf) => (
+                      <option key={uf} value={uf}>{uf}</option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
 
               {/* EAR */}
               <div className="border border-slate-200 rounded-xl p-4 space-y-2">
@@ -452,6 +465,13 @@ export default function InstructorRegisterPage() {
                   ))}
                 </div>
               </Field>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 accent-blue-600"
+                  checked={form.hasDoubleCommand}
+                  onChange={(e) => set("hasDoubleCommand", e.target.checked)} />
+                <span className="text-sm text-slate-700">Veículo possui <strong>Duplo Comando</strong> <span className="text-slate-400">(Opcional p/ Autônomos)</span></span>
+              </label>
 
               {/* Terms */}
               <div

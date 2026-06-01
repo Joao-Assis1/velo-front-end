@@ -466,6 +466,13 @@ export default function InstructorRegisterPage() {
                 </div>
               </Field>
 
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 accent-blue-600"
+                  checked={form.hasDoubleCommand}
+                  onChange={(e) => set("hasDoubleCommand", e.target.checked)} />
+                <span className="text-sm text-slate-700">Veículo possui <strong>Duplo Comando</strong> <span className="text-slate-400">(Opcional p/ Autônomos)</span></span>
+              </label>
+
               {/* Terms */}
               <div
                 role="checkbox"

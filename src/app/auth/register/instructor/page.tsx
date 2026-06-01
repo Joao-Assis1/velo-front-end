@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern } from "@/lib/utils/masks";
+import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern, maskCurrency, parseCurrency } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
 const CNH_CATS = ["A", "B", "AB"];
@@ -89,7 +89,7 @@ export default function InstructorRegisterPage() {
     const validEdu = ["Médio Completo", "Superior Incompleto", "Superior Completo", "Pós-Graduação"];
     if (!validEdu.includes(form.educationLevel)) return "É necessário ter concluído ao menos o Ensino Médio.";
     if (!form.location.trim()) return "Localização obrigatória.";
-    if (!form.pricePerClass || Number(form.pricePerClass) <= 0) return "Informe o valor por aula.";
+    if (!form.pricePerClass || parseCurrency(form.pricePerClass) <= 0) return "Informe o valor por aula.";
     return null;
   };
 
@@ -148,7 +148,7 @@ export default function InstructorRegisterPage() {
         instructorType: form.instructorType,
         location: form.location.trim(),
         bio: form.bio.trim(),
-        pricePerClass: Number(form.pricePerClass),
+        pricePerClass: parseCurrency(form.pricePerClass),
         cnhNumber: form.cnhNumber.replace(/\D/g, ""),
         cnhCategory: form.cnhCategory,
         cnhExpiry: brDateToISO(form.cnhExpiry),
@@ -297,8 +297,8 @@ export default function InstructorRegisterPage() {
               <Field label="Valor por aula (R$) *">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">R$</span>
-                  <input type="number" min={0} value={form.pricePerClass}
-                    onChange={(e) => set("pricePerClass", e.target.value)}
+                  <input type="text" inputMode="numeric" value={form.pricePerClass}
+                    onChange={(e) => set("pricePerClass", maskCurrency(e.target.value))}
                     placeholder="80,00" className={`${inputCls} pl-9`} />
                 </div>
               </Field>

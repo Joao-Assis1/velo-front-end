@@ -109,6 +109,18 @@ export const maskCVV = (value: string): string => {
  * Applies a pattern mask to a numeric string.
  * Use '#' as digit placeholder. Example: maskPattern("12345678901", "###.###.###-##") → "123.456.789-01"
  */
+export const maskCurrency = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+  const padded = digits.padStart(3, '0');
+  const intPart = (padded.slice(0, -2).replace(/^0+/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${intPart},${padded.slice(-2)}`;
+};
+
+export const parseCurrency = (value: string): number => {
+  return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
+};
+
 export function maskPattern(value: string, pattern: string): string {
   let i = 0;
   const digits = value.replace(/\D/g, "");

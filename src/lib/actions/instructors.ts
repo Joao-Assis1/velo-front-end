@@ -12,7 +12,7 @@ function mapInstructor(instructor: any): Instructor {
     name: instructor.name,
     phone: instructor.phone,
     profilePicture: instructor.profilePicture,
-    vehicleImage: instructor.vehicleImage,
+    vehicleImage: instructor.vehicleImage || primaryVehicle?.image || primaryVehicle?.vehicleImage,
     vehicleModel: primaryVehicle?.model,
     vehiclePlate: primaryVehicle?.plate,
     vehicleYear: primaryVehicle?.year,

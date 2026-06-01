@@ -366,7 +366,7 @@ export const InstructorEditProfile = ({
                 <input
                   type="checkbox"
                   className="mt-0.5 w-4 h-4 rounded border-slate-300 accent-blue-600"
-                  checked={typeof localProfile[field] === 'string' ? !!localProfile[field] : localProfile[field] as boolean || false}
+                  checked={typeof localProfile[field] === 'string' ? (localProfile[field] !== 'false' && localProfile[field] !== '') : !!localProfile[field]}
                   onChange={(e) => setLocalProfile({ ...localProfile, [field]: e.target.checked })}
                 />
                 <span className="text-xs text-slate-600 leading-tight">{text}</span>

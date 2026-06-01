@@ -21,6 +21,7 @@ export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (status === 'scanning') {
@@ -29,7 +30,10 @@ export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess
       stopCamera();
     }
     
-    return () => stopCamera();
+    return () => {
+      stopCamera();
+      if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
+    };
   }, [status]);
 
   const startCamera = async () => {
@@ -84,7 +88,7 @@ export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess
 
       if (result.success) {
         setStatus('success');
-        setTimeout(() => {
+        successTimeoutRef.current = setTimeout(() => {
           stopCamera();
           onSuccess();
         }, 2000);

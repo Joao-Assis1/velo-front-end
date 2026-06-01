@@ -156,6 +156,7 @@ export async function updateInstructorVehicleAction(
           plate: vehicleData.vehiclePlate,
           year: vehicleData.vehicleYear,
           transmission: vehicleData.transmission,
+          hasDoubleCommand: vehicleData.hasDoubleCommand ?? false,
         }),
       },
     );

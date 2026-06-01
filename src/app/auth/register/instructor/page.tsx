@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern } from "@/lib/utils/masks";
+import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern, maskCurrency, parseCurrency } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 
 const CNH_CATS = ["A", "B", "AB"];
@@ -31,6 +31,8 @@ interface FormData {
   cnhExpiry: string;
   cnhEar: boolean;    // Exercício de Atividade Remunerada
   renachNumber: string;
+  detranCredentialNumber: string;
+  detranCredentialUf: string;
   instructorType: "Credenciado" | "Autônomo" | "";
   certidaoNegativa: string; // número/protocolo
   // Novos requisitos
@@ -49,7 +51,7 @@ interface FormData {
 const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
   cpf: "", phone: "", birthDate: "", educationLevel: "", location: "", bio: "", pricePerClass: "",
-  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", instructorType: "", certidaoNegativa: "",
+  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", detranCredentialNumber: "", detranCredentialUf: "", instructorType: "", certidaoNegativa: "",
   noGravissima: false, hasInstructorCourse: false, noCassacao: false,
   vehiclePlate: "", vehicleModel: "", vehicleYear: "", transmission: "",
   hasDoubleCommand: false,
@@ -89,7 +91,7 @@ export default function InstructorRegisterPage() {
     const validEdu = ["Médio Completo", "Superior Incompleto", "Superior Completo", "Pós-Graduação"];
     if (!validEdu.includes(form.educationLevel)) return "É necessário ter concluído ao menos o Ensino Médio.";
     if (!form.location.trim()) return "Localização obrigatória.";
-    if (!form.pricePerClass || Number(form.pricePerClass) <= 0) return "Informe o valor por aula.";
+    if (!form.pricePerClass || parseCurrency(form.pricePerClass) <= 0) return "Informe o valor por aula.";
     return null;
   };
 
@@ -148,13 +150,19 @@ export default function InstructorRegisterPage() {
         instructorType: form.instructorType,
         location: form.location.trim(),
         bio: form.bio.trim(),
-        pricePerClass: Number(form.pricePerClass),
+        pricePerClass: parseCurrency(form.pricePerClass),
         cnhNumber: form.cnhNumber.replace(/\D/g, ""),
         cnhCategory: form.cnhCategory,
         cnhExpiry: brDateToISO(form.cnhExpiry),
         cnhEar: form.cnhEar,
         renachNumber: form.renachNumber.trim(),
+        detranCredentialNumber: form.detranCredentialNumber.trim() || undefined,
+        detranCredentialUf: form.detranCredentialUf || undefined,
+        hasDoubleCommand: form.hasDoubleCommand,
         certidaoNegativa: form.certidaoNegativa.trim(),
+        noGravissima: form.noGravissima,
+        hasInstructorCourse: form.hasInstructorCourse,
+        noCassacao: form.noCassacao,
         vehiclePlate: form.vehiclePlate.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(),
         vehicleModel: form.vehicleModel.trim(),
         vehicleYear: Number(form.vehicleYear),
@@ -297,8 +305,8 @@ export default function InstructorRegisterPage() {
               <Field label="Valor por aula (R$) *">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">R$</span>
-                  <input type="number" min={0} value={form.pricePerClass}
-                    onChange={(e) => set("pricePerClass", e.target.value)}
+                  <input type="text" inputMode="numeric" value={form.pricePerClass}
+                    onChange={(e) => set("pricePerClass", maskCurrency(e.target.value))}
                     placeholder="80,00" className={`${inputCls} pl-9`} />
                 </div>
               </Field>
@@ -361,6 +369,23 @@ export default function InstructorRegisterPage() {
                   <input value={form.renachNumber}
                     onChange={(e) => set("renachNumber", maskRENACH(e.target.value))}
                     placeholder="MS000000000" maxLength={11} className={inputCls} />
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Nº Credencial DETRAN" hint="Opcional">
+                  <input value={form.detranCredentialNumber}
+                    onChange={(e) => set("detranCredentialNumber", e.target.value.replace(/\D/g, ""))}
+                    placeholder="Ex: 00012345" inputMode="numeric"
+                    className={inputCls} />
+                </Field>
+                <Field label="UF da Credencial" hint="Opcional">
+                  <select value={form.detranCredentialUf} onChange={(e) => set("detranCredentialUf", e.target.value)} className={inputCls}>
+                    <option value="">Selecione</option>
+                    {["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"].map((uf) => (
+                      <option key={uf} value={uf}>{uf}</option>
+                    ))}
+                  </select>
                 </Field>
               </div>
 
@@ -440,6 +465,13 @@ export default function InstructorRegisterPage() {
                   ))}
                 </div>
               </Field>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 accent-blue-600"
+                  checked={form.hasDoubleCommand}
+                  onChange={(e) => set("hasDoubleCommand", e.target.checked)} />
+                <span className="text-sm text-slate-700">Veículo possui <strong>Duplo Comando</strong> <span className="text-slate-400">(Opcional p/ Autônomos)</span></span>
+              </label>
 
               {/* Terms */}
               <div

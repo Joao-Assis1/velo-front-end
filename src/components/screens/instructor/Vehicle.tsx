@@ -44,6 +44,7 @@ export const InstructorVehicle = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pendingPhoto, setPendingPhoto] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +70,15 @@ export const InstructorVehicle = ({
         setIsLoading(true);
         const result = await updateInstructorVehicleAction(localProfile.id, localProfile);
         if (result.success) {
-          onSave(localProfile);
+          const newVehicleId = result.data?.id || localProfile.vehicleId;
+          
+          if (pendingPhoto && newVehicleId) {
+            await uploadVehiclePhotoAction(newVehicleId, pendingPhoto);
+            setPendingPhoto(null);
+          }
+          
+          const finalProfile = { ...localProfile, vehicleId: newVehicleId };
+          onSave(finalProfile);
           setIsSaved(true);
           setTimeout(() => setIsSaved(false), 2000);
         } else {
@@ -85,13 +94,22 @@ export const InstructorVehicle = ({
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !localProfile.vehicleId) return;
+    if (!file) return;
+    
+    // Mostra o preview imediatamente
     const reader = new FileReader();
     reader.onloadend = () => {
       setLocalProfile({ ...localProfile, vehicleImage: reader.result as string });
     };
     reader.readAsDataURL(file);
-    await uploadVehiclePhotoAction(localProfile.vehicleId, file);
+    
+    // Armazena para enviar no submit
+    setPendingPhoto(file);
+    
+    // Se o veículo já tiver ID, tenta enviar também (para caso o usuário não clique em salvar)
+    if (localProfile.vehicleId) {
+      await uploadVehiclePhotoAction(localProfile.vehicleId, file);
+    }
   };
 
   return (

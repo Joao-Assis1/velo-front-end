@@ -251,7 +251,7 @@ export const StudentPersonalData = ({
             }
             className="w-full text-sm font-semibold text-slate-900 bg-transparent outline-none appearance-none cursor-pointer"
           >
-            {["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"].map(uf => (
+            {["MS"].map(uf => (
               <option key={uf} value={uf}>{uf}</option>
             ))}
           </select>

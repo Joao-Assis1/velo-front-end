@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { IdCard, PenLine, ChevronUp, ChevronDown, Smartphone, CalendarClock, Timer } from "lucide-react";
 import { maskDate } from "@/lib/utils/masks";
 import { brDateToISO } from "@/lib/utils/dates";
+import { useApp } from "@/context/AppContext";
 
 type ManualShape = {
   ladvNumber: string;
@@ -24,6 +25,7 @@ type ManualShape = {
 
 export default function LadvPage() {
   const invalidate = useInvalidateJourney();
+  const { setHasLadv } = useApp();
   const [guide, setGuide] = useState<LadvGuide | null>(null);
   const [status, setStatus] = useState<LadvStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +55,7 @@ export default function LadvPage() {
     try {
       const updated = await uploadLadv(file);
       setStatus(updated);
+      setHasLadv(true);
       await invalidate();
     } catch (e: any) {
       setError(e?.message ?? "Erro no upload.");
@@ -71,6 +74,7 @@ export default function LadvPage() {
         ladvValidUntil: brDateToISO(values.ladvValidUntil),
       });
       setStatus(updated);
+      setHasLadv(true);
       await invalidate();
     } catch (e: any) {
       setError(e?.message ?? "Erro ao enviar dados.");

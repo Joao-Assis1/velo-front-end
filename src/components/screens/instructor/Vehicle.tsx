@@ -72,12 +72,16 @@ export const InstructorVehicle = ({
         if (result.success) {
           const newVehicleId = result.data?.id || localProfile.vehicleId;
           
+          let vehicleImageUrl = localProfile.vehicleImage;
           if (pendingPhoto && newVehicleId) {
-            await uploadVehiclePhotoAction(newVehicleId, pendingPhoto);
+            const photoRes = await uploadVehiclePhotoAction(newVehicleId, pendingPhoto);
+            if (photoRes.success && photoRes.data) {
+              vehicleImageUrl = photoRes.data.image || photoRes.data.vehicleImage || photoRes.data.url || vehicleImageUrl;
+            }
             setPendingPhoto(null);
           }
-          
-          const finalProfile = { ...localProfile, vehicleId: newVehicleId };
+
+          const finalProfile = { ...localProfile, vehicleId: newVehicleId, vehicleImage: vehicleImageUrl };
           onSave(finalProfile);
           setIsSaved(true);
           setTimeout(() => setIsSaved(false), 2000);
@@ -106,9 +110,12 @@ export const InstructorVehicle = ({
     // Armazena para enviar no submit
     setPendingPhoto(file);
     
-    // Se o veículo já tiver ID, tenta enviar também (para caso o usuário não clique em salvar)
     if (localProfile.vehicleId) {
-      await uploadVehiclePhotoAction(localProfile.vehicleId, file);
+      const photoRes = await uploadVehiclePhotoAction(localProfile.vehicleId, file);
+      if (photoRes.success && photoRes.data) {
+        const serverUrl = photoRes.data.image || photoRes.data.vehicleImage || photoRes.data.url;
+        if (serverUrl) setLocalProfile((prev) => ({ ...prev, vehicleImage: serverUrl }));
+      }
     }
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Signal, SignalHigh, SignalLow, Timer, Map, Navigation, WifiOff } from 'lucide-react';
 import { SwipeButton } from '@/components/ui-custom/SwipeButton';
@@ -21,7 +21,7 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
   const [gpsStatus, setGpsStatus] = useState<'strong' | 'weak' | 'none'>('none');
   const [speed, setSpeed] = useState(0);
   const [distance, setDistance] = useState(0);
-  const [lastCoords, setLastCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
   const [activeBiometry, setActiveBiometry] = useState<BiometryStage | null>(null);
   const [telemetryPoints, setTelemetryPoints] = useState<any[]>([]);
   const [isFinishing, setIsFinishing] = useState(false);
@@ -83,10 +83,10 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
         }]);
 
         // Calculate Cumulative Distance
-        if (lastCoords) {
+        if (lastCoordsRef.current) {
           const dist = calculateDistance(
-            lastCoords.lat,
-            lastCoords.lng,
+            lastCoordsRef.current.lat,
+            lastCoordsRef.current.lng,
             latitude,
             longitude
           );
@@ -95,7 +95,7 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
             setDistance(prev => prev + dist);
           }
         }
-        setLastCoords({ lat: latitude, lng: longitude });
+        lastCoordsRef.current = { lat: latitude, lng: longitude };
       },
       (err) => {
         console.error("GPS Tracking Error:", err);
@@ -109,7 +109,7 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [lastCoords]);
+  }, []);
 
   // Haversine formula to calculate distance between two points in km
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {

@@ -36,6 +36,7 @@ function mapInstructor(instructor: any): Instructor {
     noGravissima: instructor.noGravissima,
     hasInstructorCourse: instructor.hasInstructorCourse,
     noCassacao: instructor.noCassacao,
+    hasDoubleCommand: instructor.hasDoubleCommand,
     isActive: instructor.isActive,
     detranCredentialNumber: instructor.detranCredentialNumber,
     detranCredentialUf: instructor.detranCredentialUf,

@@ -246,6 +246,16 @@ export const InstructorEditProfile = ({
               </div>
             </div>
 
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                className="w-4 h-4 rounded border-slate-300 accent-blue-600"
+                checked={localProfile.hasDoubleCommand || false}
+                onChange={(e) => setLocalProfile({ ...localProfile, hasDoubleCommand: e.target.checked })}
+              />
+              <span className="text-sm font-medium text-slate-700">Veículo possui <strong>Duplo Comando</strong> <span className="text-slate-400 font-normal">(Opcional p/ Autônomos)</span></span>
+            </label>
+
             <div className="space-y-1.5">
               <label className={labelCls}>Registro RENACH (Instrutor)</label>
               <Input

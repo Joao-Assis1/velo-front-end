@@ -246,16 +246,6 @@ export const InstructorEditProfile = ({
               </div>
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                className="w-4 h-4 rounded border-slate-300 accent-blue-600"
-                checked={localProfile.hasDoubleCommand || false}
-                onChange={(e) => setLocalProfile({ ...localProfile, hasDoubleCommand: e.target.checked })}
-              />
-              <span className="text-sm font-medium text-slate-700">Veículo possui <strong>Duplo Comando</strong> <span className="text-slate-400 font-normal">(Opcional p/ Autônomos)</span></span>
-            </label>
-
             <div className="space-y-1.5">
               <label className={labelCls}>Registro RENACH (Instrutor)</label>
               <Input
@@ -289,7 +279,7 @@ export const InstructorEditProfile = ({
                   onChange={(e) => setLocalProfile({ ...localProfile, detranCredentialUf: e.target.value })}
                 >
                   <option value="">Selecione a UF</option>
-                  {["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"].map((uf) => (
+                  {["MS"].map((uf) => (
                     <option key={uf} value={uf}>{uf}</option>
                   ))}
                 </select>
@@ -300,13 +290,12 @@ export const InstructorEditProfile = ({
               <div className="space-y-1.5">
                 <label className={labelCls}>Status da Credencial</label>
                 <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                    localProfile.credentialStatus === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                    localProfile.credentialStatus === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${localProfile.credentialStatus === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                      localProfile.credentialStatus === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                    }`}>
                     {localProfile.credentialStatus === 'APPROVED' ? 'Aprovada' :
-                     localProfile.credentialStatus === 'REJECTED' ? 'Rejeitada' : 'Pendente'}
+                      localProfile.credentialStatus === 'REJECTED' ? 'Rejeitada' : 'Pendente'}
                   </span>
                   {localProfile.credentialValidUntil && (
                     <span className="text-xs text-slate-500">

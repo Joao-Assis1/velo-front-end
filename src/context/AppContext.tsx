@@ -23,6 +23,7 @@ import {
 import { updateInstructorProfileAction } from '@/lib/actions/instructors';
 import { updateStudentProfileAction } from '@/lib/actions/profileActions';
 import { getAcademyModulesAction } from '@/lib/actions/academy';
+import { getStudentPaymentMethodsAction } from '@/lib/actions/payment-methods';
 import { INITIAL_STUDENT_PROFILE } from '../constants/mockData';
 
 interface AppContextType {
@@ -113,6 +114,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       (userRole === 'instructor' && !!instructorProfile?.id)
     ),
     staleTime: 30_000,
+  });
+
+  const { data: globalPaymentMethods } = useQuery({
+    queryKey: ['payment-methods', studentProfile?.id],
+    queryFn: async () => {
+      if (!studentProfile?.id) return [];
+      const res = await getStudentPaymentMethodsAction(studentProfile.id);
+      return res.success ? res.data : [];
+    },
+    enabled: isHydrated && userRole === 'student' && !!studentProfile?.id,
   });
 
   const setScheduledClasses = useCallback((updater: ScheduledClass[] | ((prev: ScheduledClass[]) => ScheduledClass[])) => {
@@ -324,7 +335,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const bookClass = async (date: Date, startTime: string, endTime: string, instructor: Instructor) => {
     try {
-      const defaultPM = (studentProfile as any)?.paymentMethods?.find(
+      const paymentMethodsToUse = globalPaymentMethods || (studentProfile as any)?.paymentMethods || [];
+      const defaultPM = paymentMethodsToUse.find(
         (pm: any) => pm.isDefault && !pm.isDeleted
       );
       if (!defaultPM && instructor.pricePerClass) {
@@ -452,7 +464,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const hasPaymentMethod = (studentProfile?.paymentMethods?.length ?? 0) > 0;
+  const hasPaymentMethod = (globalPaymentMethods?.length ?? studentProfile?.paymentMethods?.length ?? 0) > 0;
 
   return (
     <AppContext.Provider

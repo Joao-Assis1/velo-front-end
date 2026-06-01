@@ -31,6 +31,7 @@ interface FormData {
   cnhExpiry: string;
   cnhEar: boolean;    // Exercício de Atividade Remunerada
   renachNumber: string;
+  detranCredentialNumber: string;
   instructorType: "Credenciado" | "Autônomo" | "";
   certidaoNegativa: string; // número/protocolo
   // Novos requisitos
@@ -49,7 +50,7 @@ interface FormData {
 const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
   cpf: "", phone: "", birthDate: "", educationLevel: "", location: "", bio: "", pricePerClass: "",
-  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", instructorType: "", certidaoNegativa: "",
+  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", detranCredentialNumber: "", instructorType: "", certidaoNegativa: "",
   noGravissima: false, hasInstructorCourse: false, noCassacao: false,
   vehiclePlate: "", vehicleModel: "", vehicleYear: "", transmission: "",
   hasDoubleCommand: false,
@@ -154,6 +155,7 @@ export default function InstructorRegisterPage() {
         cnhExpiry: brDateToISO(form.cnhExpiry),
         cnhEar: form.cnhEar,
         renachNumber: form.renachNumber.trim(),
+        detranCredentialNumber: form.detranCredentialNumber.trim() || undefined,
         certidaoNegativa: form.certidaoNegativa.trim(),
         noGravissima: form.noGravissima,
         hasInstructorCourse: form.hasInstructorCourse,
@@ -366,6 +368,13 @@ export default function InstructorRegisterPage() {
                     placeholder="MS000000000" maxLength={11} className={inputCls} />
                 </Field>
               </div>
+
+              <Field label="Nº Credencial DETRAN" hint="Número de credencial emitido pelo DETRAN (opcional)">
+                <input value={form.detranCredentialNumber}
+                  onChange={(e) => set("detranCredentialNumber", e.target.value.replace(/\D/g, ""))}
+                  placeholder="Ex: 00012345" inputMode="numeric"
+                  className={inputCls} />
+              </Field>
 
               {/* EAR */}
               <div className="border border-slate-200 rounded-xl p-4 space-y-2">

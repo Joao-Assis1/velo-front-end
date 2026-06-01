@@ -34,6 +34,8 @@ export default function LadvPage() {
   const [issuedDisplay, setIssuedDisplay] = useState("");
   const [validDisplay, setValidDisplay] = useState("");
   const { register, handleSubmit, formState, setValue } = useForm<ManualShape>();
+  const hasValidLadv = !!status?.ladvNumber;
+  const [showUpload, setShowUpload] = useState(false);
 
   useEffect(() => {
     Promise.allSettled([getLadvGuide("MS"), getMyLadv()]).then(
@@ -137,14 +139,23 @@ export default function LadvPage() {
             {status?.ladvOcrStatus ? ocrLabel[status.ladvOcrStatus] : "—"}
           </dd>
         </dl>
+        {hasValidLadv && !showUpload && (
+          <div className="mt-4 border-t border-zinc-100 pt-3 flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => setShowUpload(true)}>
+              Substituir LADV
+            </Button>
+          </div>
+        )}
       </section>
 
+      {(!hasValidLadv || showUpload) && (
       <section className="rounded-xl border border-zinc-200 bg-white p-4">
         <h2 className="text-base font-semibold">Upload da LADV (PDF/JPG/PNG)</h2>
         <div className="mt-3">
           <DocumentUploader label="Enviar arquivo da LADV" onFile={handleUpload} />
         </div>
       </section>
+      )}
 
       {status?.ladvOcrStatus !== "PASS" && (
       <section className="rounded-xl border border-zinc-200 bg-white overflow-hidden">

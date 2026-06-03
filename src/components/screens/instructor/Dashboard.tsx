@@ -18,6 +18,8 @@ export const InstructorDashboard = ({
   onGiveFeedback,
   onRegularize,
   onRenew,
+  availableBalance = 0,
+  monthlyEarnings = 0,
 }: {
   profile: Instructor | null;
   onViewSchedule: () => void;

@@ -120,7 +120,7 @@ export const StudentSchedule = ({
                       <p className="font-extrabold text-slate-900 text-sm leading-tight">{cls.instructorName}</p>
                       <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                         <Clock size={12} className="text-slate-400" />
-                        {format(cls.date, "EEEE, dd 'de' MMMM · HH:mm", { locale: ptBR })}
+                        {format(cls.date, "EEEE, dd 'de' MMMM", { locale: ptBR })} · {cls.startTime} às {cls.endTime}
                       </p>
                       {cls.payment?.status && cls.payment.status !== 'COMPLETED' && (
                         <p className={cn(
@@ -190,7 +190,7 @@ export const StudentSchedule = ({
                       <p className="font-extrabold text-slate-900 text-sm leading-tight">{cls.instructorName}</p>
                       <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                         <Clock size={12} className="text-slate-400" />
-                        {format(cls.date, "dd/MM/yyyy · HH:mm", { locale: ptBR })}
+                        {format(cls.date, "dd/MM/yyyy", { locale: ptBR })} · {cls.startTime} às {cls.endTime}
                       </p>
                     </div>
                     <span className={cn(

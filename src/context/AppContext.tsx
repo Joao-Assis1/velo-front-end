@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
 import {
   createLessonAction,
@@ -349,7 +350,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const lessonDto = {
         studentId: studentProfile?.id || '00000000-0000-0000-0000-000000000000',
         instructorId: instructor.id,
-        date: date.toISOString(),
+        date: format(date, 'yyyy-MM-dd') + 'T00:00:00.000Z',
         startTime,
         endTime,
         price: instructor.pricePerClass,

@@ -22,13 +22,13 @@ export function formatBRDate(str: string | null | undefined): string {
 export function parseBRDate(str: string | null | undefined): Date | null {
   if (!str) return null;
 
-  // Handle ISO date strings from backend (e.g., "2026-06-05T00:00:00.000Z")
-  // Extract only the date part so local timezone offset doesn't shift the day backwards
+  // Extract only the date part and set it to 12:00 PM (noon) to avoid any timezone shifts
+  // between the Vercel server (UTC) and the client browser (BRT).
   if (str.includes('T')) {
     const datePart = str.split('T')[0];
     const [year, month, day] = datePart.split('-').map(Number);
     if (year && month && day) {
-      return new Date(year, month - 1, day);
+      return new Date(year, month - 1, day, 12, 0, 0);
     }
   }
 
@@ -41,5 +41,5 @@ export function parseBRDate(str: string | null | undefined): Date | null {
     const [hours = 0, minutes = 0] = timePart.split(':').map(Number);
     return new Date(year, month - 1, day, hours, minutes);
   }
-  return new Date(year, month - 1, day);
+  return new Date(year, month - 1, day, 12, 0, 0);
 }

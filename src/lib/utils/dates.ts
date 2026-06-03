@@ -19,8 +19,9 @@ export function formatBRDate(str: string | null | undefined): string {
  * Parses a date string in DD/MM/YYYY or DD/MM/YYYY HH:mm format
  * returned by the API and converts it to a JS Date object.
  */
-export function parseBRDate(str: string | null | undefined): Date | null {
+export function parseBRDate(str: string | Date | null | undefined): Date | null {
   if (!str) return null;
+  if (str instanceof Date) return str;
 
   // Extract only the date part and set it to 12:00 PM (noon) to avoid any timezone shifts
   // between the Vercel server (UTC) and the client browser (BRT).

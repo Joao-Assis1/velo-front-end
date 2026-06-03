@@ -143,7 +143,9 @@ export const LessonCard = React.memo(function LessonCard({
     }
   };
 
-  const lessonDate = parseBRDate(lesson.date as string) || new Date(lesson.date);
+  const lessonDate = lesson.date instanceof Date 
+    ? lesson.date 
+    : parseBRDate(lesson.date as string) || new Date(lesson.date);
   const formattedDate = new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "short",

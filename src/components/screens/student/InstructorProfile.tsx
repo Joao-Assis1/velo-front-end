@@ -7,7 +7,6 @@ import {
   MapPin,
   Car,
   Star,
-  MessageCircle,
   CheckCircle2,
   Upload,
   Calendar as CalendarIcon,
@@ -46,7 +45,6 @@ export const InstructorProfileView = ({
   ) => Promise<{ success: boolean; error?: string }> | void;
   busySlots?: Record<string, string[]>;
 }) => {
-  const [showWhatsAppAnim, setShowWhatsAppAnim] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -145,15 +143,6 @@ export const InstructorProfileView = ({
   };
 
   const availableTimes = getAvailableTimes(selectedDate);
-
-  const handleWhatsAppClick = () => {
-    if (!instructor.phone) return;
-    setShowWhatsAppAnim(true);
-    setTimeout(() => {
-      setShowWhatsAppAnim(false);
-      window.open(`https://wa.me/55${instructor.phone!.replace(/\D/g, '')}`, '_blank');
-    }, 1500);
-  };
 
   const handleBookClick = () => {
     if (!hasLadv) {
@@ -397,31 +386,6 @@ export const InstructorProfileView = ({
                   <Clock size={16} />
                   {selectedTime ? `Agendar para as ${selectedTime} — R$ ${instructor.pricePerClass}` : "Selecione data e horário"}
                 </button>
-
-                <AnimatePresence mode="wait">
-                  {showWhatsAppAnim ? (
-                    <motion.div
-                      initial={{ scale: 0.95, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.95, opacity: 0 }}
-                      className="bg-emerald-500 text-white py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2.5 w-full"
-                    >
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span className="font-extrabold text-sm">Redirecionando para o WhatsApp...</span>
-                    </motion.div>
-                  ) : (
-                    instructor.phone && (
-                      <button
-                        onClick={handleWhatsAppClick}
-                        disabled={!instructor.phone}
-                        className="w-full py-3.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold rounded-xl text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <MessageCircle size={16} className="text-emerald-500" />
-                        Conversar via WhatsApp
-                      </button>
-                    )
-                  )}
-                </AnimatePresence>
               </div>
 
             </div>
@@ -440,31 +404,6 @@ export const InstructorProfileView = ({
           <Clock size={16} />
           {selectedTime ? `Agendar para as ${selectedTime} — R$ ${instructor.pricePerClass}` : "Selecione data e horário"}
         </button>
-
-        <AnimatePresence mode="wait">
-          {showWhatsAppAnim ? (
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-emerald-500 text-white py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2.5 w-full"
-            >
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span className="font-extrabold text-sm">Redirecionando para o WhatsApp...</span>
-            </motion.div>
-          ) : (
-            instructor.phone && (
-              <button
-                onClick={handleWhatsAppClick}
-                disabled={!instructor.phone}
-                className="w-full py-3.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold rounded-2xl text-sm transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
-              >
-                <MessageCircle size={16} className="text-emerald-500" />
-                Conversar via WhatsApp
-              </button>
-            )
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Modais Customizados como Bottom Sheets */}

@@ -76,7 +76,7 @@ export const InstructorVehicle = ({
           if (pendingPhoto && newVehicleId) {
             const photoRes = await uploadVehiclePhotoAction(newVehicleId, pendingPhoto);
             if (photoRes.success && photoRes.data) {
-              vehicleImageUrl = photoRes.data.image || photoRes.data.vehicleImage || photoRes.data.url || vehicleImageUrl;
+              vehicleImageUrl = photoRes.data.vehiclePhoto || photoRes.data.image || photoRes.data.vehicleImage || photoRes.data.url || vehicleImageUrl;
             }
             setPendingPhoto(null);
           }
@@ -113,7 +113,7 @@ export const InstructorVehicle = ({
     if (localProfile.vehicleId) {
       const photoRes = await uploadVehiclePhotoAction(localProfile.vehicleId, file);
       if (photoRes.success && photoRes.data) {
-        const serverUrl = photoRes.data.image || photoRes.data.vehicleImage || photoRes.data.url;
+        const serverUrl = photoRes.data.vehiclePhoto || photoRes.data.image || photoRes.data.vehicleImage || photoRes.data.url;
         if (serverUrl) setLocalProfile((prev) => ({ ...prev, vehicleImage: serverUrl }));
       }
     }

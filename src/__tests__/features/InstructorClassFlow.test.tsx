@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import React from "react";
-import { AppProvider, useApp } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import { createAppWrapper } from "../utils/appWrapper";
 
 // Mock server actions (needed for context hydration/initialization)
 vi.mock("@/lib/actions/lessons", () => ({
@@ -43,6 +43,13 @@ vi.mock("@/lib/actions/instructors", () => ({
   updateInstructorProfileAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("@/lib/actions/payment-methods", () => ({
+  getStudentPaymentMethodsAction: vi.fn().mockResolvedValue({
+    success: true,
+    data: [{ id: "pm-1", isDefault: true, isDeleted: false }],
+  }),
+}));
+
 const mockLesson = {
   id: "lesson-1",
   studentId: "student-1",
@@ -54,8 +61,7 @@ const mockLesson = {
   price: 150.00
 };
 
-const wrapper = ({ children }: { children: React.ReactNode }) =>
-  React.createElement(AppProvider, null, children);
+const wrapper = createAppWrapper();
 
 describe("Instructor Class Flow (Integration)", () => {
   beforeEach(() => {

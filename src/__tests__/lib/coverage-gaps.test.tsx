@@ -73,17 +73,23 @@ vi.mock("@/lib/actions/instructors", () => ({
   updateInstructorProfileAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("@/lib/actions/payment-methods", () => ({
+  getStudentPaymentMethodsAction: vi.fn().mockResolvedValue({
+    success: true,
+    data: [{ id: "pm-1", isDefault: true, isDeleted: false }],
+  }),
+}));
+
 import { renderHook, act } from "@testing-library/react";
-import React from "react";
-import { AppProvider, useApp } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
 import {
   registerStudentAction,
   registerInstructorAction,
 } from "@/lib/actions/auth";
 import { submitInstructorFeedbackAction } from "@/lib/actions/lessons";
+import { createAppWrapper } from "../utils/appWrapper";
 
-const wrapper = ({ children }: { children: React.ReactNode }) =>
-  React.createElement(AppProvider, null, children);
+const wrapper = createAppWrapper();
 
 // ── register ──────────────────────────────────────────────────────────────
 describe("AppContext – register", () => {
@@ -114,6 +120,34 @@ describe("AppContext – register", () => {
     });
 
     expect(localStorage.getItem("velo-token")).toBe("new-student-token");
+    expect(result.current.studentProfile?.name).toBe("Ana");
+  });
+
+  it("registers a student via forcedRole even before userRole state updates (no stale-role bug)", async () => {
+    (registerStudentAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: true,
+      data: { id: "s1", name: "Ana", email: "ana@velo.com", ladvUploaded: false },
+      token: "forced-student-token",
+    });
+    (registerInstructorAction as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: true,
+      data: { id: "i1", name: "Carlos", email: "carlos@velo.com" },
+      token: "wrong-instructor-token",
+    });
+
+    const { result } = renderHook(() => useApp(), { wrapper });
+
+    // Simulates the page: it passes the role explicitly because setUserRole
+    // has not propagated to the register closure yet.
+    await act(async () => {
+      await (result.current.register as any)(
+        { name: "Ana", email: "ana@velo.com", password: "senha123" },
+        "student",
+      );
+    });
+
+    expect(registerStudentAction).toHaveBeenCalledTimes(1);
+    expect(registerInstructorAction).not.toHaveBeenCalled();
     expect(result.current.studentProfile?.name).toBe("Ana");
   });
 

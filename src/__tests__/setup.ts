@@ -1,5 +1,11 @@
 import "@testing-library/jest-dom";
 import { vi, beforeEach } from "vitest";
+import { notifyManager } from "@tanstack/react-query";
+
+// Make React Query notifications synchronous in tests so that setQueryData
+// (used by AppContext.setScheduledClasses) propagates within the same act()
+// tick, eliminating order-dependent flakiness.
+notifyManager.setScheduler((cb) => cb());
 
 // Mock localStorage
 const localStorageMock = (() => {

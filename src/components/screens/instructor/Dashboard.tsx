@@ -18,6 +18,8 @@ export const InstructorDashboard = ({
   onGiveFeedback,
   onRegularize,
   onRenew,
+  availableBalance = 0,
+  monthlyEarnings = 0,
 }: {
   profile: Instructor | null;
   onViewSchedule: () => void;
@@ -25,9 +27,9 @@ export const InstructorDashboard = ({
   onGiveFeedback: (id: string, feedback: string) => void;
   onRegularize: () => void;
   onRenew: () => void;
+  availableBalance?: number;
+  monthlyEarnings?: number;
 }) => {
-  const { availableBalance, pendingBalance } = useApp();
-
   const myClasses = classes.filter((c) => c.instructorId === profile?.id);
   const todayClasses = myClasses.filter((c) => isToday(c.date));
   const pendingClasses = myClasses.filter((c) => c.status === 'pending_acceptance');
@@ -36,13 +38,6 @@ export const InstructorDashboard = ({
     .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   const now = new Date();
-  const monthlyEarnings = completedClasses
-    .filter(
-      (c) =>
-        c.date.getMonth() === now.getMonth() &&
-        c.date.getFullYear() === now.getFullYear()
-    )
-    .reduce((sum, c) => sum + (c.price ?? 0), 0);
 
   const [feedbackClassId, setFeedbackClassId] = useState<string | null>(null);
   const [feedbackText, setFeedbackText] = useState('');

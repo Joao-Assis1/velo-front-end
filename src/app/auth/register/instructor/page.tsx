@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern, maskCurrency, parseCurrency } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
+import { useFormPersist } from "@/lib/hooks/useFormPersist";
 
 const CNH_CATS = ["A", "B", "AB"];
 const EDU_LEVELS = ["Médio Completo", "Superior Incompleto", "Superior Completo", "Pós-Graduação"];
@@ -31,7 +32,6 @@ interface FormData {
   cnhExpiry: string;
   cnhEar: boolean;    // Exercício de Atividade Remunerada
   renachNumber: string;
-  detranCredentialNumber: string;
   instructorType: "Credenciado" | "Autônomo" | "";
   certidaoNegativa: string; // número/protocolo
   // Novos requisitos
@@ -50,7 +50,7 @@ interface FormData {
 const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
   cpf: "", phone: "", birthDate: "", educationLevel: "", location: "", bio: "", pricePerClass: "",
-  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", detranCredentialNumber: "", instructorType: "", certidaoNegativa: "",
+  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", instructorType: "", certidaoNegativa: "",
   noGravissima: false, hasInstructorCourse: false, noCassacao: false,
   vehiclePlate: "", vehicleModel: "", vehicleYear: "", transmission: "",
   hasDoubleCommand: false,
@@ -61,14 +61,14 @@ export default function InstructorRegisterPage() {
   const router = useRouter();
   const { register, setUserRole } = useApp();
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState<FormData>(INITIAL);
+  const { form, setForm, clearForm } = useFormPersist<FormData>("velo-register-instructor", INITIAL);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const set = (field: keyof FormData, value: string | boolean) =>
-    setForm((p) => ({ ...p, [field]: value }));
+    setForm((p: FormData) => ({ ...p, [field]: value }));
 
   const validateStep1 = () => {
     if (!form.name.trim() || form.name.trim().split(" ").length < 2) return "Informe nome e sobrenome.";
@@ -155,7 +155,6 @@ export default function InstructorRegisterPage() {
         cnhExpiry: brDateToISO(form.cnhExpiry),
         cnhEar: form.cnhEar,
         renachNumber: form.renachNumber.trim(),
-        detranCredentialNumber: form.detranCredentialNumber.trim() || undefined,
         hasDoubleCommand: form.hasDoubleCommand,
         certidaoNegativa: form.certidaoNegativa.trim(),
         noGravissima: form.noGravissima,
@@ -166,6 +165,7 @@ export default function InstructorRegisterPage() {
         vehicleYear: Number(form.vehicleYear),
         transmission: form.transmission,
       }, "instructor");
+      clearForm();
       router.push("/app/instructor/dashboard");
     } catch (e: any) {
       setError(e?.message || "Erro ao criar conta. Tente novamente.");
@@ -369,13 +369,6 @@ export default function InstructorRegisterPage() {
                     placeholder="MS000000000" maxLength={11} className={inputCls} />
                 </Field>
               </div>
-
-              <Field label="Nº Credencial DETRAN" hint="Opcional">
-                <input value={form.detranCredentialNumber}
-                  onChange={(e) => set("detranCredentialNumber", e.target.value.replace(/\D/g, ""))}
-                  placeholder="Ex: 00012345" inputMode="numeric"
-                  className={inputCls} />
-              </Field>
 
               {/* EAR */}
               <div className="border border-slate-200 rounded-xl p-4 space-y-2">

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { maskDate, maskPattern } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
+import { useFormPersist } from "@/lib/hooks/useFormPersist";
 
 
 function isValidCPF(cpf: string): boolean {
@@ -48,14 +49,14 @@ export default function StudentRegisterPage() {
   const router = useRouter();
   const { register, setUserRole } = useApp();
   const [step, setStep] = useState<Step>(1);
-  const [form, setForm] = useState<FormData>(INITIAL);
+  const { form, setForm, clearForm } = useFormPersist<FormData>("velo-register-student", INITIAL);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const set = (field: keyof FormData, value: string | boolean) =>
-    setForm((p) => ({ ...p, [field]: value }));
+    setForm((p: FormData) => ({ ...p, [field]: value }));
 
   // --- Validations per step ---
   const validateStep1 = () => {
@@ -112,6 +113,7 @@ export default function StudentRegisterPage() {
         intendedCategory: form.intendedCategory,
         ufDomicile: form.ufDomicile,
       }, "student");
+      clearForm();
       router.push("/app/student/dashboard");
     } catch (e: any) {
       const msg: string = e?.message || "Erro ao criar conta. Tente novamente.";
@@ -320,6 +322,7 @@ export default function StudentRegisterPage() {
                   Li e aceito os{" "}
                   <a href="/terms?from=student" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Termos de Uso</a> e a{" "}
                   <a href="/privacy?from=student" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> do Velo,
+                  {/* Links abrem em nova aba — form persiste via sessionStorage */}
                   incluindo o tratamento de dados biométricos e de geolocalização exigidos pela Res. CONTRAN 1.020/25.
                 </p>
               </div>

@@ -3,12 +3,19 @@ import { ChevronLeft } from "lucide-react";
 
 export const metadata = { title: "Termos de Uso — Velo" };
 
-export default function TermsPage() {
+export default async function TermsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
+  const { from } = await searchParams;
+  const backHref = from === "instructor" ? "/auth/register/instructor" : "/auth/register/student";
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-10 bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/auth/register/student" className="p-2 hover:bg-slate-100 rounded-xl transition text-slate-500">
+          <Link href={backHref} className="p-2 hover:bg-slate-100 rounded-xl transition text-slate-500">
             <ChevronLeft size={20} />
           </Link>
           <div>

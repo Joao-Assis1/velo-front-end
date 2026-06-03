@@ -88,9 +88,21 @@ export default function ConciergePage() {
   }
   if (state.isError || timeline.isError) {
     return (
-      <p className="p-4 text-sm text-rose-600">
-        Não foi possível carregar sua jornada. Tente novamente.
-      </p>
+      <div className="flex flex-col items-start gap-3 p-4">
+        <p className="text-sm text-rose-600">
+          Não foi possível carregar sua jornada.
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            state.refetch();
+            timeline.refetch();
+          }}
+        >
+          Tentar novamente
+        </Button>
+      </div>
     );
   }
   const journey = state.data!;

@@ -21,6 +21,17 @@ export function formatBRDate(str: string | null | undefined): string {
  */
 export function parseBRDate(str: string | null | undefined): Date | null {
   if (!str) return null;
+
+  // Handle ISO date strings from backend (e.g., "2026-06-05T00:00:00.000Z")
+  // Extract only the date part so local timezone offset doesn't shift the day backwards
+  if (str.includes('T')) {
+    const datePart = str.split('T')[0];
+    const [year, month, day] = datePart.split('-').map(Number);
+    if (year && month && day) {
+      return new Date(year, month - 1, day);
+    }
+  }
+
   const [datePart, timePart] = str.split(' ');
   const parts = datePart.split('/');
   if (parts.length !== 3) return null;

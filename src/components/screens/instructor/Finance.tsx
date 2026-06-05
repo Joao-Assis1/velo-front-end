@@ -1,8 +1,7 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
-import { ChevronLeft, ArrowUpRight, ArrowDownLeft, AlertTriangle, Loader2, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ArrowUpRight, ArrowDownLeft, Loader2 } from 'lucide-react';
 import { formatBRDate } from '@/lib/utils/dates';
 
 export interface EarningsData {
@@ -20,7 +19,6 @@ export interface EarningsData {
 
 export const InstructorFinance = ({
   earningsData,
-  stripePayoutsEnabled,
   onBack,
   selectedMonth,
   selectedYear,
@@ -28,7 +26,6 @@ export const InstructorFinance = ({
   isLoading = false
 }: {
   earningsData?: EarningsData,
-  stripePayoutsEnabled?: boolean,
   onBack: () => void,
   selectedMonth: number,
   selectedYear: number,
@@ -142,32 +139,6 @@ export const InstructorFinance = ({
               </div>
             </div>
           </div>
-
-          {/* Stripe status */}
-          {stripePayoutsEnabled ? (
-            <div className="flex items-center gap-3 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
-              <div className="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center text-green-600 shrink-0">
-                <ShieldCheck size={18} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-slate-700">Conta de recebimento ativa</p>
-                <p className="text-xs text-green-600 mt-0.5">Recebimentos via Stripe habilitados</p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
-              <AlertTriangle size={16} className="shrink-0 mt-0.5 text-amber-500" />
-              <div>
-                <p className="text-sm font-bold text-amber-900 mb-1">Conta de recebimento não configurada</p>
-                <p className="text-sm text-amber-700">
-                  Conecte sua conta bancária para receber o valor das suas aulas.{' '}
-                  <Link href="/app/instructor/settings" className="underline font-semibold">
-                    Configurar agora
-                  </Link>
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Automatic transfers info */}
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-3">

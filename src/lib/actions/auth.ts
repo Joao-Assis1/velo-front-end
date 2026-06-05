@@ -81,9 +81,6 @@ export async function loginInstructorAction(credentials: any) {
       vehiclePlate: primaryVehicle?.plate,
       vehicleImage: primaryVehicle?.vehiclePhoto,
       transmission: primaryVehicle?.transmission as any,
-      stripeAccountId: instructor.stripeAccountId || undefined,
-      stripeAccountStatus: instructor.stripeAccountStatus,
-      stripePayoutsEnabled: instructor.stripePayoutsEnabled,
       availability:
         instructor.availabilities?.map((a: any) => ({
           id: a.id,
@@ -180,9 +177,6 @@ export async function registerInstructorAction(data: any) {
       vehiclePlate: primaryVehicle?.plate,
       vehicleImage: primaryVehicle?.vehiclePhoto,
       transmission: primaryVehicle?.transmission as any,
-      stripeAccountId: instructor.stripeAccountId || undefined,
-      stripeAccountStatus: instructor.stripeAccountStatus,
-      stripePayoutsEnabled: instructor.stripePayoutsEnabled,
       availability:
         instructor.availabilities?.map((a: any) => ({
           id: a.id,

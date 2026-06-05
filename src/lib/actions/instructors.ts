@@ -42,9 +42,6 @@ function mapInstructor(instructor: any): Instructor {
     detranCredentialUf: instructor.detranCredentialUf,
     credentialStatus: instructor.credentialStatus,
     credentialValidUntil: instructor.credentialValidUntil ? new Date(instructor.credentialValidUntil) : undefined,
-    stripeAccountId: instructor.stripeAccountId,
-    stripeAccountStatus: instructor.stripeAccountStatus,
-    stripePayoutsEnabled: instructor.stripePayoutsEnabled,
   };
 }
 

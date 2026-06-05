@@ -10,18 +10,6 @@ interface AddCardFormProps {
   onClose?: () => void;
 }
 
-const stripeErrorMap: Record<string, string> = {
-  card_declined: 'Cartão recusado. Tente outro cartão.',
-  insufficient_funds: 'Cartão recusado por saldo insuficiente.',
-  lost_card: 'Cartão bloqueado. Entre em contato com o banco.',
-  stolen_card: 'Cartão bloqueado. Entre em contato com o banco.',
-  expired_card: 'Cartão vencido.',
-  incorrect_cvc: 'CVV inválido.',
-  incorrect_number: 'Número de cartão inválido.',
-  invalid_expiry_month: 'Mês de validade inválido.',
-  invalid_expiry_year: 'Ano de validade inválido.',
-  processing_error: 'Erro ao processar pagamento. Tente novamente.',
-};
 
 export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) => {
   const { studentProfile } = useApp();
@@ -84,10 +72,7 @@ export const AddCardForm: React.FC<AddCardFormProps> = ({ onSuccess, onClose }) 
       if (res.success) {
         if (onSuccess) onSuccess();
       } else {
-        const mappedError =
-          stripeErrorMap[res.error ?? ''] ??
-          (res.error || 'Cartão não autorizado. Tente outro.');
-        setError(mappedError);
+        setError(res.error || 'Cartão não autorizado. Tente outro.');
       }
     } catch {
       setError('Erro de conexão');

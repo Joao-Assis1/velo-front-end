@@ -6,7 +6,7 @@ import {
   setDefaultCard,
   SavedCard,
 } from "@/lib/api/payments-stripe";
-import { AddCardStripe } from "@/components/journey/AddCardStripe";
+import { AddCardForm } from "@/components/features/AddCardForm";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Trash2, Star } from "lucide-react";
 
@@ -64,8 +64,8 @@ export default function PaymentsPage() {
         <div>
           <h1 className="text-2xl font-bold">Métodos de pagamento</h1>
           <p className="text-sm text-zinc-600">
-            Cartões são salvos com segurança pelo Stripe. A Velo não armazena
-            número, CVV ou validade — apenas o token.
+            Cartões são salvos com segurança. A Velo não armazena
+            número, CVV ou validade.
           </p>
         </div>
       </header>
@@ -121,7 +121,7 @@ export default function PaymentsPage() {
       <section className="rounded-xl border border-zinc-200 bg-white p-4">
         <h2 className="text-base font-semibold">Adicionar novo cartão</h2>
         <div className="mt-3">
-          <AddCardStripe onDone={() => void reload()} />
+          <AddCardForm onSuccess={() => void reload()} />
         </div>
       </section>
 

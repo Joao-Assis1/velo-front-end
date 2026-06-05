@@ -393,6 +393,7 @@ export const LessonCard = React.memo(function LessonCard({
             studentImage={lesson.studentImage}
             lessonId={lesson.id}
             onFinish={handleTelemetryFinish}
+            onClose={() => setShowTelemetry(false)}
           />
         )}
       </AnimatePresence>

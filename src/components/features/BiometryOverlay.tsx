@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Scan, ShieldCheck, UserCheck, Loader2, Camera, AlertCircle } from 'lucide-react';
+import { Scan, ShieldCheck, UserCheck, Loader2, Camera, AlertCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { submitBiometryAction } from '@/lib/actions/lessons';
 import { BiometryStage } from '@/types';
@@ -12,10 +12,11 @@ interface BiometryOverlayProps {
   studentName: string;
   studentImage?: string;
   onSuccess: () => void;
+  onClose?: () => void;
   stage: BiometryStage;
 }
 
-export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess, stage }: BiometryOverlayProps) => {
+export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess, onClose, stage }: BiometryOverlayProps) => {
   const [status, setStatus] = useState<'idle' | 'scanning' | 'verifying' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   
@@ -114,6 +115,16 @@ export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess
 
   return (
     <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[110] flex flex-col items-center justify-center p-6 text-white">
+      {onClose && status !== 'verifying' && status !== 'success' && (
+        <button
+          onClick={() => { stopCamera(); onClose(); }}
+          aria-label="Fechar biometria"
+          className="absolute top-6 right-6 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+        >
+          <X size={24} />
+        </button>
+      )}
+
       {/* Scanning Target */}
       <div className="relative w-64 h-64 md:w-80 md:h-80 mb-12">
         {/* Frame Corners */}

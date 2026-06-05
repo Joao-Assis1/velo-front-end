@@ -118,7 +118,7 @@ export async function registerStudentAction(data: any) {
     });
     const authResult = apiResponse.data;
     if (!authResult || !authResult.user)
-      return { success: false, error: "Registration failed" };
+      return { success: false, error: "Não foi possível concluir o cadastro" };
 
     (await cookies()).set("velo-token", authResult.access_token, {
       path: "/",
@@ -142,7 +142,7 @@ export async function registerInstructorAction(data: any) {
     });
     const authResult = apiResponse.data;
     if (!authResult || !authResult.user)
-      return { success: false, error: "Registration failed" };
+      return { success: false, error: "Não foi possível concluir o cadastro" };
 
     const instructor = authResult.user;
     const primaryVehicle = instructor.vehicles?.[0];

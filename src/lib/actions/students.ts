@@ -27,7 +27,7 @@ export async function getStudentAction(id: string) {
     const student = apiResponse?.data;
 
     if (!student) {
-      throw new Error("Student not found");
+      throw new Error("Aluno não encontrado");
     }
 
     return { 

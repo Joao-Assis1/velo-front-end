@@ -359,7 +359,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
       const result = await createLessonAction(lessonDto);
       if (!result.success || !result.data) {
-        throw new Error(result.error || 'Failed to book class');
+        throw new Error(result.error || 'Não foi possível agendar a aula');
       }
 
       const lesson = result.data as ScheduledClass;

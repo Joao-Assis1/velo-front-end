@@ -11,12 +11,13 @@ import { submitTelemetryBatchAction } from '@/lib/actions/lessons';
 
 interface TelemetryHUDProps {
   onFinish: () => void;
+  onClose?: () => void;
   studentName: string;
   lessonId: string;
   studentImage?: string;
 }
 
-export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: TelemetryHUDProps) => {
+export const TelemetryHUD = ({ onFinish, onClose, studentName, lessonId, studentImage }: TelemetryHUDProps) => {
   const [seconds, setSeconds] = useState(50 * 60); // 50 minutes
   const [gpsStatus, setGpsStatus] = useState<'strong' | 'weak' | 'none'>('none');
   const [speed, setSpeed] = useState(0);
@@ -161,6 +162,10 @@ export const TelemetryHUD = ({ onFinish, studentName, lessonId, studentImage }: 
               }
               setActiveBiometry(null);
             }}
+            onClose={onClose ? () => {
+              setActiveBiometry(null);
+              onClose();
+            } : undefined}
           />
         )}
       </AnimatePresence>

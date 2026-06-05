@@ -82,6 +82,8 @@ export interface Instructor {
   stripeAccountId?: string;
   stripeAccountStatus?: 'PENDING' | 'ONBOARDING' | 'ACTIVE' | 'RESTRICTED';
   stripePayoutsEnabled?: boolean;
+  pixKey?: string;
+  pixKeyType?: 'CPF' | 'CNPJ' | 'EMAIL' | 'PHONE' | 'EVP';
 }
 
 export interface Student {

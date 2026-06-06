@@ -41,6 +41,21 @@ export const maskCNH = (value: string) => {
     .substring(0, 11);
 };
 
+export const isValidCNH = (value: string): boolean => {
+  const d = value.replace(/\D/g, '');
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+  let dsc = 0;
+  let sum = 0;
+  for (let i = 0, j = 9; i < 9; i++, j--) sum += parseInt(d[i]) * j;
+  let d1 = sum % 11;
+  if (d1 >= 10) { d1 = 0; dsc = 2; }
+  sum = 0;
+  for (let i = 0, j = 1; i < 9; i++, j++) sum += parseInt(d[i]) * j;
+  const r = sum % 11;
+  const d2 = r >= 10 ? 0 : r - dsc < 0 ? r - dsc + 11 : r - dsc;
+  return `${d1}${d2}` === d.substring(9, 11);
+};
+
 /**
  * Masks a string as RENACH (11 digits)
  */
@@ -110,11 +125,11 @@ export const maskCVV = (value: string): string => {
  * Use '#' as digit placeholder. Example: maskPattern("12345678901", "###.###.###-##") → "123.456.789-01"
  */
 export const maskCurrency = (value: string): string => {
-  const digits = value.replace(/\D/g, '');
-  if (!digits) return '';
-  const padded = digits.padStart(3, '0');
-  const intPart = (padded.slice(0, -2).replace(/^0+/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `${intPart},${padded.slice(-2)}`;
+  const clean = value.replace(/[^\d,]/g, '');
+  if (!clean) return '';
+  const parts = clean.split(',');
+  const intPart = (parts[0].replace(/^0+/, '') || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.length > 1 ? `${intPart},${parts[1].substring(0, 2)}` : intPart;
 };
 
 export const parseCurrency = (value: string): number => {

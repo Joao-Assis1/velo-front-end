@@ -20,10 +20,18 @@ const statusConfig = (s: string) => {
       return { label: 'Pago', bg: 'bg-green-50', text: 'text-green-600' };
     case 'PENDING':
       return { label: 'Pendente', bg: 'bg-amber-50', text: 'text-amber-600' };
+    case 'HELD':
+      return { label: 'Em custódia', bg: 'bg-purple-50', text: 'text-purple-600' };
+    case 'RELEASED':
+      return { label: 'Liberado', bg: 'bg-green-50', text: 'text-green-600' };
+    case 'FAILED':
+      return { label: 'Falhou', bg: 'bg-red-50', text: 'text-red-600' };
     case 'OVERDUE':
       return { label: 'Vencido', bg: 'bg-red-50', text: 'text-red-600' };
     case 'REFUNDED':
       return { label: 'Reembolsado', bg: 'bg-blue-50', text: 'text-blue-600' };
+    case 'RELEASE_FAILED':
+      return { label: 'Erro na liberação', bg: 'bg-orange-50', text: 'text-orange-600' };
     default:
       return { label: s, bg: 'bg-slate-50', text: 'text-slate-500' };
   }

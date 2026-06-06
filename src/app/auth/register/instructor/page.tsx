@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern, maskCurrency, parseCurrency } from "@/lib/utils/masks";
+import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern, maskCurrency, parseCurrency, isValidCNH } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
 import { useFormPersist } from "@/lib/hooks/useFormPersist";
 
@@ -96,6 +96,7 @@ export default function InstructorRegisterPage() {
 
   const validateStep3 = () => {
     if (form.cnhNumber.replace(/\D/g, "").length !== 11) return "Número da CNH deve ter 11 dígitos.";
+    if (!isValidCNH(form.cnhNumber)) return "Número da CNH inválido. Verifique os dígitos verificadores.";
     if (!form.cnhCategory) return "Selecione a categoria da CNH.";
     if (!form.cnhExpiry || form.cnhExpiry.replace(/\D/g, '').length < 8) return "Data de validade da CNH obrigatória.";
     const expiryObj = parseBRDate(form.cnhExpiry);
@@ -166,7 +167,7 @@ export default function InstructorRegisterPage() {
         transmission: form.transmission,
       }, "instructor");
       clearForm();
-      router.push("/app/instructor/dashboard");
+      router.push("/app/instructor/schedule");
     } catch (e: any) {
       setError(e?.message || "Erro ao criar conta. Tente novamente.");
     } finally {

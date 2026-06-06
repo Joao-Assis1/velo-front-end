@@ -23,7 +23,7 @@ export default function DisputeDetailPage() {
     setBusy(true);
     setError(null);
     try {
-      await fetchWrapper(`/payments-stripe/disputes/${lessonId}/resolve`, {
+      await fetchWrapper(`/admin/lessons/${lessonId}/resolve-dispute`, {
         method: "POST",
         body: JSON.stringify({ action }),
       });

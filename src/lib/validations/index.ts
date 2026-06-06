@@ -49,6 +49,8 @@ export const InstructorSchema = z.object({
   detranCredentialUf: z.string().optional(),
   credentialStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
   credentialValidUntil: z.coerce.date().optional(),
+  pixKey: z.string().optional(),
+  pixKeyType: z.enum(['CPF', 'CNPJ', 'EMAIL', 'PHONE', 'EVP']).optional(),
 });
 
 export const StudentSchema = z.object({

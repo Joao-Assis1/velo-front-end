@@ -79,9 +79,8 @@ export interface Instructor {
   detranCredentialUf?: string;
   credentialStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   credentialValidUntil?: Date;
-  stripeAccountId?: string;
-  stripeAccountStatus?: 'PENDING' | 'ONBOARDING' | 'ACTIVE' | 'RESTRICTED';
-  stripePayoutsEnabled?: boolean;
+  pixKey?: string;
+  pixKeyType?: 'CPF' | 'CNPJ' | 'EMAIL' | 'PHONE' | 'EVP';
 }
 
 export interface Student {

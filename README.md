@@ -17,7 +17,7 @@ Acesse `http://localhost:3000`.
 **Aluno**
 - Busca e filtro de instrutores por preço, localização e tipo de CNH
 - Agendamento de aulas com calendário de disponibilidade em tempo real
-- Pagamento via cartão de crédito (Stripe sandbox)
+- Pagamento via cartão de crédito (Asaas sandbox)
 - Histórico de aulas, pagamentos e notas de feedback
 - Central de disputas (até 48h após conclusão da aula)
 - Simulados teóricos — Velo Academy
@@ -28,8 +28,8 @@ Acesse `http://localhost:3000`.
 - Gestão de disponibilidade semanal
 - Aceite/recusa de agendamentos
 - Ficha do veículo (modelo, placa, transmissão)
-- Extrato financeiro com histórico de recebimentos (transferência automática via Stripe)
-- Onboarding Stripe Connect para recebimento de pagamentos
+- Extrato financeiro com histórico de recebimentos (transferência automática via Asaas)
+- Onboarding Asaas Transfers para recebimento de pagamentos
 
 ## Stack
 
@@ -39,7 +39,7 @@ Acesse `http://localhost:3000`.
 | UI | React 19 + Tailwind CSS v4 + shadcn + Base UI |
 | Estado | React Context + TanStack Query v5 |
 | Formulários | React Hook Form + Zod v4 |
-| Pagamentos | Stripe |
+| Pagamentos | Asaas |
 | Auth | Better Auth (cookie `velo-token`) |
 | Testes | Vitest + Testing Library + Playwright (E2E) |
 | Linguagem | TypeScript 5.8 |
@@ -51,7 +51,7 @@ Crie um arquivo `.env.local` na raiz com as seguintes variáveis:
 | Variável | Descrição |
 |----------|-----------|
 | `NEXT_PUBLIC_API_URL` | URL base da API (`velo-back`), ex: `http://localhost:3001/api/v1` |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Chave pública do Stripe (sandbox) |
+| `NEXT_PUBLIC_ASAAS_API_KEY` | Chave pública do Asaas (sandbox) |
 | `BETTER_AUTH_SECRET` | Secret para assinatura de sessões Better Auth |
 | `BETTER_AUTH_URL` | URL base do frontend, ex: `http://localhost:3000` |
 

@@ -2,7 +2,7 @@
 
 ## Application Overview
 
-Velo é um sistema de gestão de autoescola com dois perfis: aluno e instrutor. Frontend Next.js 16 (App Router) + React 19 + Tailwind CSS v4. Backend REST em localhost:3001. Autenticação via cookie velo-token (Better Auth). Pagamentos via Stripe sandbox. Rotas públicas: /auth/login, /auth/register/student, /auth/register/instructor. Rotas protegidas: /app/student/* e /app/instructor/*.
+Velo é um sistema de gestão de autoescola com dois perfis: aluno e instrutor. Frontend Next.js 16 (App Router) + React 19 + Tailwind CSS v4. Backend REST em localhost:3001. Autenticação via cookie velo-token (Better Auth). Pagamentos via Asaas sandbox. Rotas públicas: /auth/login, /auth/register/student, /auth/register/instructor. Rotas protegidas: /app/student/* e /app/instructor/*.
 
 ## Test Scenarios
 

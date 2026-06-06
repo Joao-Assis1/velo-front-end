@@ -20,6 +20,7 @@ import { getEscrowStatusAction } from "@/lib/actions/lessons";
 import { LessonEscrow } from "@/types";
 import { TelemetryHUD } from "@/components/features/TelemetryHUD";
 import EscrowStepper from "@/components/features/EscrowStepper";
+import { parseBRDate } from "@/lib/utils/dates";
 
 export type LessonData = {
   id: string;
@@ -142,7 +143,9 @@ export const LessonCard = React.memo(function LessonCard({
     }
   };
 
-  const lessonDate = new Date(lesson.date);
+  const lessonDate = lesson.date instanceof Date 
+    ? lesson.date 
+    : parseBRDate(lesson.date as string) || new Date(lesson.date);
   const formattedDate = new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "short",

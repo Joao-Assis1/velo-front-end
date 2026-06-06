@@ -29,12 +29,15 @@ export const BiometryOverlay = ({ lessonId, studentName, studentImage, onSuccess
     } else if (status === 'idle') {
       stopCamera();
     }
-    
+  }, [status]);
+
+  // Cleanup on unmount only — must not run on status changes or it cancels the success timeout
+  useEffect(() => {
     return () => {
       stopCamera();
       if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
     };
-  }, [status]);
+  }, []);
 
   const startCamera = async () => {
     try {

@@ -157,7 +157,8 @@ export const InstructorSchedule = ({
           {upcomingClasses.length > 0 ? (
             <div className="space-y-6">
               {Object.entries(groupedUpcoming).map(([dateKey, dayClasses]) => {
-                const date = new Date(dateKey + "T00:00:00");
+                const [y, m, d] = dateKey.split("-").map(Number);
+                const date = new Date(y, m - 1, d);
                 const dateLabel = isToday(date)
                   ? "Hoje"
                   : isTomorrow(date)

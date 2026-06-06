@@ -19,7 +19,6 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import React from "react";
 
 // ── mock server actions ───────────────────────────────────────────────────
 vi.mock("@/lib/actions/lessons", () => ({
@@ -61,6 +60,13 @@ vi.mock("@/lib/actions/instructors", () => ({
   updateInstructorProfileAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("@/lib/actions/payment-methods", () => ({
+  getStudentPaymentMethodsAction: vi.fn().mockResolvedValue({
+    success: true,
+    data: [{ id: "pm-1", isDefault: true, isDeleted: false }],
+  }),
+}));
+
 import {
   createLessonAction,
   checkInAction,
@@ -72,7 +78,8 @@ import {
   loginStudentAction,
   loginInstructorAction,
 } from "@/lib/actions/auth";
-import { AppProvider, useApp } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import { createAppWrapper } from "../utils/appWrapper";
 
 // ── fixtures ──────────────────────────────────────────────────────────────
 const mockLesson = {
@@ -106,8 +113,7 @@ const mockStudent = {
 };
 
 // ── wrapper ───────────────────────────────────────────────────────────────
-const wrapper = ({ children }: { children: React.ReactNode }) =>
-  React.createElement(AppProvider, null, children);
+const wrapper = createAppWrapper();
 
 // ── suite ─────────────────────────────────────────────────────────────────
 describe("AppContext", () => {

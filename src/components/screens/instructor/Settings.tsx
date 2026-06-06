@@ -1,153 +1,137 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Lock, ChevronRight, Check, Banknote, AlertTriangle, Loader2, ExternalLink, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronLeft, Lock, ChevronRight, Check, Banknote, Pencil } from 'lucide-react';
 import { Input, Button } from '@/components/ui-custom';
 import { useApp } from '@/context/AppContext';
 import { forgotPasswordAction, resetPasswordAction } from '@/lib/actions/auth';
-import { getConnectStatusAction, startConnectOnboardingAction, type ConnectStatus } from '@/lib/actions/connect';
+import { updateInstructorProfileAction } from '@/lib/actions/instructors';
+import { cn } from '@/lib/utils';
 
-function ConnectSection() {
-  const [status, setStatus] = useState<ConnectStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+const PIX_TYPE_LABELS: Record<string, string> = {
+  CPF: 'CPF',
+  CNPJ: 'CNPJ',
+  EMAIL: 'E-mail',
+  PHONE: 'Telefone',
+  EVP: 'Chave aleatória',
+};
+
+function PixKeySection() {
+  const { instructorProfile, setInstructorProfile } = useApp();
+  const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [pixKeyType, setPixKeyType] = useState<string>(instructorProfile?.pixKeyType ?? '');
+  const [pixKey, setPixKey] = useState(instructorProfile?.pixKey ?? '');
 
-  useEffect(() => {
-    getConnectStatusAction().then((res) => {
-      if (res.success && res.data) setStatus(res.data);
-      setLoading(false);
-    });
-  }, []);
-
-  const handleOnboard = async () => {
-    setActionLoading(true);
+  const handleSave = async () => {
+    if (!instructorProfile?.id) return;
+    if (!pixKeyType || !pixKey.trim()) {
+      setError('Selecione o tipo e informe a chave PIX.');
+      return;
+    }
+    setLoading(true);
     setError('');
-    try {
-      const res = await startConnectOnboardingAction();
-      if (!res.success || !res.data?.url) {
-        setError(res.error ?? 'Erro ao iniciar cadastro. Tente novamente.');
-        return;
+    const res = await updateInstructorProfileAction(instructorProfile.id, { pixKeyType: pixKeyType as any, pixKey: pixKey.trim() });
+    setLoading(false);
+    if (res.success) {
+      if (instructorProfile) {
+        setInstructorProfile({ ...instructorProfile, pixKeyType: pixKeyType as any, pixKey: pixKey.trim() });
       }
-      window.location.href = res.data.url;
-    } catch {
-      setError('Erro inesperado. Tente novamente.');
-    } finally {
-      setActionLoading(false);
+      setSuccess(true);
+      setEditing(false);
+      setTimeout(() => setSuccess(false), 3000);
+    } else {
+      setError(res.error ?? 'Erro ao salvar chave PIX.');
     }
   };
 
-  const handleRefreshStatus = async () => {
-    setActionLoading(true);
-    setError('');
-    try {
-      const res = await getConnectStatusAction();
-      if (res.success && res.data) setStatus(res.data);
-    } catch {
-      setError('Não foi possível verificar o status.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  const hasKey = !!instructorProfile?.pixKey;
 
-  const accountStatus = status?.stripeAccountStatus ?? 'PENDING';
-  const payoutsEnabled = status?.stripePayoutsEnabled ?? false;
-
-  if (loading) return <div className="h-16 bg-slate-100 rounded-2xl animate-pulse" />;
-
-  if (accountStatus === 'ACTIVE' && payoutsEnabled) {
+  if (!editing) {
     return (
-      <div className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center">
-            <ShieldCheck size={18} />
-          </div>
-          <div>
-            <span className="block font-semibold text-slate-700 text-sm">Conta de Recebimento</span>
-            <span className="text-xs text-green-600 font-medium">Conta conectada · Recebimentos habilitados</span>
-          </div>
-        </div>
-        <button onClick={handleOnboard} disabled={actionLoading} className="text-xs text-slate-400 hover:text-slate-600 underline transition-colors">
-          Gerenciar
-        </button>
-      </div>
-    );
-  }
-
-  if (accountStatus === 'ONBOARDING') {
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between p-4 bg-white border border-amber-200 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center">
-              <Banknote size={18} />
-            </div>
-            <div>
-              <span className="block font-semibold text-slate-700 text-sm">Conta de Recebimento</span>
-              <span className="text-xs text-amber-600 font-medium">Cadastro em análise pelo Stripe</span>
-            </div>
-          </div>
-          <button onClick={handleRefreshStatus} disabled={actionLoading} className="text-xs text-slate-400 hover:text-slate-600 transition-colors">
-            {actionLoading ? <Loader2 size={14} className="animate-spin" /> : 'Atualizar'}
-          </button>
-        </div>
-        {error && <p className="text-xs text-red-500 px-1">{error}</p>}
-        <Button variant="outline" className="w-full flex items-center gap-2" onClick={handleOnboard} disabled={actionLoading}>
-          {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <ExternalLink size={16} />}
-          Continuar cadastro no Stripe
-        </Button>
-      </div>
-    );
-  }
-
-  if (accountStatus === 'RESTRICTED') {
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between p-4 bg-white border border-red-200 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center">
-              <AlertTriangle size={18} />
-            </div>
-            <div>
-              <span className="block font-semibold text-slate-700 text-sm">Conta de Recebimento</span>
-              <span className="text-xs text-red-600 font-medium">Conta restrita pelo Stripe</span>
-            </div>
-          </div>
-        </div>
-        {error && <p className="text-xs text-red-500 px-1">{error}</p>}
-        <Button variant="outline" className="w-full flex items-center gap-2" onClick={handleOnboard} disabled={actionLoading}>
-          {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <ExternalLink size={16} />}
-          Resolver pendências no Stripe
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
       <div className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
         <div className="flex items-center gap-3.5">
           <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
             <Banknote size={18} />
           </div>
           <div>
-            <span className="block font-semibold text-slate-700 text-sm">Conta de Recebimento</span>
-            <span className="text-xs text-slate-500">Configure para receber o valor das suas aulas</span>
+            <span className="block font-semibold text-slate-700 text-sm">Chave PIX</span>
+            {hasKey ? (
+              <span className="text-xs text-slate-500">
+                {PIX_TYPE_LABELS[instructorProfile!.pixKeyType!] ?? instructorProfile!.pixKeyType}: {instructorProfile!.pixKey}
+              </span>
+            ) : (
+              <span className="text-xs text-slate-400">Não cadastrada</span>
+            )}
+            {success && <span className="block text-xs text-green-600 font-medium mt-0.5">Salvo com sucesso!</span>}
           </div>
         </div>
+        <button
+          onClick={() => {
+            setPixKeyType(instructorProfile?.pixKeyType ?? '');
+            setPixKey(instructorProfile?.pixKey ?? '');
+            setError('');
+            setEditing(true);
+          }}
+          className="text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1"
+        >
+          <Pencil size={13} />
+          {hasKey ? 'Editar' : 'Cadastrar'}
+        </button>
       </div>
-      {error && <p className="text-xs text-red-500 px-1">{error}</p>}
-      <button
-        onClick={handleOnboard}
-        disabled={actionLoading}
-        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-3 px-4 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-sm shadow-blue-600/20 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
-      >
-        {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <ExternalLink size={16} />}
-        Conectar conta bancária via Stripe
-      </button>
-      <p className="text-xs text-slate-400 text-center px-2">
-        Você será redirecionado ao Stripe para cadastrar seus dados bancários com segurança.
-      </p>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+      <h3 className="font-bold text-slate-900 mb-4 text-sm">Chave PIX para Recebimentos</h3>
+      {error && (
+        <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100">
+          {error}
+        </div>
+      )}
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Tipo de Chave</label>
+          <select
+            value={pixKeyType}
+            onChange={(e) => setPixKeyType(e.target.value)}
+            className={cn(
+              'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all',
+            )}
+          >
+            <option value="">Selecione o tipo</option>
+            {Object.entries(PIX_TYPE_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Chave PIX</label>
+          <Input
+            value={pixKey}
+            onChange={(e) => setPixKey(e.target.value)}
+            placeholder="Digite sua chave PIX"
+          />
+        </div>
+        <div className="flex gap-3 pt-1">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            onClick={() => { setEditing(false); setError(''); }}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button type="button" className="flex-1" onClick={handleSave} disabled={loading}>
+            {loading ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -212,14 +196,14 @@ export const InstructorSettings = ({ onBack }: { onBack: () => void }) => {
             <ChevronLeft size={15} /> Voltar
           </button>
           <h1 className="text-2xl font-black text-white tracking-tight">Configurações</h1>
-          <p className="text-slate-400 text-xs mt-0.5">Privacidade, segurança e recebimentos</p>
+          <p className="text-slate-400 text-xs mt-0.5">Privacidade, segurança e chave PIX</p>
         </div>
       </div>
 
       <div className="space-y-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-1 mb-3">Recebimentos</p>
-          <ConnectSection />
+          <PixKeySection />
         </div>
 
         <div>

@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern, maskCurrency, parseCurrency } from "@/lib/utils/masks";
+import { maskCNH, maskRENACH, maskPlate, maskDate, maskPattern, maskCurrency, parseCurrency, isValidCNH } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
+import { useFormPersist } from "@/lib/hooks/useFormPersist";
 
 const CNH_CATS = ["A", "B", "AB"];
 const EDU_LEVELS = ["Médio Completo", "Superior Incompleto", "Superior Completo", "Pós-Graduação"];
@@ -31,8 +32,6 @@ interface FormData {
   cnhExpiry: string;
   cnhEar: boolean;    // Exercício de Atividade Remunerada
   renachNumber: string;
-  detranCredentialNumber: string;
-  detranCredentialUf: string;
   instructorType: "Credenciado" | "Autônomo" | "";
   certidaoNegativa: string; // número/protocolo
   // Novos requisitos
@@ -51,7 +50,7 @@ interface FormData {
 const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
   cpf: "", phone: "", birthDate: "", educationLevel: "", location: "", bio: "", pricePerClass: "",
-  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", detranCredentialNumber: "", detranCredentialUf: "", instructorType: "", certidaoNegativa: "",
+  cnhNumber: "", cnhCategory: "", cnhExpiry: "", cnhEar: true, renachNumber: "", instructorType: "", certidaoNegativa: "",
   noGravissima: false, hasInstructorCourse: false, noCassacao: false,
   vehiclePlate: "", vehicleModel: "", vehicleYear: "", transmission: "",
   hasDoubleCommand: false,
@@ -62,14 +61,14 @@ export default function InstructorRegisterPage() {
   const router = useRouter();
   const { register, setUserRole } = useApp();
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState<FormData>(INITIAL);
+  const { form, setForm, clearForm } = useFormPersist<FormData>("velo-register-instructor", INITIAL);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const set = (field: keyof FormData, value: string | boolean) =>
-    setForm((p) => ({ ...p, [field]: value }));
+    setForm((p: FormData) => ({ ...p, [field]: value }));
 
   const validateStep1 = () => {
     if (!form.name.trim() || form.name.trim().split(" ").length < 2) return "Informe nome e sobrenome.";
@@ -97,6 +96,7 @@ export default function InstructorRegisterPage() {
 
   const validateStep3 = () => {
     if (form.cnhNumber.replace(/\D/g, "").length !== 11) return "Número da CNH deve ter 11 dígitos.";
+    if (!isValidCNH(form.cnhNumber)) return "Número da CNH inválido. Verifique os dígitos verificadores.";
     if (!form.cnhCategory) return "Selecione a categoria da CNH.";
     if (!form.cnhExpiry || form.cnhExpiry.replace(/\D/g, '').length < 8) return "Data de validade da CNH obrigatória.";
     const expiryObj = parseBRDate(form.cnhExpiry);
@@ -156,8 +156,6 @@ export default function InstructorRegisterPage() {
         cnhExpiry: brDateToISO(form.cnhExpiry),
         cnhEar: form.cnhEar,
         renachNumber: form.renachNumber.trim(),
-        detranCredentialNumber: form.detranCredentialNumber.trim() || undefined,
-        detranCredentialUf: form.detranCredentialUf || undefined,
         hasDoubleCommand: form.hasDoubleCommand,
         certidaoNegativa: form.certidaoNegativa.trim(),
         noGravissima: form.noGravissima,
@@ -167,8 +165,9 @@ export default function InstructorRegisterPage() {
         vehicleModel: form.vehicleModel.trim(),
         vehicleYear: Number(form.vehicleYear),
         transmission: form.transmission,
-      });
-      router.push("/app/instructor/dashboard");
+      }, "instructor");
+      clearForm();
+      router.push("/app/instructor/schedule");
     } catch (e: any) {
       setError(e?.message || "Erro ao criar conta. Tente novamente.");
     } finally {
@@ -372,23 +371,6 @@ export default function InstructorRegisterPage() {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Nº Credencial DETRAN" hint="Opcional">
-                  <input value={form.detranCredentialNumber}
-                    onChange={(e) => set("detranCredentialNumber", e.target.value.replace(/\D/g, ""))}
-                    placeholder="Ex: 00012345" inputMode="numeric"
-                    className={inputCls} />
-                </Field>
-                <Field label="UF da Credencial" hint="Opcional">
-                  <select value={form.detranCredentialUf} onChange={(e) => set("detranCredentialUf", e.target.value)} className={inputCls}>
-                    <option value="">Selecione</option>
-                    {["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"].map((uf) => (
-                      <option key={uf} value={uf}>{uf}</option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
-
               {/* EAR */}
               <div className="border border-slate-200 rounded-xl p-4 space-y-2">
                 <p className="text-xs font-bold text-slate-700">EAR — Exercício de Atividade Remunerada *</p>
@@ -488,8 +470,8 @@ export default function InstructorRegisterPage() {
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
                   Declaro que as informações são verdadeiras e aceito os{" "}
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Termos de Uso</a>,{" "}
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> e as obrigações
+                  <a href="/terms?from=instructor" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Termos de Uso</a>,{" "}
+                  <a href="/privacy?from=instructor" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> e as obrigações
                   previstas na <span className="font-bold">Resolução CONTRAN 1.020/25</span>, incluindo coleta de
                   dados biométricos e de geolocalização durante as aulas.
                 </p>

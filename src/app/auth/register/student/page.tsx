@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { maskDate, maskPattern } from "@/lib/utils/masks";
 import { parseBRDate, brDateToISO } from "@/lib/utils/dates";
+import { useFormPersist } from "@/lib/hooks/useFormPersist";
 
 
 function isValidCPF(cpf: string): boolean {
@@ -34,29 +35,28 @@ interface FormData {
   motherName: string;
   ufDomicile: string;
   intendedCategory: "B" | "";
-  // Step 3 — Termos e LADV
+  // Step 3 — Termos
   termsAccepted: boolean;
-  ladvSimulated: boolean;
 }
 
 const INITIAL: FormData = {
   name: "", email: "", password: "", confirmPassword: "",
   cpf: "", phone: "", birthDate: "", motherName: "", ufDomicile: "MS", intendedCategory: "B",
-  termsAccepted: false, ladvSimulated: false,
+  termsAccepted: false,
 };
 
 export default function StudentRegisterPage() {
   const router = useRouter();
   const { register, setUserRole } = useApp();
   const [step, setStep] = useState<Step>(1);
-  const [form, setForm] = useState<FormData>(INITIAL);
+  const { form, setForm, clearForm } = useFormPersist<FormData>("velo-register-student", INITIAL);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const set = (field: keyof FormData, value: string | boolean) =>
-    setForm((p) => ({ ...p, [field]: value }));
+    setForm((p: FormData) => ({ ...p, [field]: value }));
 
   // --- Validations per step ---
   const validateStep1 = () => {
@@ -84,7 +84,6 @@ export default function StudentRegisterPage() {
 
   const validateStep3 = () => {
     if (!form.termsAccepted) return "Você deve aceitar os Termos de Uso.";
-    if (!form.ladvSimulated) return "Simule o envio da Licença de Aprendizagem (LADV).";
     return null;
   };
 
@@ -113,8 +112,8 @@ export default function StudentRegisterPage() {
         motherName: form.motherName.trim(),
         intendedCategory: form.intendedCategory,
         ufDomicile: form.ufDomicile,
-        ladvUploaded: form.ladvSimulated,
-      });
+      }, "student");
+      clearForm();
       router.push("/app/student/dashboard");
     } catch (e: any) {
       const msg: string = e?.message || "Erro ao criar conta. Tente novamente.";
@@ -125,7 +124,7 @@ export default function StudentRegisterPage() {
     }
   };
 
-  const STEPS_LABEL = ["Acesso", "Dados Pessoais", "Documentos"];
+  const STEPS_LABEL = ["Acesso", "Dados Pessoais", "Termos"];
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-start justify-center pt-8 pb-16 px-4">
@@ -303,33 +302,7 @@ export default function StudentRegisterPage() {
           {/* STEP 3 */}
           {step === 3 && (
             <div className="space-y-4">
-              <h2 className="text-base font-bold text-slate-800">Documentos e Termos</h2>
-
-              {/* LADV */}
-              <div className="border-2 border-dashed border-slate-200 rounded-xl p-5 space-y-3">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl mt-0.5">📄</span>
-                  <div>
-                    <p className="font-bold text-slate-800 text-sm">Licença de Aprendizagem (LADV)</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Obrigatória pela CONTRAN 1.020/25. Documento emitido pelo DETRAN após aprovação nos exames teórico e médico/psicológico.
-                    </p>
-                  </div>
-                </div>
-                {form.ladvSimulated ? (
-                  <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2.5 rounded-xl text-sm font-bold">
-                    <span>✓</span> LADV anexada com sucesso
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => set("ladvSimulated", true)}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold py-2.5 px-4 rounded-xl transition"
-                  >
-                    📎 Simular envio do PDF
-                  </button>
-                )}
-              </div>
+              <h2 className="text-base font-bold text-slate-800">Termos</h2>
 
               {/* Terms */}
               <div
@@ -347,8 +320,9 @@ export default function StudentRegisterPage() {
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
                   Li e aceito os{" "}
-                  <a href="/terms" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Termos de Uso</a> e a{" "}
-                  <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> do Velo,
+                  <a href="/terms?from=student" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Termos de Uso</a> e a{" "}
+                  <a href="/privacy?from=student" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 font-bold hover:underline">Política de Privacidade</a> do Velo,
+                  {/* Links abrem em nova aba — form persiste via sessionStorage */}
                   incluindo o tratamento de dados biométricos e de geolocalização exigidos pela Res. CONTRAN 1.020/25.
                 </p>
               </div>

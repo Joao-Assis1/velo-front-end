@@ -3,12 +3,19 @@ import { ChevronLeft } from "lucide-react";
 
 export const metadata = { title: "Termos de Uso — Velo" };
 
-export default function TermsPage() {
+export default async function TermsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
+  const { from } = await searchParams;
+  const backHref = from === "instructor" ? "/auth/register/instructor" : "/auth/register/student";
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-10 bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/auth/register/student" className="p-2 hover:bg-slate-100 rounded-xl transition text-slate-500">
+          <Link href={backHref} className="p-2 hover:bg-slate-100 rounded-xl transition text-slate-500">
             <ChevronLeft size={20} />
           </Link>
           <div>
@@ -60,7 +67,7 @@ export default function TermsPage() {
 
           <Article title="1.5 Pagamentos e cancelamentos">
             <ul className="list-disc pl-5 space-y-1">
-              <li>O pagamento é processado de forma segura pela plataforma via Stripe.</li>
+              <li>O pagamento é processado de forma segura pela plataforma via Asaas.</li>
               <li>Cancelamentos com <strong>mais de 24 horas de antecedência</strong> dão direito a reembolso integral.</li>
               <li>Cancelamentos com <strong>menos de 24 horas de antecedência</strong> estão sujeitos à política de reembolso disponível nas configurações do app.</li>
               <li>O Velo emite comprovante de todas as transações realizadas.</li>

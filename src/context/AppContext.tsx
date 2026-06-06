@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import { UserRole, Instructor, Student, ScheduledClass, DetranStage, AcademyModule } from '../types';
 import {
   createLessonAction,
@@ -52,7 +53,7 @@ interface AppContextType {
   setActiveClassId: (id: string | null) => void;
   
   login: (credentials?: any, forcedRole?: UserRole) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  register: (data: any, forcedRole?: UserRole) => Promise<void>;
   updateStudentProfile: (data: any) => Promise<void>;
   updateInstructorProfile: (data: any) => Promise<void>;
   logout: () => void;
@@ -210,8 +211,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (data: any) => {
-    if (userRole === 'student') {
+  const register = async (data: any, forcedRole?: UserRole) => {
+    const roleToUse = forcedRole || userRole;
+    if (roleToUse === 'student') {
       const res = await registerStudentAction(data);
       if (!res.success || !res.data) {
         throw new Error(res.error || 'Erro ao realizar cadastro');
@@ -220,6 +222,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('velo-token', res.token);
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
+      setUserRole('student');
       setStudentProfile(res.data as Student);
       setHasLadv((res.data as any).ladvUploaded ?? false);
     } else {
@@ -231,6 +234,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('velo-token', res.token);
         document.cookie = `velo-token=${res.token}; path=/; max-age=86400; SameSite=Lax`;
       }
+      setUserRole('instructor');
       setInstructorProfile({
         ...res.data,
         rating: res.data.rating ?? 5.0,
@@ -346,7 +350,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const lessonDto = {
         studentId: studentProfile?.id || '00000000-0000-0000-0000-000000000000',
         instructorId: instructor.id,
-        date: date.toISOString(),
+        date: format(date, 'yyyy-MM-dd') + 'T00:00:00.000Z',
         startTime,
         endTime,
         price: instructor.pricePerClass,

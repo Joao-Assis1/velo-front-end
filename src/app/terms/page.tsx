@@ -67,7 +67,7 @@ export default async function TermsPage({
 
           <Article title="1.5 Pagamentos e cancelamentos">
             <ul className="list-disc pl-5 space-y-1">
-              <li>O pagamento é processado de forma segura pela plataforma via Stripe.</li>
+              <li>O pagamento é processado de forma segura pela plataforma via Asaas.</li>
               <li>Cancelamentos com <strong>mais de 24 horas de antecedência</strong> dão direito a reembolso integral.</li>
               <li>Cancelamentos com <strong>menos de 24 horas de antecedência</strong> estão sujeitos à política de reembolso disponível nas configurações do app.</li>
               <li>O Velo emite comprovante de todas as transações realizadas.</li>

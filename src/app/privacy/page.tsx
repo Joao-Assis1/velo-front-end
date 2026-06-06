@@ -52,7 +52,7 @@ export default async function PrivacyPage({
               ["Localização", "Busca de instrutores próximos", "Consentimento (art. 7º, I)"],
               ["Histórico de aulas", "Progresso do aluno e suporte", "Execução de contrato (art. 7º, V)"],
               ["Fotos de check-in/check-out", "Comprovação de realização da aula", "Execução de contrato (art. 7º, V)"],
-              ["Dados de pagamento", "Processamento financeiro via Stripe", "Execução de contrato (art. 7º, V)"],
+              ["Dados de pagamento", "Processamento financeiro via Asaas", "Execução de contrato (art. 7º, V)"],
             ]} />
 
             <p className="mt-6 mb-4 font-medium text-slate-700">Dados do Instrutor</p>
@@ -73,7 +73,7 @@ export default async function PrivacyPage({
             <p className="mb-2">O Velo <strong>não vende dados pessoais</strong> a terceiros. Os dados são compartilhados apenas nas seguintes situações:</p>
             <ul className="list-disc pl-5 space-y-2">
               <li><strong>Entre aluno e instrutor:</strong> nome, foto de perfil e histórico de aulas são compartilhados para viabilizar a prestação do serviço.</li>
-              <li><strong>Stripe:</strong> dados financeiros para processar transações. A Stripe possui certificação PCI-DSS.</li>
+              <li><strong>Asaas:</strong> dados financeiros para processar transações. A Asaas é instituição de pagamento regulada pelo Banco Central.</li>
               <li><strong>Neon.tech:</strong> armazenamento seguro com Row Level Security (RLS) ativo.</li>
               <li><strong>Autoridades competentes:</strong> quando exigido por lei, ordem judicial ou requisição do DETRAN.</li>
             </ul>

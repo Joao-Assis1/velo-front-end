@@ -5,7 +5,7 @@ import {
   deleteCard,
   setDefaultCard,
   SavedCard,
-} from "@/lib/api/payments-stripe";
+} from "@/lib/api/payment-methods";
 import { AddCardForm } from "@/components/features/AddCardForm";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Trash2, Star } from "lucide-react";
